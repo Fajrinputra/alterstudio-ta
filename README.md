@@ -57,3 +57,39 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+# AlterStudio Workflow Management System
+
+Sistem Informasi Manajemen Alur Kerja Terintegrasi untuk Alter Studio berbasis Laravel 12 & MySQL.
+
+Fitur utama:
+- Autentikasi user (Laravel Breeze)
+- Multi-role (Admin, Klien, Fotografer, Editor, Manajer)
+- Booking project
+- Penjadwalan kru
+- Workflow pascaproduksi
+- Penggajian & laporan
+
+---
+
+## ⚙️ Tech Stack
+
+- PHP 8.2
+- Laravel 12
+- MySQL
+- Laravel Breeze (Auth)
+- Tailwind CSS + Vite
+- Node.js 22 LTS
+- GitHub (version control)
+
+---
+
+## 📁 Struktur Project
+
+alterstudio/
+├── app/
+├── routes/
+├── resources/
+├── database/
+├── public/
+└── .env
