@@ -9,6 +9,9 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
+/**
+ * Request login dengan validasi + throttle anti brute force.
+ */
 class LoginRequest extends FormRequest
 {
     /**
@@ -39,9 +42,11 @@ class LoginRequest extends FormRequest
      */
     public function authenticate(): void
     {
+        // Cek rate limit sebelum validasi kredensial.
         $this->ensureIsNotRateLimited();
 
         if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
+            // Hit percobaan gagal untuk email+IP saat ini.
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
@@ -59,6 +64,7 @@ class LoginRequest extends FormRequest
      */
     public function ensureIsNotRateLimited(): void
     {
+        // Maksimal 5 percobaan login gagal per throttle key.
         if (! RateLimiter::tooManyAttempts($this->throttleKey(), 5)) {
             return;
         }
@@ -80,6 +86,7 @@ class LoginRequest extends FormRequest
      */
     public function throttleKey(): string
     {
+        // Key berbasis email + IP agar pembatasan lebih adil.
         return Str::transliterate(Str::lower($this->string('email')).'|'.$this->ip());
     }
 }

@@ -7,6 +7,9 @@ use Illuminate\Auth\Events\Verified;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\RedirectResponse;
 
+/**
+ * Callback verifikasi email dari link signed URL.
+ */
 class VerifyEmailController extends Controller
 {
     /**

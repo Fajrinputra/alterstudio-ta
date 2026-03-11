@@ -5,8 +5,11 @@ namespace Database\Factories;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use App\Enums\Role;
 
 /**
+ * Factory user untuk role-based testing.
+ *
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\User>
  */
 class UserFactory extends Factory
@@ -29,6 +32,8 @@ class UserFactory extends Factory
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
+            'role' => Role::CLIENT,
+            'is_active' => true,
         ];
     }
 
@@ -40,5 +45,11 @@ class UserFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'email_verified_at' => null,
         ]);
+    }
+
+    public function role(Role $role): static
+    {
+        // Shortcut agar test mudah membuat user role tertentu.
+        return $this->state(fn () => ['role' => $role]);
     }
 }

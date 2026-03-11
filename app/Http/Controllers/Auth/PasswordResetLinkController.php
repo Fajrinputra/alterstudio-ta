@@ -2,12 +2,17 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Models\User;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Password;
 use Illuminate\View\View;
 
+/**
+ * Permintaan link reset password via email.
+ */
 class PasswordResetLinkController extends Controller
 {
     /**
@@ -26,15 +31,23 @@ class PasswordResetLinkController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
-            'email' => ['required', 'email'],
+            'email' => ['required', 'email', 'exists:users,email'],
         ]);
 
-        // We will send the password reset link to this user. Once we have attempted
-        // to send the link, we will examine the response then see the message we
-        // need to show to the user. Finally, we'll send out a proper response.
+        // Kirim token reset melalui broker password.
         $status = Password::sendResetLink(
             $request->only('email')
         );
+
+        if ($status === Password::RESET_LINK_SENT) {
+            // Sinkronkan FK user_id agar tabel token tetap relasional.
+            $userId = User::where('email', $request->email)->value('id');
+            if ($userId) {
+                DB::table('password_reset_tokens')
+                    ->where('email', $request->email)
+                    ->update(['user_id' => $userId]);
+            }
+        }
 
         return $status == Password::RESET_LINK_SENT
                     ? back()->with('status', __($status))

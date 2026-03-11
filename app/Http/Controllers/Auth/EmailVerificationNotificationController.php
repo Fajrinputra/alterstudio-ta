@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
+/**
+ * Mengirim ulang email verifikasi akun.
+ */
 class EmailVerificationNotificationController extends Controller
 {
     /**

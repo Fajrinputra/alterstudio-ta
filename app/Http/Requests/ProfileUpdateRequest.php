@@ -6,6 +6,9 @@ use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
+/**
+ * Validasi update profil user.
+ */
 class ProfileUpdateRequest extends FormRequest
 {
     /**
@@ -15,6 +18,7 @@ class ProfileUpdateRequest extends FormRequest
      */
     public function rules(): array
     {
+        // Email tetap unik kecuali milik user yang sedang login.
         return [
             'name' => ['required', 'string', 'max:255'],
             'email' => [
@@ -25,6 +29,8 @@ class ProfileUpdateRequest extends FormRequest
                 'max:255',
                 Rule::unique(User::class)->ignore($this->user()->id),
             ],
+            'no_hp' => ['nullable', 'string', 'max:30'],
+            'avatar' => ['nullable', 'image', 'max:2048'],
         ];
     }
 }

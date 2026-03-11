@@ -8,6 +8,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 
+/**
+ * Ubah password untuk user yang sedang login.
+ */
 class PasswordController extends Controller
 {
     /**

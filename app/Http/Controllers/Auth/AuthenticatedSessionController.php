@@ -9,6 +9,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
+/**
+ * Menangani alur login/logout pengguna.
+ */
 class AuthenticatedSessionController extends Controller
 {
     /**
@@ -24,9 +27,19 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request): RedirectResponse
     {
+        // Validasi kredensial dilakukan oleh LoginRequest::authenticate().
         $request->authenticate();
 
+        // Regenerate session untuk mencegah session fixation.
         $request->session()->regenerate();
+
+        // Hard stop untuk akun nonaktif walau password benar.
+        if (!$request->user()->is_active) {
+            Auth::logout();
+            return back()->withErrors([
+                'email' => 'Akun Anda dinonaktifkan. Hubungi admin.',
+            ]);
+        }
 
         return redirect()->intended(route('dashboard', absolute: false));
     }
@@ -36,6 +49,7 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+        // Logout + invalidasi penuh sesi.
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();

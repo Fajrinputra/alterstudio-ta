@@ -9,6 +9,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
+/**
+ * Konfirmasi ulang password untuk aksi sensitif.
+ */
 class ConfirmablePasswordController extends Controller
 {
     /**
@@ -24,6 +27,7 @@ class ConfirmablePasswordController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        // Re-validasi password terhadap akun login saat ini.
         if (! Auth::guard('web')->validate([
             'email' => $request->user()->email,
             'password' => $request->password,

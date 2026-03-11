@@ -35,4 +35,18 @@ return [
         ],
     ],
 
+    'midtrans' => [
+        // Semua credential pembayaran harus berasal dari env (tanpa hardcoded key).
+        'server_key' => env('MIDTRANS_SERVER_KEY'),
+        'client_key' => env('MIDTRANS_CLIENT_KEY'),
+        'merchant_id' => env('MIDTRANS_MERCHANT_ID'),
+        'sandbox' => env('MIDTRANS_SANDBOX', true),
+    ],
+
+    'contact' => [
+        'whatsapp' => env('CONTACT_WHATSAPP_URL', 'https://wa.me/6281234567890'),
+        'instagram' => env('CONTACT_INSTAGRAM_URL', 'https://instagram.com/alterstudio'),
+        'tiktok' => env('CONTACT_TIKTOK_URL', 'https://tiktok.com/@alterstudio'),
+    ],
+
 ];

@@ -4,6 +4,9 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
+/**
+ * Tabel inti autentikasi: users, password reset token, dan sessions (legacy).
+ */
 return new class extends Migration
 {
     /**
@@ -11,6 +14,7 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Master akun user.
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('name');
@@ -21,12 +25,14 @@ return new class extends Migration
             $table->timestamps();
         });
 
+        // Token reset password bawaan Laravel.
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();
             $table->string('token');
             $table->timestamp('created_at')->nullable();
         });
 
+        // Session table awal (kemudian dipindah ke driver file di mode strict).
         Schema::create('sessions', function (Blueprint $table) {
             $table->string('id')->primary();
             $table->foreignId('user_id')->nullable()->index();
