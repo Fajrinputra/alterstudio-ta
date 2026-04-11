@@ -13,10 +13,10 @@ class LocationPublicController extends Controller
     /** Tampilkan detail cabang untuk guest. */
     public function show(StudioLocation $studioLocation)
     {
-        $studioLocation->load('rooms');
+        $studioLocation->load(['rooms']);
         return view('locations.show', [
             'location' => $studioLocation,
-            'photos' => $studioLocation->photo_gallery ?? ($studioLocation->photo_path ? [$studioLocation->photo_path] : []),
+            'photos' => $studioLocation->photo_gallery,
         ]);
     }
 }

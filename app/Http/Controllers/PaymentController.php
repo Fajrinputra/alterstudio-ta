@@ -21,17 +21,29 @@ class PaymentController extends Controller
     {
         $this->authorizeBooking($request, $booking);
 
-        if (in_array($booking->status, ['PAID', 'DP_PAID'], true)) {
+        if ($booking->status === Booking::STATUS_CANCELLED) {
+            return response()->json([
+                'message' => 'Booking sudah dibatalkan dan tidak dapat dibayar kembali.',
+            ], 422);
+        }
+
+        if ($this->cancelIfPaymentWindowExpired($booking)) {
+            return response()->json([
+                'message' => 'Waktu pembayaran 30 menit sudah habis. Booking dibatalkan otomatis, silakan pesan ulang.',
+            ], 422);
+        }
+
+        if (in_array($booking->status, [Booking::STATUS_PAID, Booking::STATUS_DP_PAID], true)) {
             return response()->json([
                 'message' => 'Booking sudah memiliki pembayaran terkonfirmasi.',
             ], 422);
         }
 
         $validated = $request->validate([
-            'type' => ['required', 'in:DP,FULL'],
+            'type' => ['required', 'in:' . Payment::TYPE_DP . ',' . Payment::TYPE_FULL],
         ]);
 
-        $amount = $validated['type'] === 'DP'
+        $amount = $validated['type'] === Payment::TYPE_DP
             ? (int) min($booking->total_price, 100000)
             : (int) $booking->total_price;
 
@@ -39,7 +51,7 @@ class PaymentController extends Controller
         // ketika user klik bayar berulang.
         $existingPending = Payment::where('booking_id', $booking->id)
             ->where('type', $validated['type'])
-            ->where('status', 'PENDING')
+            ->where('status', Payment::STATUS_PENDING)
             ->whereNotNull('snap_token')
             ->latest()
             ->first();
@@ -58,6 +70,12 @@ class PaymentController extends Controller
 
         // Call Midtrans Snap API (sandbox)
         $serverKey = config('services.midtrans.server_key');
+        if (!is_string($serverKey) || trim($serverKey) === '') {
+            Log::error('Midtrans configuration missing: MIDTRANS_SERVER_KEY');
+            return response()->json([
+                'message' => 'Konfigurasi Midtrans belum lengkap (MIDTRANS_SERVER_KEY).',
+            ], 422);
+        }
         $isSandbox = (bool) config('services.midtrans.sandbox', true);
         $baseUrl = $isSandbox
             ? 'https://app.sandbox.midtrans.com'
@@ -66,22 +84,23 @@ class PaymentController extends Controller
         $itemDetails = [
             [
                 'id' => $booking->package_id,
-                'price' => $validated['type'] === 'FULL' ? (int) $booking->package->price : $amount,
+                'price' => $validated['type'] === Payment::TYPE_FULL ? (int) $booking->package->price : $amount,
                 'quantity' => 1,
-                'name' => ($booking->package->name ?? 'Paket').($validated['type'] === 'DP' ? ' (DP)' : ''),
+                'name' => ($booking->package->name ?? 'Paket').($validated['type'] === Payment::TYPE_DP ? ' (DP)' : ''),
             ]
         ];
 
-        if ($validated['type'] === 'FULL' && !empty($booking->selected_addons)) {
+        if ($validated['type'] === Payment::TYPE_FULL && !empty($booking->selected_addons)) {
             foreach ($booking->selected_addons as $idx => $addon) {
                 $price = (int) ($addon['price'] ?? 0);
+                $quantity = max(1, (int) ($addon['quantity'] ?? 1));
                 if ($price <= 0) {
                     continue;
                 }
                 $itemDetails[] = [
                     'id' => 'addon-'.$booking->id.'-'.$idx,
                     'price' => $price,
-                    'quantity' => 1,
+                    'quantity' => $quantity,
                     'name' => (string) ($addon['label'] ?? 'Addon'),
                 ];
             }
@@ -130,7 +149,7 @@ class PaymentController extends Controller
             'booking_id' => $booking->id,
             'type' => $validated['type'],
             'amount' => $amount,
-            'status' => 'PENDING',
+            'status' => Payment::STATUS_PENDING,
             'order_id' => $orderId,
             'snap_token' => $snapToken,
         ]);
@@ -164,8 +183,22 @@ class PaymentController extends Controller
     {
         $this->authorizeBooking($request, $booking);
 
+        if ($booking->status === Booking::STATUS_CANCELLED) {
+            return response()->json([
+                'message' => 'Booking sudah dibatalkan.',
+                'booking_status' => $booking->status,
+            ], 422);
+        }
+
+        if ($this->cancelIfPaymentWindowExpired($booking)) {
+            return response()->json([
+                'message' => 'Waktu pembayaran 30 menit sudah habis. Booking dibatalkan otomatis.',
+                'booking_status' => $booking->fresh()->status,
+            ], 422);
+        }
+
         $payment = Payment::where('booking_id', $booking->id)
-            ->where('status', 'PENDING')
+            ->where('status', Payment::STATUS_PENDING)
             ->latest()
             ->first();
 
@@ -177,6 +210,11 @@ class PaymentController extends Controller
         }
 
         $serverKey = config('services.midtrans.server_key');
+        if (!is_string($serverKey) || trim($serverKey) === '') {
+            return response()->json([
+                'message' => 'Konfigurasi Midtrans belum lengkap (MIDTRANS_SERVER_KEY).',
+            ], 422);
+        }
         $isSandbox = (bool) config('services.midtrans.sandbox', true);
         $baseUrl = $isSandbox
             ? 'https://api.sandbox.midtrans.com'
@@ -220,33 +258,52 @@ class PaymentController extends Controller
 
         // Mapping status Midtrans -> status payment internal.
         $statusMap = [
-            'settlement' => 'PAID',
-            'capture' => 'PAID',
-            'pending' => 'PENDING',
-            'expire' => 'EXPIRED',
-            'cancel' => 'FAILED',
-            'failure' => 'FAILED',
-            'deny' => 'FAILED',
+            'settlement' => Payment::STATUS_PAID,
+            'capture' => Payment::STATUS_PAID,
+            'pending' => Payment::STATUS_PENDING,
+            'expire' => Payment::STATUS_EXPIRED,
+            'cancel' => Payment::STATUS_FAILED,
+            'failure' => Payment::STATUS_FAILED,
+            'deny' => Payment::STATUS_FAILED,
         ];
 
-        $newStatus = $statusMap[$transactionStatus] ?? 'PENDING';
+        $newStatus = $statusMap[$transactionStatus] ?? Payment::STATUS_PENDING;
 
         $payment->update([
             'transaction_status' => $transactionStatus,
             'status' => $newStatus,
-            'paid_at' => $newStatus === 'PAID' ? Carbon::now() : null,
+            'paid_at' => $newStatus === Payment::STATUS_PAID ? Carbon::now() : null,
         ]);
 
-        if ($newStatus === 'PAID') {
-            $booking->status = $payment->type === 'DP' ? 'DP_PAID' : 'PAID';
+        if ($newStatus === Payment::STATUS_PAID) {
+            $booking->status = $payment->type === Payment::TYPE_DP ? Booking::STATUS_DP_PAID : Booking::STATUS_PAID;
             $booking->save();
 
-            if ($previousStatus !== 'PAID') {
+            if ($previousStatus !== Payment::STATUS_PAID) {
                 $booking->client?->notify(new PaymentConfirmedNotification($payment->id));
             }
-        } elseif (in_array($newStatus, ['EXPIRED', 'FAILED'], true)) {
-            $booking->status = 'WAITING_PAYMENT';
+        } elseif (in_array($newStatus, [Payment::STATUS_EXPIRED, Payment::STATUS_FAILED], true)) {
+            $booking->status = Booking::STATUS_WAITING_PAYMENT;
             $booking->save();
         }
+    }
+
+    protected function cancelIfPaymentWindowExpired(Booking $booking): bool
+    {
+        if (! $booking->isPaymentWindowExpired()) {
+            return false;
+        }
+
+        $booking->update(['status' => Booking::STATUS_CANCELLED]);
+
+        $booking->payments()
+            ->where('status', Payment::STATUS_PENDING)
+            ->update([
+                'status' => Payment::STATUS_EXPIRED,
+                'transaction_status' => 'payment_window_expired',
+                'paid_at' => null,
+            ]);
+
+        return true;
     }
 }

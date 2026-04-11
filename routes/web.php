@@ -39,7 +39,6 @@ Route::middleware('auth')->group(function () {
 
         Route::post('/projects/{project}/selections', [\App\Http\Controllers\PhotoSelectionController::class, 'store']);
         Route::post('/projects/{project}/selections/finalize', [\App\Http\Controllers\PhotoSelectionController::class, 'finalize'])->name('projects.selections.finalize');
-        Route::post('/projects/{project}/revision-pins', [\App\Http\Controllers\RevisionPinController::class, 'store']);
         Route::get('/projects/{project}/raw-download', [\App\Http\Controllers\MediaAssetController::class, 'downloadRaw'])->name('projects.raw.download');
     });
 
@@ -47,16 +46,16 @@ Route::middleware('auth')->group(function () {
     Route::post('/profile/avatar', \App\Http\Controllers\ProfileAvatarController::class)->name('profile.avatar');
     Route::post('/profile/avatar/delete', [\App\Http\Controllers\ProfileAvatarController::class, 'destroy'])->name('profile.avatar.delete');
 
-    // Admin / Manager / Owner
+    // Akses bersama admin/manager untuk monitoring + jadwal
     Route::middleware('role:ADMIN,MANAGER')->group(function () {
         Route::get('/admin/bookings', [\App\Http\Controllers\BookingController::class, 'index']);
-        Route::post('/admin/bookings/{booking}/status', [\App\Http\Controllers\BookingController::class, 'updateStatus'])->name('admin.bookings.status');
         Route::post('/projects/{project}/schedule', [\App\Http\Controllers\ScheduleController::class, 'store']);
         Route::put('/projects/{project}/schedule', [\App\Http\Controllers\ScheduleController::class, 'update'])->name('projects.schedule.update');
         Route::delete('/projects/{project}/schedule', [\App\Http\Controllers\ScheduleController::class, 'destroy'])->name('projects.schedule.destroy');
-        Route::get('/payroll', [\App\Http\Controllers\PayrollController::class, 'index'])->name('payroll.index');
+    });
 
-        // Kelola pengguna
+    // Kelola pengguna dan cabang hanya untuk manajer
+    Route::middleware('role:MANAGER')->group(function () {
         Route::get('/admin/users', [\App\Http\Controllers\UserManagementController::class, 'index'])->name('admin.users.index');
         Route::get('/admin/users/create', [\App\Http\Controllers\UserManagementController::class, 'create'])->name('admin.users.create');
         Route::get('/admin/users/{user}/edit', [\App\Http\Controllers\UserManagementController::class, 'edit'])->name('admin.users.edit');
@@ -64,7 +63,21 @@ Route::middleware('auth')->group(function () {
         Route::put('/admin/users/{user}', [\App\Http\Controllers\UserManagementController::class, 'update'])->name('admin.users.update');
         Route::post('/admin/users/{user}/toggle', [\App\Http\Controllers\UserManagementController::class, 'toggle'])->name('admin.users.toggle');
         Route::delete('/admin/users/{user}', [\App\Http\Controllers\UserManagementController::class, 'destroy'])->name('admin.users.destroy');
+        Route::get('/reports', [\App\Http\Controllers\ReportController::class, 'index'])->name('reports.index');
 
+        // Kelola lokasi
+        Route::get('/admin/locations', [\App\Http\Controllers\Admin\StudioLocationController::class, 'index']);
+        Route::get('/admin/locations/manage', [\App\Http\Controllers\Admin\StudioLocationController::class, 'manage'])->name('admin.locations.manage');
+        Route::post('/admin/locations', [\App\Http\Controllers\Admin\StudioLocationController::class, 'store']);
+        Route::put('/admin/locations/{studioLocation}', [\App\Http\Controllers\Admin\StudioLocationController::class, 'update']);
+        Route::delete('/admin/locations/{studioLocation}', [\App\Http\Controllers\Admin\StudioLocationController::class, 'destroy']);
+        Route::post('/admin/locations/room', [\App\Http\Controllers\Admin\StudioLocationController::class, 'storeRoom'])->name('admin.locations.room.store');
+        Route::put('/admin/locations/room/{studioRoom}', [\App\Http\Controllers\Admin\StudioLocationController::class, 'updateRoom'])->name('admin.locations.room.update');
+        Route::delete('/admin/locations/room/{studioRoom}', [\App\Http\Controllers\Admin\StudioLocationController::class, 'destroyRoom'])->name('admin.locations.room.destroy');
+    });
+
+    // Kelola katalog untuk admin + manajer
+    Route::middleware('role:ADMIN,MANAGER')->group(function () {
         // Kelola katalog (view)
         Route::get('/admin/catalog', [\App\Http\Controllers\Admin\CatalogController::class, 'index'])->name('admin.catalog');
         Route::get('/admin/catalog/create', [\App\Http\Controllers\Admin\CatalogController::class, 'create'])->name('admin.catalog.create');
@@ -85,17 +98,13 @@ Route::middleware('auth')->group(function () {
         Route::post('/admin/packages', [\App\Http\Controllers\Admin\ServicePackageController::class, 'store'])->name('admin.packages.store');
         Route::put('/admin/packages/{servicePackage}', [\App\Http\Controllers\Admin\ServicePackageController::class, 'update'])->name('admin.packages.update');
         Route::delete('/admin/packages/{servicePackage}', [\App\Http\Controllers\Admin\ServicePackageController::class, 'destroy'])->name('admin.packages.destroy');
-
-        // Kelola lokasi
-        Route::get('/admin/locations', [\App\Http\Controllers\Admin\StudioLocationController::class, 'index']);
-        Route::get('/admin/locations/manage', [\App\Http\Controllers\Admin\StudioLocationController::class, 'manage'])->name('admin.locations.manage');
-        Route::post('/admin/locations', [\App\Http\Controllers\Admin\StudioLocationController::class, 'store']);
-        Route::put('/admin/locations/{studioLocation}', [\App\Http\Controllers\Admin\StudioLocationController::class, 'update']);
-        Route::delete('/admin/locations/{studioLocation}', [\App\Http\Controllers\Admin\StudioLocationController::class, 'destroy']);
-        Route::post('/admin/locations/room', [\App\Http\Controllers\Admin\StudioLocationController::class, 'storeRoom'])->name('admin.locations.room.store');
     });
 
+    // Fitur khusus admin
     Route::middleware('role:ADMIN')->group(function () {
+        // Update status pembayaran hanya admin
+        Route::post('/admin/bookings/{booking}/status', [\App\Http\Controllers\BookingController::class, 'updateStatus'])->name('admin.bookings.status');
+
         Route::get('/admin/landing/hero', [\App\Http\Controllers\Admin\LandingHeroController::class, 'index'])->name('admin.landing.hero');
         Route::post('/admin/landing/hero', [\App\Http\Controllers\Admin\LandingHeroController::class, 'store'])->name('admin.landing.hero.store');
         Route::put('/admin/landing/hero/{slide}', [\App\Http\Controllers\Admin\LandingHeroController::class, 'update'])->name('admin.landing.hero.update');
@@ -107,10 +116,13 @@ Route::middleware('auth')->group(function () {
         Route::get('/admin/schedules', [\App\Http\Controllers\ScheduleController::class, 'index'])->name('admin.schedules');
     });
 
-    // Editor & Photographer uploads
+    // Upload aset hanya untuk editor/fotografer/admin
     Route::middleware('role:EDITOR,PHOTOGRAPHER,ADMIN')->group(function () {
         Route::post('/projects/{project}/assets', [\App\Http\Controllers\MediaAssetController::class, 'store']);
-        Route::post('/revision-pins/{revisionPin}/resolve', [\App\Http\Controllers\RevisionPinController::class, 'resolve']);
+    });
+
+    // Detail project boleh dilihat manager (read-only dari sisi route method GET)
+    Route::middleware('role:EDITOR,PHOTOGRAPHER,ADMIN,MANAGER')->group(function () {
         Route::get('/projects/{project}', [\App\Http\Controllers\ProjectController::class, 'show'])->name('projects.show');
     });
 });

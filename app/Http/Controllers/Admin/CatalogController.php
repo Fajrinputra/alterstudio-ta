@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\ServiceCategory;
 use App\Models\ServicePackage;
-use App\Models\StudioLocation;
 use Illuminate\Http\Request;
 
 /**
@@ -16,22 +15,22 @@ class CatalogController extends Controller
     /** Daftar kategori untuk halaman katalog admin. */
     public function index()
     {
-        $categories = ServiceCategory::withCount('packages')->orderBy('name')->get();
+        $categories = ServiceCategory::with(['packages' => fn ($q) => $q->orderBy('name')])->orderBy('name')->get();
         return view('admin.catalog.index', compact('categories'));
     }
 
     /** Tampilan katalog read-only untuk semua role. */
     public function publicIndex()
     {
-        $categories = ServiceCategory::with(['packages'])->orderBy('name')->get();
-        return view('catalog.index', compact('categories'));
+        $categories = ServiceCategory::with(['packages' => fn ($q) => $q->orderBy('name')])->orderBy('name')->get();
+        return view('admin.catalog.index', compact('categories'));
     }
 
     public function publicShow(ServicePackage $servicePackage)
     {
         // Detail paket pada halaman katalog client (read-only).
-        $servicePackage->load('category');
-        return view('catalog.show', compact('servicePackage'));
+        $servicePackage->load(['category']);
+        return view('admin.catalog.show', compact('servicePackage'));
     }
 
     public function create()
@@ -63,21 +62,24 @@ class CatalogController extends Controller
             if (!($pkg['name'] ?? null)) {
                 continue;
             }
+            $features = $this->toArray($pkg['features'] ?? null, "\n");
+            $addons = $this->normalizeCsvAddons($pkg['addons'] ?? null);
+
             $package = ServicePackage::create([
                 'category_id' => $category->id,
                 'name' => $pkg['name'],
                 'price' => $pkg['price'] ?? 0,
                 'description' => $pkg['description'] ?? null,
-                'features' => $this->toArray($pkg['features'] ?? null, "\n"),
-                'addons' => $this->toArray($pkg['addons'] ?? null, ','),
                 'terms' => $pkg['terms'] ?? null,
                 'is_active' => true,
             ]);
+            $this->syncFeatures($package, $features);
+            $this->syncAddons($package, $addons);
 
             // overview image per paket (packages[index][overview_image])
             if ($request->hasFile("packages.$index.overview_image")) {
                 $path = $request->file("packages.$index.overview_image")->storePublicly("packages/{$package->id}/overview", 'public');
-                $package->update(['overview_image' => $path]);
+                $this->syncGalleryItems($package, array_values(array_unique(array_merge([$path], $package->gallery))));
             }
             // gallery per paket
             if ($request->hasFile("packages.$index.gallery")) {
@@ -85,7 +87,7 @@ class CatalogController extends Controller
                 foreach ($request->file("packages.$index.gallery") as $file) {
                     $paths[] = $file->storePublicly("packages/{$package->id}/gallery", 'public');
                 }
-                $package->update(['gallery' => array_slice($paths, 0, 20)]);
+                $this->syncGalleryItems($package, array_slice($paths, 0, 20));
             }
         }
 
@@ -116,6 +118,7 @@ class CatalogController extends Controller
             'addons' => ['nullable','array'],
             'addons.*.label' => ['nullable','string','max:255'],
             'addons.*.price' => ['nullable','integer','min:0'],
+            'addons.*.unit' => ['nullable','string','max:50'],
             'terms' => ['nullable','string'],
             'overview_image' => ['nullable','image','max:20480'],
             'is_active' => ['boolean'],
@@ -123,21 +126,24 @@ class CatalogController extends Controller
             'gallery.*' => ['image','max:20480'],
         ]);
 
+        $features = $this->toArray($data['features'] ?? null, "\n");
+        $addons = $this->normalizeAddons($data['addons'] ?? []);
+
         $package = ServicePackage::create([
             'category_id' => $category->id,
             'name' => $data['name'],
             'price' => $data['price'],
             'max_people' => $data['max_people'] ?? null,
             'description' => $data['description'] ?? null,
-            'features' => $this->toArray($data['features'] ?? null, "\n"),
-            'addons' => $this->normalizeAddons($data['addons'] ?? []),
             'terms' => $data['terms'] ?? null,
             'is_active' => $data['is_active'] ?? false,
         ]);
+        $this->syncFeatures($package, $features);
+        $this->syncAddons($package, $addons);
 
         if ($request->hasFile('overview_image')) {
             $path = $request->file('overview_image')->storePublicly("packages/{$package->id}/overview", 'public');
-            $package->update(['overview_image' => $path]);
+            $this->syncGalleryItems($package, array_values(array_unique(array_merge([$path], $package->gallery))));
         }
 
         if ($request->hasFile('gallery')) {
@@ -145,7 +151,7 @@ class CatalogController extends Controller
             foreach ($request->file('gallery') as $file) {
                 $paths[] = $file->storePublicly("packages/{$package->id}/gallery", 'public');
             }
-            $package->update(['gallery' => array_slice($paths, 0, 20)]);
+            $this->syncGalleryItems($package, array_slice($paths, 0, 20));
         }
 
         return redirect()->route('admin.catalog.packages', $category)->with('status', 'Paket ditambahkan.');
@@ -179,10 +185,66 @@ class CatalogController extends Controller
                 return [
                     'label' => $label,
                     'price' => max(0, $price),
+                    'unit' => trim((string) ($addon['unit'] ?? '')),
                 ];
             })
             ->filter()
             ->values()
             ->all();
+    }
+
+    protected function normalizeCsvAddons($value): array
+    {
+        return collect($this->toArray($value, ','))
+            ->map(function ($raw) {
+                [$label, $price] = $this->parseAddonLabelAndPrice($raw);
+
+                return ['label' => $label, 'price' => $price, 'unit' => ''];
+            })
+            ->values()
+            ->all();
+    }
+
+    protected function parseAddonLabelAndPrice(string $raw): array
+    {
+        $raw = trim($raw);
+
+        if (preg_match('/^(.*?)\s*(?:\||:|-)\s*([0-9][0-9\.,]*)$/', $raw, $matches)) {
+            return [
+                trim($matches[1]) !== '' ? trim($matches[1]) : $raw,
+                (int) preg_replace('/[^0-9]/', '', $matches[2]),
+            ];
+        }
+
+        return [$raw, 0];
+    }
+
+    protected function syncFeatures(ServicePackage $package, array $features): void
+    {
+        $package->update([
+            'features' => array_values(array_filter(array_map('trim', $features), fn ($value) => $value !== '')),
+        ]);
+    }
+
+    protected function syncAddons(ServicePackage $package, array $addons): void
+    {
+        $package->update([
+            'addons' => array_values(array_map(function ($addon) {
+                return [
+                    'label' => trim((string) ($addon['label'] ?? '')),
+                    'price' => (int) ($addon['price'] ?? 0),
+                    'unit' => trim((string) ($addon['unit'] ?? '')),
+                    'is_active' => (bool) ($addon['is_active'] ?? true),
+                ];
+            }, $addons)),
+        ]);
+    }
+
+    protected function syncGalleryItems(ServicePackage $package, array $paths): void
+    {
+        $package->update([
+            'gallery' => array_values(array_filter($paths)),
+            'cover_image' => $paths[0] ?? $package->cover_image,
+        ]);
     }
 }

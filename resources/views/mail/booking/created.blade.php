@@ -1,9 +1,13 @@
 @component('mail::message')
-# Booking Diterima
+# Booking Berhasil Dibuat
 
-Halo {{ $booking->client->name ?? 'Klien' }},
+Halo {{ $isClientRecipient ? ($booking->client->name ?? 'Klien') : 'Tim Alter Studio' }},
 
-Terima kasih telah melakukan pemesanan.
+@if($isClientRecipient)
+Terima kasih telah melakukan pemesanan di Alter Studio. Berikut ringkasan booking Anda yang sudah tercatat di sistem.
+@else
+Terdapat booking baru yang masuk ke sistem Alter Studio. Berikut detail pemesanannya.
+@endif
 
 @component('mail::panel')
 **ID Booking:** #{{ $booking->id }}  
@@ -22,11 +26,17 @@ Terima kasih telah melakukan pemesanan.
 **Total:** Rp {{ $total }}
 @endcomponent
 
+@if($isClientRecipient)
+Silakan lanjutkan pembayaran agar tim kami dapat memproses pemesanan Anda sesuai jadwal.
+
 @component('mail::button', ['url' => route('bookings.pay', $booking)])
 Lanjutkan Pembayaran
 @endcomponent
 
-Jika status sudah DP/PAID, abaikan tombol di atas.
+Jika status sudah DP atau lunas, abaikan tombol di atas.
+@else
+Silakan buka dashboard untuk meninjau pembayaran dan menindaklanjuti pemesanan ini.
+@endif
 
 Terima kasih,<br>
 Alter Studio

@@ -1,83 +1,83 @@
-<section class="bg-white/80 backdrop-blur-sm border border-[#e3d5c4] rounded-2xl shadow-xl p-6">
-    <header class="mb-6">
-        <h2 class="text-xl font-display font-semibold text-[#3f2b1b] flex items-center gap-2">
-            <i class="fa-solid fa-lock text-[#b58042]"></i>
+<section class="bg-white/80 backdrop-blur-2xl border border-[#EDE0D0] rounded-3xl shadow-xl p-8">
+    <header class="mb-8">
+        <h2 class="font-display text-2xl text-[#3F2B1B] font-semibold flex items-center gap-3">
+            <i class="fa-solid fa-lock text-[#D4A017]"></i>
             {{ __('Ganti Password') }}
         </h2>
-        <p class="text-sm text-[#7a5b3a] mt-1">Gunakan password kuat untuk keamanan akun.</p>
+        <p class="text-sm text-[#7A5B3A] mt-2">Gunakan password yang kuat untuk menjaga keamanan akun Anda.</p>
     </header>
 
-    <form method="post" action="{{ route('password.update') }}" class="space-y-5">
+    <form method="post" action="{{ route('password.update') }}" class="space-y-6">
         @csrf
         @method('put')
 
         {{-- Current Password --}}
         <div class="space-y-2">
-            <x-input-label for="update_password_current_password" :value="__('Password Saat Ini')" class="text-sm font-medium text-[#6f5134]" />
+            <label class="block text-xs font-medium text-[#7A5B3A] tracking-widest">Password Saat Ini</label>
             <div class="relative">
-                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-[#b58042]">
+                <span class="absolute left-5 top-1/2 -translate-y-1/2 text-[#D4A017]">
                     <i class="fa-solid fa-lock"></i>
                 </span>
-                <x-text-input id="update_password_current_password" 
-                              name="current_password" 
-                              type="password" 
-                              class="w-full pl-10 pr-4 py-3 rounded-xl border border-[#d7c5b2] bg-[#fdf8f2] focus:border-[#b58042] focus:ring-[#b58042]" 
+                <x-text-input id="update_password_current_password"
+                              name="current_password"
+                              type="password"
+                              class="w-full pl-12 pr-6 py-4 rounded-3xl border border-[#E1D3C5] bg-white/70 backdrop-blur-md focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20"
                               autocomplete="current-password"
                               placeholder="Masukkan password saat ini" />
             </div>
-            <x-input-error :messages="$errors->updatePassword->get('current_password')" class="text-rose-500 text-sm mt-1" />
+            <x-input-error :messages="$errors->updatePassword->get('current_password')" class="text-red-600 text-sm" />
         </div>
 
         {{-- New Password --}}
         <div class="space-y-2">
-            <x-input-label for="update_password_password" :value="__('Password Baru')" class="text-sm font-medium text-[#6f5134]" />
+            <label class="block text-xs font-medium text-[#7A5B3A] tracking-widest">Password Baru</label>
             <div class="relative">
-                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-[#b58042]">
+                <span class="absolute left-5 top-1/2 -translate-y-1/2 text-[#D4A017]">
                     <i class="fa-solid fa-key"></i>
                 </span>
-                <x-text-input id="update_password_password" 
-                              name="password" 
-                              type="password" 
-                              class="w-full pl-10 pr-4 py-3 rounded-xl border border-[#d7c5b2] bg-[#fdf8f2] focus:border-[#b58042] focus:ring-[#b58042]" 
+                <x-text-input id="update_password_password"
+                              name="password"
+                              type="password"
+                              class="w-full pl-12 pr-6 py-4 rounded-3xl border border-[#E1D3C5] bg-white/70 backdrop-blur-md focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20"
                               autocomplete="new-password"
                               placeholder="Minimal 8 karakter" />
             </div>
-            <x-input-error :messages="$errors->updatePassword->get('password')" class="text-rose-500 text-sm mt-1" />
+            <x-input-error :messages="$errors->updatePassword->get('password')" class="text-red-600 text-sm" />
         </div>
 
         {{-- Confirm Password --}}
         <div class="space-y-2">
-            <x-input-label for="update_password_password_confirmation" :value="__('Konfirmasi Password')" class="text-sm font-medium text-[#6f5134]" />
+            <label class="block text-xs font-medium text-[#7A5B3A] tracking-widest">Konfirmasi Password Baru</label>
             <div class="relative">
-                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-[#b58042]">
+                <span class="absolute left-5 top-1/2 -translate-y-1/2 text-[#D4A017]">
                     <i class="fa-solid fa-key"></i>
                 </span>
-                <x-text-input id="update_password_password_confirmation" 
-                              name="password_confirmation" 
-                              type="password" 
-                              class="w-full pl-10 pr-4 py-3 rounded-xl border border-[#d7c5b2] bg-[#fdf8f2] focus:border-[#b58042] focus:ring-[#b58042]" 
+                <x-text-input id="update_password_password_confirmation"
+                              name="password_confirmation"
+                              type="password"
+                              class="w-full pl-12 pr-6 py-4 rounded-3xl border border-[#E1D3C5] bg-white/70 backdrop-blur-md focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20"
                               autocomplete="new-password"
                               placeholder="Ketik ulang password baru" />
             </div>
-            <x-input-error :messages="$errors->updatePassword->get('password_confirmation')" class="text-rose-500 text-sm mt-1" />
+            <x-input-error :messages="$errors->updatePassword->get('password_confirmation')" class="text-red-600 text-sm" />
         </div>
 
         {{-- Submit Button --}}
-        <div class="flex items-center gap-4 pt-2">
-            <button type="submit" 
-                    class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#b58042] to-[#8b5b2e] text-white font-semibold shadow-lg shadow-[#b58042]/30 hover:shadow-xl hover:-translate-y-0.5 transition-all">
+        <div class="flex items-center gap-4 pt-4">
+            <button type="submit"
+                    class="inline-flex items-center gap-3 px-8 py-4 rounded-3xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] text-white font-semibold shadow-xl hover:shadow-2xl hover:-translate-y-0.5 transition-all">
                 <i class="fa-solid fa-floppy-disk"></i>
                 {{ __('Simpan Password') }}
             </button>
 
             @if (session('status') === 'password-updated')
-                <p x-data="{ show: true }" 
-                   x-show="show" 
+                <p x-data="{ show: true }"
+                   x-show="show"
                    x-transition
-                   x-init="setTimeout(() => show = false, 2000)" 
-                   class="text-sm text-emerald-600 flex items-center gap-1">
+                   x-init="setTimeout(() => show = false, 2500)"
+                   class="text-sm text-emerald-600 flex items-center gap-2">
                     <i class="fa-solid fa-circle-check"></i>
-                    Tersimpan.
+                    Password berhasil diperbarui.
                 </p>
             @endif
         </div>

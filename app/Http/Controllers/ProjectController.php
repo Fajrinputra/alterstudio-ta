@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 /**
- * Detail project produksi: galeri, seleksi, revisi, dan jadwal.
+ * Detail project produksi: galeri, seleksi, dan jadwal.
  */
 class ProjectController extends Controller
 {
@@ -23,10 +23,12 @@ class ProjectController extends Controller
 
         $project->load([
             'booking.package',
+            'booking.studioLocation',
+            'booking.studioRoom',
             'mediaAssets',
             'selections',
-            'revisionPins',
-            'schedule'
+            'photographer',
+            'editor',
         ]);
 
         return view('projects.show', compact('project'));

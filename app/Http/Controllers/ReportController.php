@@ -3,18 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Enums\Role;
-use App\Models\Schedule;
-use App\Models\User;
 use App\Models\Booking;
+use App\Models\Payment;
+use App\Models\Project;
 use App\Models\ServiceCategory;
-use App\Models\ServicePackage;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 
 /**
- * Laporan operasional/pendapatan untuk manajer (tabel + grafik + export CSV).
+ * Modul laporan operasional untuk manager.
  */
-class PayrollController extends Controller
+class ReportController extends Controller
 {
     public function index(Request $request)
     {
@@ -24,31 +23,38 @@ class PayrollController extends Controller
         $startAt = CarbonImmutable::parse($dateFrom)->startOfDay();
         $endAt = CarbonImmutable::parse($dateTo)->endOfDay();
 
-        $bookings = Booking::with(['package','client'])
+        $bookings = Booking::with(['package', 'client'])
             ->whereBetween('booking_date', [$startAt, $endAt])
-            ->when($categoryId, fn($q) => $q->whereHas('package', fn($p) => $p->where('category_id', $categoryId)))
-            ->whereIn('status', ['DP_PAID','PAID'])
+            ->when($categoryId, fn ($q) => $q->whereHas('package', fn ($p) => $p->where('category_id', $categoryId)))
+            ->whereIn('status', [Booking::STATUS_DP_PAID, Booking::STATUS_PAID])
             ->get();
-        $revenueTotal = $bookings->sum('total_price');
+
+        $revenueTotal = Payment::query()
+            ->where('status', Payment::STATUS_PAID)
+            ->whereBetween('paid_at', [$startAt, $endAt])
+            ->whereHas('booking', fn ($q) => $q->where('status', '!=', Booking::STATUS_CANCELLED))
+            ->when($categoryId, fn ($q) => $q->whereHas('booking.package', fn ($p) => $p->where('category_id', $categoryId)))
+            ->sum('amount');
 
         $totalOrders = Booking::whereBetween('booking_date', [$startAt, $endAt])
-            ->when($categoryId, fn($q) => $q->whereHas('package', fn($p) => $p->where('category_id', $categoryId)))
+            ->when($categoryId, fn ($q) => $q->whereHas('package', fn ($p) => $p->where('category_id', $categoryId)))
             ->count();
-        $activeEditors = User::where('role', Role::EDITOR)->where('is_active', true)->count();
-        $activePhotographers = User::where('role', Role::PHOTOGRAPHER)->where('is_active', true)->count();
+
+        $assignedEditors = $this->scheduledAssigneesCount(Role::EDITOR, $dateFrom, $dateTo, $categoryId);
+        $assignedPhotographers = $this->scheduledAssigneesCount(Role::PHOTOGRAPHER, $dateFrom, $dateTo, $categoryId);
         $activeClients = Booking::whereBetween('booking_date', [$startAt, $endAt])
-            ->when($categoryId, fn($q) => $q->whereHas('package', fn($p) => $p->where('category_id', $categoryId)))
-            ->whereIn('status', ['WAITING_PAYMENT','DP_PAID','PAID'])
+            ->when($categoryId, fn ($q) => $q->whereHas('package', fn ($p) => $p->where('category_id', $categoryId)))
+            ->whereIn('status', [Booking::STATUS_WAITING_PAYMENT, Booking::STATUS_DP_PAID, Booking::STATUS_PAID])
             ->distinct('client_id')
             ->count('client_id');
 
         $photographerPerf = $this->performanceByRole(Role::PHOTOGRAPHER, $dateFrom, $dateTo, $categoryId);
         $editorPerf = $this->performanceByRole(Role::EDITOR, $dateFrom, $dateTo, $categoryId);
 
-        // CSV export
         if ($request->get('download') === 'csv') {
             $csv = $this->buildCsv($dateFrom, $dateTo, $bookings, $photographerPerf, $editorPerf, $revenueTotal);
             $filename = "laporan-{$dateFrom}-{$dateTo}.csv";
+
             return response()->streamDownload(function () use ($csv) {
                 echo $csv;
             }, $filename, ['Content-Type' => 'text/csv']);
@@ -65,44 +71,44 @@ class PayrollController extends Controller
             ],
         ];
 
-        $packages = ServicePackage::orderBy('name')->get();
         $categories = ServiceCategory::orderBy('name')->get();
 
-        return view('admin.payroll.index', compact(
+        return view('admin.reports.index', compact(
             'dateFrom',
             'dateTo',
             'categoryId',
             'bookings',
             'revenueTotal',
             'totalOrders',
-            'activeEditors',
-            'activePhotographers',
+            'assignedEditors',
+            'assignedPhotographers',
             'activeClients',
             'photographerPerf',
             'editorPerf',
             'chart',
-            'packages',
             'categories'
         ));
     }
 
-    /** Ringkasan performa per role (project hitung dari schedule dalam rentang). */
+    /**
+     * Ringkasan performa per role berdasarkan jadwal yang aktif pada rentang laporan.
+     */
     protected function performanceByRole(Role $role, string $start, string $end, ?int $categoryId = null)
     {
         $userField = $role === Role::PHOTOGRAPHER ? 'photographer' : 'editor';
         $column = $role === Role::PHOTOGRAPHER ? 'photographer_id' : 'editor_id';
 
-        $schedules = Schedule::with(['project.booking.package', $userField])
+        $projects = Project::with(['booking.package', $userField])
             ->whereNotNull($column)
-            ->whereBetween('start_at', [$start, $end.' 23:59:59'])
-            ->when($categoryId, fn($q) => $q->whereHas('project.booking.package', fn($p) => $p->where('category_id', $categoryId)))
+            ->whereBetween('start_at', [$start, $end . ' 23:59:59'])
+            ->when($categoryId, fn ($q) => $q->whereHas('booking.package', fn ($p) => $p->where('category_id', $categoryId)))
             ->get();
 
-        return $schedules
+        return $projects
             ->groupBy($column)
             ->map(function ($items) use ($userField) {
                 $user = optional($items->first()->{$userField});
-                $packages = $items->groupBy(fn($s)=>$s->project->booking->package->name ?? 'Tanpa Paket')
+                $packages = $items->groupBy(fn ($project) => $project->booking->package->name ?? 'Tanpa Paket')
                     ->map->count();
 
                 return [
@@ -115,32 +121,53 @@ class PayrollController extends Controller
             ->values();
     }
 
+    /**
+     * Jumlah kru unik yang benar-benar mendapat jadwal dalam periode laporan.
+     */
+    protected function scheduledAssigneesCount(Role $role, string $start, string $end, ?int $categoryId = null): int
+    {
+        $column = $role === Role::PHOTOGRAPHER ? 'photographer_id' : 'editor_id';
+
+        return Project::query()
+            ->whereNotNull($column)
+            ->whereBetween('start_at', [$start, $end . ' 23:59:59'])
+            ->when($categoryId, fn ($q) => $q->whereHas('booking.package', fn ($p) => $p->where('category_id', $categoryId)))
+            ->distinct($column)
+            ->count($column);
+    }
+
     protected function buildCsv(string $from, string $to, $bookings, $photographerPerf, $editorPerf, $revenueTotal): string
     {
         $lines = [];
         $lines[] = "Laporan Alter Studio;Periode;{$from};{$to}";
         $lines[] = "";
-        $lines[] = "Pemesanan;Paket;Klien;Tanggal;Status;Total";
-        foreach ($bookings as $b) {
+        $lines[] = "Pemesanan;Paket;Klien;Tanggal;Status;Nilai Pemesanan";
+
+        foreach ($bookings as $booking) {
             $lines[] = implode(';', [
-                $b->id,
-                $b->package->name ?? '-',
-                $b->client->name ?? '-',
-                $b->booking_date,
-                $b->status,
-                $b->total_price,
+                $booking->id,
+                $booking->package->name ?? '-',
+                $booking->client->name ?? '-',
+                $booking->booking_date,
+                $booking->status,
+                $booking->total_price,
             ]);
         }
-        $lines[] = ";;Total Pendapatan;;;" . $revenueTotal;
+
+        $lines[] = ";;Pendapatan Diterima;;;" . $revenueTotal;
         $lines[] = "";
         $lines[] = "Kinerja Fotografer;Nama;Total Project";
-        foreach ($photographerPerf as $p) {
-            $lines[] = implode(';', ['',$p['name'],$p['total']]);
+
+        foreach ($photographerPerf as $photographer) {
+            $lines[] = implode(';', ['', $photographer['name'], $photographer['total']]);
         }
+
         $lines[] = "Kinerja Editor;Nama;Total Project";
-        foreach ($editorPerf as $e) {
-            $lines[] = implode(';', ['',$e['name'],$e['total']]);
+
+        foreach ($editorPerf as $editor) {
+            $lines[] = implode(';', ['', $editor['name'], $editor['total']]);
         }
+
         return implode("\n", $lines);
     }
 }

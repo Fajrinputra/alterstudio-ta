@@ -25,8 +25,8 @@ class MediaAssetFactory extends Factory
 
         return [
             'project_id' => $project->id,
-            'type' => 'PREVIEW',
-            'path' => "projects/{$project->id}/PREVIEW/file.jpg",
+            'type' => 'RAW',
+            'path' => "projects/{$project->id}/RAW/file.jpg",
             'uploaded_by' => $user->id,
             'version' => 1,
         ];

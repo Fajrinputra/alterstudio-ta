@@ -33,12 +33,12 @@ class EditRequestSubmittedNotification extends Notification implements ShouldQue
         $clientName = $booking?->client?->name ?? 'Klien';
 
         return (new MailMessage)
-            ->subject('[Alter Studio] Permintaan edit baru')
+            ->subject('[Alter Studio] Permintaan edit baru dari klien')
             ->greeting('Halo '.$notifiable->name.',')
             ->line('Ada permintaan edit baru dari klien.')
             ->line('Klien: '.$clientName)
             ->line('Paket: '.$packageName)
             ->action('Buka Detail Project', route('projects.show', $this->projectId))
-            ->line('Terima kasih.');
+            ->line('Silakan buka detail project untuk memulai proses edit.');
     }
 }

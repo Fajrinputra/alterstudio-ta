@@ -1,123 +1,130 @@
+@php use Illuminate\Support\Str; @endphp
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center justify-between">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-                <p class="text-sm text-[#8b7359] tracking-wide flex items-center gap-2">
-                    <i class="fa-solid fa-box text-[#b58042]"></i>
+                <p class="text-sm text-[#8B7359] tracking-wide flex items-center gap-2">
+                    <i class="fa-solid fa-box text-[#D4A017]"></i>
                     Katalog Layanan
                 </p>
-                <h2 class="text-3xl font-light tracking-tight text-[#3f2b1b] mt-1">
-                    Edit Paket - <span class="font-medium bg-gradient-to-r from-[#b58042] to-[#8b5b2e] bg-clip-text text-transparent">{{ $category->name }}</span>
+                <h2 class="text-4xl font-display font-bold tracking-tighter text-[#3F2B1B] mt-1">
+                    Edit Paket - <span class="bg-gradient-to-r from-[#D4A017] to-[#E07A5F] bg-clip-text text-transparent">{{ $category->name }}</span>
                 </h2>
             </div>
-            <a href="{{ route('admin.catalog.packages', $category) }}" 
-               class="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-[#d7c5b2] text-[#5b422b] hover:bg-white hover:shadow-md transition-all">
-                <i class="fa-solid fa-arrow-left"></i>
+            <a href="{{ route('admin.catalog.packages', $category) }}"
+               class="inline-flex items-center gap-3 px-6 py-3 rounded-3xl border border-[#E1D3C5] text-[#5C432C] hover:bg-white hover:shadow-md transition-all">
                 Kembali
             </a>
         </div>
     </x-slot>
 
-    <div class="py-8">
+    <div class="py-12">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="relative group">
-                <div class="absolute inset-0 bg-gradient-to-r from-[#b58042]/20 to-[#8b5b2e]/20 rounded-2xl blur-xl"></div>
-                <div class="relative bg-white/70 backdrop-blur-xl border border-[#e3d5c4] rounded-2xl p-8 shadow-lg">
-                    <form method="POST" action="{{ route('admin.packages.update', $package) }}" enctype="multipart/form-data" class="space-y-5">
-                        @csrf
-                        @method('PUT')
-                        <input type="hidden" name="category_id" value="{{ $category->id }}">
+            <div class="bg-white rounded-3xl border border-[#EDE0D0] shadow-2xl p-10">
+                <form method="POST" action="{{ route('admin.packages.update', $package) }}" enctype="multipart/form-data" class="space-y-10">
+                    @csrf
+                    @method('PUT')
+                    <input type="hidden" name="category_id" value="{{ $category->id }}">
 
-                        {{-- Grid 2 kolom untuk info dasar --}}
-                        <div class="grid md:grid-cols-2 gap-5">
-                            {{-- Nama Paket --}}
-                            <div class="space-y-2">
-                                <label class="block text-sm font-medium text-[#6f5134] flex items-center gap-1">
-                                    <i class="fa-solid fa-box text-[#b58042]"></i>
-                                    Nama Paket
-                                </label>
-                                <input name="name" value="{{ old('name', $package->name) }}" required
-                                       class="w-full px-4 py-2.5 rounded-xl border border-[#d7c5b2] bg-white/50 backdrop-blur-sm text-[#4a301f] focus:border-[#b58042] focus:ring-[#b58042]">
-                            </div>
-
-                            {{-- Harga --}}
-                            <div class="space-y-2">
-                                <label class="block text-sm font-medium text-[#6f5134] flex items-center gap-1">
-                                    <i class="fa-solid fa-money-bill text-[#b58042]"></i>
-                                    Harga (Rp)
-                                </label>
-                                <input type="number" name="price" min="0" value="{{ old('price', $package->price) }}" required
-                                       class="w-full px-4 py-2.5 rounded-xl border border-[#d7c5b2] bg-white/50 backdrop-blur-sm text-[#4a301f] focus:border-[#b58042] focus:ring-[#b58042]">
-                            </div>
-
-                            {{-- Durasi --}}
-                            <div class="space-y-2">
-                                <label class="block text-sm font-medium text-[#6f5134] flex items-center gap-1">
-                                    <i class="fa-solid fa-clock text-[#b58042]"></i>
-                                    Durasi (menit)
-                                </label>
-                                <input type="number" name="duration_minutes" min="1" value="{{ old('duration_minutes', $package->duration_minutes) }}" required
-                                       class="w-full px-4 py-2.5 rounded-xl border border-[#d7c5b2] bg-white/50 backdrop-blur-sm text-[#4a301f] focus:border-[#b58042] focus:ring-[#b58042]">
-                                @error('duration_minutes') 
-                                    <p class="text-xs text-red-600 flex items-center gap-1 mt-1">
-                                        <i class="fa-solid fa-circle-exclamation"></i>
-                                        {{ $message }}
-                                    </p>
-                                @enderror
-                            </div>
-
-                            {{-- Max Orang --}}
-                            <div class="space-y-2">
-                                <label class="block text-sm font-medium text-[#6f5134] flex items-center gap-1">
-                                    <i class="fa-solid fa-user text-[#b58042]"></i>
-                                    Max Orang
-                                </label>
-                                <input type="number" name="max_people" min="1" value="{{ old('max_people', $package->max_people) }}"
-                                       class="w-full px-4 py-2.5 rounded-xl border border-[#d7c5b2] bg-white/50 backdrop-blur-sm text-[#4a301f] focus:border-[#b58042] focus:ring-[#b58042]">
-                            </div>
-                        </div>
-
-                        {{-- Deskripsi --}}
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <!-- Nama Paket -->
                         <div class="space-y-2">
-                            <label class="block text-sm font-medium text-[#6f5134] flex items-center gap-1">
-                                <i class="fa-solid fa-file-lines text-[#b58042]"></i>
-                                Deskripsi
+                            <label class="block text-sm font-medium text-[#5C432C] flex items-center gap-2">
+                                <i class="fa-solid fa-box text-[#D4A017]"></i>
+                                Nama Paket
                             </label>
-                            <textarea name="description" rows="2" 
-                                      class="w-full px-4 py-2.5 rounded-xl border border-[#d7c5b2] bg-white/50 backdrop-blur-sm text-[#4a301f] focus:border-[#b58042] focus:ring-[#b58042]">{{ old('description', $package->description) }}</textarea>
+                            <input name="name" value="{{ old('name', $package->name) }}" required
+                                   class="w-full px-6 py-4 rounded-3xl border border-[#E1D3C5] bg-white text-[#3F2B1B] focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20 transition-all">
+                            @error('name')
+                                <p class="text-xs text-red-600 flex items-center gap-1 mt-1"><i class="fa-solid fa-circle-exclamation"></i> {{ $message }}</p>
+                            @enderror
                         </div>
 
-                        {{-- Status Aktif --}}
-                        <div class="flex items-center gap-2 p-3 bg-white/50 rounded-xl border border-[#e3d5c4]">
-                            <input type="checkbox" name="is_active" value="1" {{ $package->is_active ? 'checked' : '' }}
-                                   class="w-4 h-4 rounded border-[#d7c5b2] text-[#b58042] focus:ring-[#b58042]">
-                            <label class="text-sm text-[#6f5134]">Paket aktif dan dapat dipilih klien</label>
-                        </div>
-
-                        {{-- Features (yang didapat) --}}
+                        <!-- Harga -->
                         <div class="space-y-2">
-                            <label class="block text-sm font-medium text-[#6f5134] flex items-center gap-1">
-                                <i class="fa-solid fa-star text-[#b58042]"></i>
-                                Yang Didapat (satu per baris)
+                            <label class="block text-sm font-medium text-[#5C432C] flex items-center gap-2">
+                                <i class="fa-solid fa-money-bill text-[#D4A017]"></i>
+                                Harga (Rp)
                             </label>
-                            <textarea name="features" rows="4" 
-                                      class="w-full px-4 py-2.5 rounded-xl border border-[#d7c5b2] bg-white/50 backdrop-blur-sm text-[#4a301f] focus:border-[#b58042] focus:ring-[#b58042]">@if(old('features')){{ old('features') }}@else{{ is_array($package->features) ? implode("\n", $package->features) : $package->features }}@endif</textarea>
+                            <input type="number" name="price" min="0" value="{{ old('price', $package->price) }}" required
+                                   class="w-full px-6 py-4 rounded-3xl border border-[#E1D3C5] bg-white text-[#3F2B1B] focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20 transition-all">
+                            @error('price')
+                                <p class="text-xs text-red-600 flex items-center gap-1 mt-1"><i class="fa-solid fa-circle-exclamation"></i> {{ $message }}</p>
+                            @enderror
                         </div>
 
-                        {{-- Add-ons --}}
-                        <div class="space-y-3">
-                            <div class="flex items-center justify-between">
-                                <label class="block text-sm font-medium text-[#6f5134] flex items-center gap-1">
-                                    <i class="fa-solid fa-plus-circle text-[#b58042]"></i>
-                                    Add-on Paket
-                                </label>
-                                <button type="button" data-addons-add
-                                        class="px-3 py-1.5 rounded-lg bg-[#b58042] text-white text-xs font-semibold hover:bg-[#9b6a34] transition-colors">
-                                    <i class="fa-solid fa-plus mr-1"></i>Tambah Add-on
-                                </button>
-                            </div>
-                            <p class="text-xs text-[#8b7359]">Isi nama add-on dan harga agar total booking otomatis terhitung.</p>
+                        <!-- Durasi -->
+                        <div class="space-y-2">
+                            <label class="block text-sm font-medium text-[#5C432C] flex items-center gap-2">
+                                <i class="fa-solid fa-clock text-[#D4A017]"></i>
+                                Durasi (menit)
+                            </label>
+                            <input type="number" name="duration_minutes" min="1" value="{{ old('duration_minutes', $package->duration_minutes) }}" required
+                                   class="w-full px-6 py-4 rounded-3xl border border-[#E1D3C5] bg-white text-[#3F2B1B] focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20 transition-all">
+                            @error('duration_minutes')
+                                <p class="text-xs text-red-600 flex items-center gap-1 mt-1"><i class="fa-solid fa-circle-exclamation"></i> {{ $message }}</p>
+                            @enderror
+                        </div>
 
+                        <!-- Max Orang -->
+                        <div class="space-y-2">
+                            <label class="block text-sm font-medium text-[#5C432C] flex items-center gap-2">
+                                <i class="fa-solid fa-user text-[#D4A017]"></i>
+                                Max Orang
+                            </label>
+                            <input type="number" name="max_people" min="1" value="{{ old('max_people', $package->max_people) }}"
+                                   class="w-full px-6 py-4 rounded-3xl border border-[#E1D3C5] bg-white text-[#3F2B1B] focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20 transition-all">
+                        </div>
+                    </div>
+
+                    <!-- Deskripsi -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-[#5C432C] flex items-center gap-2">
+                            <i class="fa-solid fa-file-lines text-[#D4A017]"></i>
+                            Deskripsi
+                        </label>
+                        <textarea name="description" rows="4"
+                                  class="w-full px-6 py-4 rounded-3xl border border-[#E1D3C5] bg-white text-[#3F2B1B] focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20 transition-all">{{ old('description', $package->description) }}</textarea>
+                    </div>
+
+                    <!-- Status Aktif -->
+                    <div class="flex items-center gap-3 p-5 bg-[#FAF6F0] rounded-3xl border border-[#EDE0D0]">
+                        <input type="checkbox" name="is_active" value="1" @checked(old('is_active', $package->is_active))
+                               class="w-5 h-5 rounded border-[#E1D3C5] text-[#D4A017] focus:ring-[#D4A017]">
+                        <label class="text-[#5C432C]">Paket aktif dan dapat dipilih oleh klien</label>
+                    </div>
+
+                    <!-- Features -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-[#5C432C] flex items-center gap-2">
+                            <i class="fa-solid fa-star text-[#D4A017]"></i>
+                            Yang Didapat (satu per baris)
+                        </label>
+                        <textarea name="features" rows="5"
+                                  class="w-full px-6 py-4 rounded-3xl border border-[#E1D3C5] bg-white text-[#3F2B1B] focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20 transition-all">
+                            @if(old('features'))
+                                {{ old('features') }}
+                            @else
+                                {{ is_array($package->features) ? implode("\n", $package->features) : $package->features }}
+                            @endif
+                        </textarea>
+                    </div>
+
+                    <!-- Add-ons -->
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <label class="block text-sm font-medium text-[#5C432C] flex items-center gap-2">
+                                <i class="fa-solid fa-plus-circle text-[#D4A017]"></i>
+                                Add-on Paket
+                            </label>
+                            <button type="button" id="add-addon-btn"
+                                    class="px-6 py-3 rounded-3xl bg-[#D4A017] text-white text-sm font-semibold hover:bg-[#E07A5F] transition-all">
+                                <i class="fa-solid fa-plus mr-2"></i>Tambah Add-on
+                            </button>
+                        </div>
+                        <p class="text-xs text-[#8B7359]">Isi nama add-on, harga, dan satuan (opsional).</p>
+
+                        <div id="addons-wrapper" class="space-y-4">
                             @php
                                 $existingAddons = old('addons');
                                 if (!is_array($existingAddons)) {
@@ -127,183 +134,153 @@
                                                 return [
                                                     'label' => $addon['label'] ?? '',
                                                     'price' => $addon['price'] ?? 0,
+                                                    'unit' => $addon['unit'] ?? '',
                                                 ];
                                             }
-                                            if (is_string($addon)) {
-                                                return ['label' => $addon, 'price' => 0];
-                                            }
-                                            return null;
+                                            return ['label' => $addon, 'price' => 0, 'unit' => ''];
                                         })
                                         ->filter()
                                         ->values()
                                         ->all();
                                 }
-                                if (count($existingAddons) === 0) {
-                                    $existingAddons = [['label' => '', 'price' => '']];
+                                if (empty($existingAddons)) {
+                                    $existingAddons = [['label' => '', 'price' => '', 'unit' => '']];
                                 }
                             @endphp
-                            <div id="addons-wrapper" class="space-y-2">
-                                @foreach($existingAddons as $index => $addon)
-                                    <div class="grid md:grid-cols-[1fr_200px_auto] gap-2 items-center addon-row">
-                                        <input name="addons[{{ $index }}][label]" value="{{ $addon['label'] ?? '' }}"
-                                               class="w-full px-4 py-2.5 rounded-xl border border-[#d7c5b2] bg-white/50 backdrop-blur-sm text-[#4a301f] focus:border-[#b58042] focus:ring-[#b58042]"
-                                               placeholder="Nama add-on">
-                                        <input type="number" name="addons[{{ $index }}][price]" min="0" value="{{ $addon['price'] ?? '' }}"
-                                               class="w-full px-4 py-2.5 rounded-xl border border-[#d7c5b2] bg-white/50 backdrop-blur-sm text-[#4a301f] focus:border-[#b58042] focus:ring-[#b58042]"
-                                               placeholder="Harga">
-                                        <button type="button" data-addons-remove
-                                                class="px-3 py-2 rounded-lg border border-[#d7c5b2] text-[#6f5134] hover:bg-white transition-colors">
-                                            Hapus
-                                        </button>
-                                    </div>
-                                @endforeach
-                            </div>
-                            @error('addons')
-                                <p class="text-xs text-red-600">{{ $message }}</p>
-                            @enderror
-                            @error('addons.*.label')
-                                <p class="text-xs text-red-600">{{ $message }}</p>
-                            @enderror
-                            @error('addons.*.price')
-                                <p class="text-xs text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        {{-- Syarat & Ketentuan --}}
-                        <div class="space-y-2">
-                            <label class="block text-sm font-medium text-[#6f5134] flex items-center gap-1">
-                                <i class="fa-solid fa-file-contract text-[#b58042]"></i>
-                                Syarat & Ketentuan
-                            </label>
-                            <textarea name="terms" rows="3" 
-                                      class="w-full px-4 py-2.5 rounded-xl border border-[#d7c5b2] bg-white/50 backdrop-blur-sm text-[#4a301f] focus:border-[#b58042] focus:ring-[#b58042]">{{ old('terms', $package->terms) }}</textarea>
-                        </div>
-
-                        {{-- Foto Overview --}}
-                        <div class="space-y-3">
-                            <label class="block text-sm font-medium text-[#6f5134] flex items-center gap-1">
-                                <i class="fa-solid fa-image text-[#b58042]"></i>
-                                Foto Overview
-                            </label>
-                            
-                            @if($package->overview_image)
-                                <div class="flex items-start gap-4">
-                                    <div class="w-32 h-32 rounded-lg overflow-hidden border border-[#e3d5c4] bg-white">
-                                        <img src="{{ Storage::url($package->overview_image) }}" class="w-full h-full object-cover" alt="Overview">
-                                    </div>
-                                    <div class="flex-1">
-                                        <p class="text-xs text-[#8b7359] mb-2">Foto saat ini</p>
-                                        <label class="inline-flex items-center gap-2 text-xs">
-                                            <input type="checkbox" name="remove_overview" value="1" 
-                                                   class="rounded border-[#d7c5b2] text-[#b58042] focus:ring-[#b58042]">
-                                            <span class="text-[#6f5134]">Hapus foto ini</span>
-                                        </label>
-                                    </div>
+                            @foreach($existingAddons as $index => $addon)
+                                <div class="addon-row grid md:grid-cols-[1fr_180px_180px_auto] gap-4 items-end">
+                                    <input name="addons[{{ $index }}][label]" value="{{ $addon['label'] ?? '' }}"
+                                           class="w-full px-6 py-4 rounded-3xl border border-[#E1D3C5] focus:border-[#D4A017] transition-all"
+                                           placeholder="Nama add-on">
+                                    <input type="number" name="addons[{{ $index }}][price]" min="0" value="{{ $addon['price'] ?? '' }}"
+                                           class="w-full px-6 py-4 rounded-3xl border border-[#E1D3C5] focus:border-[#D4A017] transition-all"
+                                           placeholder="Harga">
+                                    <input name="addons[{{ $index }}][unit]" value="{{ $addon['unit'] ?? '' }}"
+                                           class="w-full px-6 py-4 rounded-3xl border border-[#E1D3C5] focus:border-[#D4A017] transition-all"
+                                           placeholder="Satuan">
+                                    <button type="button" class="addon-remove-btn px-6 py-4 rounded-3xl border border-red-200 text-red-600 hover:bg-red-50 transition-all">
+                                        Hapus
+                                    </button>
                                 </div>
-                            @endif
-
-                            <input type="file" name="overview_image" accept="image/*"
-                                   class="w-full text-sm text-[#6f5134] file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#b58042] file:text-white hover:file:bg-[#9b6a34] file:cursor-pointer">
-                            @error('overview_image') 
-                                <p class="text-xs text-red-600 flex items-center gap-1 mt-1">
-                                    <i class="fa-solid fa-circle-exclamation"></i>
-                                    {{ $message }}
-                                </p>
-                            @enderror
+                            @endforeach
                         </div>
+                    </div>
 
-                        {{-- Galeri --}}
-                        <div class="space-y-3">
-                            <label class="block text-sm font-medium text-[#6f5134] flex items-center gap-1">
-                                <i class="fa-solid fa-images text-[#b58042]"></i>
-                                Galeri Foto
-                            </label>
+                    <!-- Terms -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-[#5C432C] flex items-center gap-2">
+                            <i class="fa-solid fa-file-contract text-[#D4A017]"></i>
+                            Syarat & Ketentuan
+                        </label>
+                        <textarea name="terms" rows="4"
+                                  class="w-full px-6 py-4 rounded-3xl border border-[#E1D3C5] bg-white text-[#3F2B1B] focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20 transition-all">{{ old('terms', $package->terms) }}</textarea>
+                    </div>
 
-                            @if(!empty($gallery))
+                    <!-- Overview Image -->
+                    <div class="space-y-3">
+                        <label class="block text-sm font-medium text-[#5C432C] flex items-center gap-2">
+                            <i class="fa-solid fa-image text-[#D4A017]"></i>
+                            Foto Overview
+                        </label>
+                        @if($package->overview_image)
+                            <div class="flex gap-6 items-start">
+                                <div class="w-40 h-40 rounded-2xl overflow-hidden border border-[#EDE0D0]">
+                                    <img src="{{ Storage::url($package->overview_image) }}" class="w-full h-full object-cover" alt="Current Overview">
+                                </div>
                                 <div>
-                                    <p class="text-xs text-[#8b7359] mb-2">Galeri saat ini ({{ count($gallery) }} foto)</p>
-                                    <div class="grid grid-cols-4 gap-2 mb-3">
-                                        @foreach($gallery as $path)
-                                            <div class="aspect-square rounded-lg overflow-hidden border border-[#e3d5c4] bg-white">
-                                                <img src="{{ Storage::url($path) }}" class="w-full h-full object-cover" alt="foto paket">
-                                            </div>
-                                        @endforeach
-                                    </div>
+                                    <p class="text-sm text-[#8B7359]">Foto saat ini</p>
+                                    <label class="inline-flex items-center gap-2 mt-2">
+                                        <input type="checkbox" name="remove_overview" value="1" class="rounded border-[#E1D3C5]">
+                                        <span class="text-[#5C432C] text-sm">Hapus foto ini</span>
+                                    </label>
                                 </div>
-                            @endif
+                            </div>
+                        @endif
+                        <input type="file" name="overview_image" accept="image/*"
+                               class="w-full text-sm file:mr-4 file:py-3 file:px-6 file:rounded-3xl file:border-0 file:bg-[#D4A017] file:text-white file:font-medium">
+                        @error('overview_image')
+                            <p class="text-xs text-red-600 flex items-center gap-1 mt-1"><i class="fa-solid fa-circle-exclamation"></i> {{ $message }}</p>
+                        @enderror
+                    </div>
 
-                            <input type="file" name="gallery[]" multiple accept="image/*"
-                                   class="w-full text-sm text-[#6f5134] file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#b58042] file:text-white hover:file:bg-[#9b6a34] file:cursor-pointer">
-                            <p class="text-xs text-[#8b7359] flex items-center gap-1">
-                                <i class="fa-solid fa-circle-info"></i>
-                                Upload foto baru untuk menambah ke galeri (maks 20 foto total)
-                            </p>
-                            @error('gallery') 
-                                <p class="text-xs text-red-600 flex items-center gap-1 mt-1">
-                                    <i class="fa-solid fa-circle-exclamation"></i>
-                                    {{ $message }}
-                                </p>
-                            @enderror
-                            @error('gallery.*') 
-                                <p class="text-xs text-red-600 flex items-center gap-1 mt-1">
-                                    <i class="fa-solid fa-circle-exclamation"></i>
-                                    {{ $message }}
-                                </p>
-                            @enderror
-                        </div>
+                    <!-- Gallery -->
+                    <div class="space-y-3">
+                        <label class="block text-sm font-medium text-[#5C432C] flex items-center gap-2">
+                            <i class="fa-solid fa-images text-[#D4A017]"></i>
+                            Galeri Foto
+                        </label>
+                        @if(!empty($gallery))
+                            <div class="mb-4">
+                                <p class="text-xs text-[#8B7359] mb-3">Galeri saat ini ({{ count($gallery) }} foto)</p>
+                                <div class="grid grid-cols-4 gap-3">
+                                    @foreach($gallery as $path)
+                                        <div class="aspect-square rounded-2xl overflow-hidden border border-[#EDE0D0]">
+                                            <img src="{{ Storage::url($path) }}" class="w-full h-full object-cover" alt="gallery">
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
+                        <input type="file" name="gallery[]" multiple accept="image/*"
+                               class="w-full text-sm file:mr-4 file:py-3 file:px-6 file:rounded-3xl file:border-0 file:bg-[#D4A017] file:text-white file:font-medium">
+                        @error('gallery')
+                            <p class="text-xs text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
 
-                        {{-- Action Buttons --}}
-                        <div class="flex items-center justify-end gap-3 pt-4 border-t border-[#e3d5c4]">
-                            <a href="{{ route('admin.catalog.packages', $category) }}" 
-                               class="px-6 py-2.5 rounded-xl border border-[#d7c5b2] text-[#5b422b] hover:bg-white hover:shadow-md transition-all">
-                                Batal
-                            </a>
-                            <button type="submit" 
-                                    class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#b58042] to-[#8b5b2e] text-white font-semibold shadow-lg shadow-[#b58042]/30 hover:shadow-xl hover:-translate-y-0.5 transition-all">
-                                <i class="fa-solid fa-pen-to-square"></i>
-                                Update Paket
-                            </button>
-                        </div>
-                    </form>
-                </div>
+                    <!-- Action Buttons -->
+                    <div class="flex justify-end gap-4 pt-8 border-t border-[#EDE0D0]">
+                        <a href="{{ route('admin.catalog.packages', $category) }}"
+                           class="px-8 py-4 rounded-3xl border border-[#E1D3C5] text-[#5C432C] hover:bg-white transition-all">
+                            Batal
+                        </a>
+                        <button type="submit"
+                                class="inline-flex items-center gap-3 px-10 py-4 rounded-3xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] text-white font-semibold shadow-lg hover:shadow-xl transition-all">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                            Update Paket
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const wrapper = document.getElementById('addons-wrapper');
+            const addBtn = document.getElementById('add-addon-btn');
+            let index = {{ count($existingAddons) }};
+
+            if (addBtn) {
+                addBtn.addEventListener('click', () => {
+                    const rowHTML = `
+                        <div class="addon-row grid md:grid-cols-[1fr_180px_180px_auto] gap-4 items-end">
+                            <input name="addons[${index}][label]" 
+                                   class="w-full px-6 py-4 rounded-3xl border border-[#E1D3C5] focus:border-[#D4A017] transition-all"
+                                   placeholder="Nama add-on">
+                            <input type="number" name="addons[${index}][price]" min="0"
+                                   class="w-full px-6 py-4 rounded-3xl border border-[#E1D3C5] focus:border-[#D4A017] transition-all"
+                                   placeholder="Harga">
+                            <input name="addons[${index}][unit]"
+                                   class="w-full px-6 py-4 rounded-3xl border border-[#E1D3C5] focus:border-[#D4A017] transition-all"
+                                   placeholder="Satuan">
+                            <button type="button" class="addon-remove-btn px-6 py-4 rounded-3xl border border-red-200 text-red-600 hover:bg-red-50 transition-all">
+                                Hapus
+                            </button>
+                        </div>
+                    `;
+                    wrapper.insertAdjacentHTML('beforeend', rowHTML);
+                    index++;
+                });
+            }
+
+            wrapper.addEventListener('click', (e) => {
+                if (e.target.classList.contains('addon-remove-btn')) {
+                    if (wrapper.querySelectorAll('.addon-row').length > 1) {
+                        e.target.closest('.addon-row').remove();
+                    }
+                }
+            });
+        });
+    </script>
 </x-app-layout>
-<script>
-    (function () {
-        const wrapper = document.getElementById('addons-wrapper');
-        const addBtn = document.querySelector('[data-addons-add]');
-        if (!wrapper || !addBtn) return;
-
-        let addonIndex = wrapper.querySelectorAll('.addon-row').length;
-
-        function addonRow(index) {
-            return `
-                <div class="grid md:grid-cols-[1fr_200px_auto] gap-2 items-center addon-row">
-                    <input name="addons[${index}][label]"
-                           class="w-full px-4 py-2.5 rounded-xl border border-[#d7c5b2] bg-white/50 backdrop-blur-sm text-[#4a301f] focus:border-[#b58042] focus:ring-[#b58042]"
-                           placeholder="Nama add-on">
-                    <input type="number" name="addons[${index}][price]" min="0"
-                           class="w-full px-4 py-2.5 rounded-xl border border-[#d7c5b2] bg-white/50 backdrop-blur-sm text-[#4a301f] focus:border-[#b58042] focus:ring-[#b58042]"
-                           placeholder="Harga">
-                    <button type="button" data-addons-remove
-                            class="px-3 py-2 rounded-lg border border-[#d7c5b2] text-[#6f5134] hover:bg-white transition-colors">
-                        Hapus
-                    </button>
-                </div>
-            `;
-        }
-
-        addBtn.addEventListener('click', () => {
-            wrapper.insertAdjacentHTML('beforeend', addonRow(addonIndex++));
-        });
-
-        wrapper.addEventListener('click', (event) => {
-            if (!event.target.closest('[data-addons-remove]')) return;
-            const rows = wrapper.querySelectorAll('.addon-row');
-            if (rows.length <= 1) return;
-            event.target.closest('.addon-row')?.remove();
-        });
-    })();
-</script>

@@ -31,14 +31,14 @@ class PaymentConfirmedNotification extends Notification implements ShouldQueue
         $booking = $payment?->booking;
 
         return (new MailMessage)
-            ->subject('[Alter Studio] Pembayaran terkonfirmasi')
+            ->subject('[Alter Studio] Pembayaran berhasil dikonfirmasi')
             ->greeting('Halo '.$notifiable->name.',')
-            ->line('Pembayaran Anda telah tervalidasi oleh sistem.')
+            ->line('Pembayaran Anda sudah berhasil dikonfirmasi oleh sistem.')
             ->line('No. Pemesanan: #'.($booking?->id ?? '-'))
             ->line('Paket: '.($booking?->package?->name ?? 'Paket'))
             ->line('Jenis pembayaran: '.(($payment?->type ?? 'FULL') === 'DP' ? 'DP' : 'Pelunasan'))
             ->line('Nominal: Rp '.number_format((int) ($payment?->amount ?? 0), 0, ',', '.'))
             ->action('Lihat Pemesanan', route('bookings.index'))
-            ->line('Terima kasih.');
+            ->line('Terima kasih telah menggunakan layanan Alter Studio.');
     }
 }

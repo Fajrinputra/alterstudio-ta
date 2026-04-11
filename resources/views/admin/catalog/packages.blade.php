@@ -1,169 +1,233 @@
 @php use Illuminate\Support\Str; @endphp
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center justify-between">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-                <p class="text-sm text-[#8b7359] tracking-wide flex items-center gap-2">
-                    <i class="fa-solid fa-box text-[#b58042]"></i>
+                <p class="text-sm text-[#8B7359] tracking-wide flex items-center gap-2">
+                    <i class="fa-solid fa-box text-[#D4A017]"></i>
                     Katalog Layanan
                 </p>
-                <h2 class="text-3xl font-light tracking-tight text-[#3f2b1b] mt-1">
-                    Paket: <span class="font-medium bg-gradient-to-r from-[#b58042] to-[#8b5b2e] bg-clip-text text-transparent">{{ $category->name }}</span>
+                <h2 class="text-4xl font-display font-bold tracking-tighter text-[#3F2B1B] mt-1">
+                    Paket: <span class="bg-gradient-to-r from-[#D4A017] to-[#E07A5F] bg-clip-text text-transparent">{{ $category->name }}</span>
                 </h2>
             </div>
-            <div class="flex gap-2">
-                <a href="{{ route('admin.catalog') }}" 
-                   class="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-[#d7c5b2] text-[#5b422b] hover:bg-white hover:shadow-md transition-all">
-                    <i class="fa-solid fa-arrow-left"></i>
-                    Kembali
+            <div class="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
+                <a href="{{ route('admin.catalog') }}"
+                   class="inline-flex w-full sm:w-auto items-center justify-center gap-3 px-6 py-3 rounded-3xl border border-[#E1D3C5] text-[#5C432C] hover:bg-white hover:shadow-md transition-all">
+                    Kembali ke Kategori
                 </a>
-                <a href="{{ route('admin.catalog.packages.create', $category) }}" 
-                   class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-[#b58042] to-[#8b5b2e] text-white font-semibold shadow-lg shadow-[#b58042]/30 hover:shadow-xl hover:-translate-y-0.5 transition-all">
+                <a href="{{ route('admin.catalog.packages.create', $category) }}"
+                   class="inline-flex w-full sm:w-auto items-center justify-center gap-3 px-8 py-3 rounded-3xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] text-white font-semibold shadow-lg shadow-[#D4A017]/30 hover:shadow-xl hover:-translate-y-0.5 transition-all">
                     <i class="fa-solid fa-plus"></i>
-                    Tambah Paket
+                    Tambah Paket Baru
                 </a>
             </div>
         </div>
     </x-slot>
 
-    <div class="py-8">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+    <div class="py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
             
-            {{-- Session Status --}}
+            {{-- Session Messages --}}
             @if (session('status'))
-                <div class="flex items-center gap-3 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700">
+                <div class="flex items-center gap-3 p-5 rounded-3xl bg-emerald-50 border border-emerald-200 text-emerald-700">
                     <i class="fa-solid fa-circle-check text-emerald-500"></i>
-                    <span class="text-sm font-medium">{{ session('status') }}</span>
+                    <span class="font-medium">{{ session('status') }}</span>
                 </div>
             @endif
             @if (session('error'))
-                <div class="flex items-center gap-3 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700">
+                <div class="flex items-center gap-3 p-5 rounded-3xl bg-red-50 border border-red-200 text-red-700">
                     <i class="fa-solid fa-circle-exclamation text-red-500"></i>
-                    <span class="text-sm font-medium">{{ session('error') }}</span>
+                    <span class="font-medium">{{ session('error') }}</span>
                 </div>
             @endif
 
-            {{-- Grid Paket --}}
-            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {{-- Packages Grid --}}
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                 @forelse($packages as $pkg)
                     <div class="relative group" x-data="{ confirmDelete: false }">
-                        <div class="absolute inset-0 bg-gradient-to-r from-[#b58042]/10 to-[#8b5b2e]/10 rounded-2xl blur-xl"></div>
-                        <div class="relative bg-white/70 backdrop-blur-xl border border-[#e3d5c4] rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all">
+                        <div class="h-full bg-white/85 backdrop-blur-sm rounded-3xl border border-[#EDE0D0] shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden">
                             
-                            {{-- Header dengan status --}}
-                            <div class="flex items-start justify-between mb-3">
-                                <div class="flex items-center gap-2">
-                                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-[#b58042]/20 to-[#8b5b2e]/20 flex items-center justify-center">
-                                        <i class="fa-solid fa-cube text-[#b58042] text-sm"></i>
+                            <!-- Package Image -->
+                            @if($pkg->overview_image)
+                                <div class="relative h-56 w-full overflow-hidden">
+                                    <img src="{{ Storage::url($pkg->overview_image) }}" 
+                                         alt="{{ $pkg->name }}" 
+                                         class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                                    <div class="absolute inset-0 bg-gradient-to-t from-black/45 via-black/10 to-transparent"></div>
+                                    <div class="absolute bottom-4 left-4 flex items-center gap-2">
+                                        <span class="px-3 py-1 rounded-full bg-white/90 text-[#5C432C] text-xs font-semibold shadow">
+                                            {{ $category->name }}
+                                        </span>
+                                        <span class="px-3 py-1 rounded-full text-xs font-medium shadow
+                                            {{ $pkg->is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700' }}">
+                                            {{ $pkg->is_active ? 'Aktif' : 'Nonaktif' }}
+                                        </span>
                                     </div>
-                                    <h3 class="font-display text-lg text-[#3f2b1b]">{{ $pkg->name }}</h3>
                                 </div>
-                                <span class="px-2 py-1 rounded-full text-xs font-medium {{ $pkg->is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700' }}">
-                                    {{ $pkg->is_active ? 'Aktif' : 'Nonaktif' }}
-                                </span>
-                            </div>
-
-                            {{-- Harga --}}
-                            <p class="text-2xl font-light text-[#b58042] mb-3">
-                                Rp {{ number_format($pkg->price) }}
-                            </p>
-
-                            {{-- Deskripsi singkat --}}
-                            @if($pkg->description)
-                                <p class="text-sm text-[#6f5134] mb-3 line-clamp-2">{{ $pkg->description }}</p>
+                            @else
+                                <div class="relative h-56 w-full bg-gradient-to-br from-[#FAF6F0] via-[#F7EFE5] to-[#F4EDE4] flex items-center justify-center">
+                                    <i class="fa-solid fa-image text-[#8B7359] text-6xl opacity-60"></i>
+                                    <div class="absolute top-4 right-4">
+                                        <span class="px-3 py-1 rounded-full text-xs font-medium
+                                            {{ $pkg->is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700' }}">
+                                            {{ $pkg->is_active ? 'Aktif' : 'Nonaktif' }}
+                                        </span>
+                                    </div>
+                                </div>
                             @endif
 
-                            {{-- Features preview --}}
-                            @if($pkg->features && count($pkg->features) > 0)
-                                <div class="space-y-1 mb-3">
-                                    @foreach(array_slice($pkg->features, 0, 3) as $feature)
-                                        <p class="text-xs text-[#5b422b] flex items-center gap-1">
-                                            <i class="fa-solid fa-circle-check text-[#b58042] text-[10px]"></i>
-                                            {{ Str::limit($feature, 40) }}
-                                        </p>
-                                    @endforeach
-                                    @if(count($pkg->features) > 3)
-                                        <p class="text-xs text-[#b58042]">+{{ count($pkg->features) - 3 }} fitur lainnya</p>
+                            <div class="p-7 flex h-[calc(100%-14rem)] flex-col">
+                                <!-- Name -->
+                                <div class="mb-4">
+                                    <p class="text-[11px] uppercase tracking-[0.18em] text-[#8B7359] mb-2">Ringkasan Paket</p>
+                                    <h3 class="font-display text-2xl font-semibold text-[#3F2B1B] leading-tight line-clamp-2">{{ $pkg->name }}</h3>
+                                </div>
+
+                                <!-- Price -->
+                                <div class="mb-5">
+                                    <p class="text-sm text-[#8B7359] mb-1">Harga Paket</p>
+                                    <p class="text-4xl font-bold text-[#D4A017] leading-none">
+                                        Rp {{ number_format($pkg->price) }}
+                                    </p>
+                                </div>
+
+                                <!-- Description -->
+                                @if($pkg->description)
+                                    <p class="text-sm text-[#7A5B3A] line-clamp-3 mb-5 leading-relaxed">{{ $pkg->description }}</p>
+                                @endif
+
+                                <div class="space-y-5 mb-6">
+                                    <!-- Quick Meta -->
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <div class="rounded-2xl border border-[#EDE0D0] bg-[#FCF7F1] px-4 py-3">
+                                            <p class="text-[11px] uppercase tracking-[0.18em] text-[#8B7359] mb-1">Kapasitas</p>
+                                            <p class="text-sm font-semibold text-[#3F2B1B]">
+                                                {{ $pkg->max_people ? 'Maks. '.$pkg->max_people.' orang' : 'Fleksibel' }}
+                                            </p>
+                                        </div>
+                                        <div class="rounded-2xl border border-[#EDE0D0] bg-[#FCF7F1] px-4 py-3">
+                                            <p class="text-[11px] uppercase tracking-[0.18em] text-[#8B7359] mb-1">Add-on</p>
+                                            <p class="text-sm font-semibold text-[#3F2B1B]">
+                                                {{ is_countable($pkg->addons ?? null) ? count($pkg->addons) : 0 }} opsi
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Quick Features -->
+                                    @if($pkg->features && count($pkg->features) > 0)
+                                        <div>
+                                            <h4 class="text-sm font-medium text-[#8B7359] uppercase tracking-wider mb-3 flex items-center gap-2">
+                                                <i class="fa-solid fa-star text-[#D4A017]"></i>
+                                                Yang Didapat
+                                            </h4>
+                                            <div class="space-y-2">
+                                                @foreach(array_slice($pkg->features, 0, 3) as $feature)
+                                                    <div class="flex items-start gap-2 text-xs text-[#5C432C]">
+                                                        <i class="fa-solid fa-circle-check text-[#D4A017] mt-0.5"></i>
+                                                        <span>{{ Str::limit($feature, 52) }}</span>
+                                                    </div>
+                                                @endforeach
+                                                @if(count($pkg->features) > 3)
+                                                    <p class="text-xs text-[#D4A017] font-medium">+{{ count($pkg->features) - 3 }} fitur lainnya</p>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    @endif
+
+                                    <!-- Quick Add-ons -->
+                                    @if($pkg->addons && count($pkg->addons) > 0)
+                                        <div>
+                                            <h4 class="text-sm font-medium text-[#8B7359] uppercase tracking-wider mb-3 flex items-center gap-2">
+                                                <i class="fa-solid fa-plus-circle text-[#D4A017]"></i>
+                                                Add-on Tersedia
+                                            </h4>
+                                            <div class="flex flex-wrap gap-2">
+                                                @foreach(array_slice($pkg->addons, 0, 2) as $addon)
+                                                    @php
+                                                        $addonLabel = is_array($addon) ? ($addon['label'] ?? '-') : $addon;
+                                                        $addonPrice = is_array($addon) ? (int) ($addon['price'] ?? 0) : 0;
+                                                        $addonUnit = is_array($addon) ? trim((string) ($addon['unit'] ?? '')) : '';
+                                                    @endphp
+                                                    <span class="px-3 py-1.5 rounded-full bg-[#F1E5D8] border border-[#E3D5C4] text-[#6B4A2D] text-xs">
+                                                        {{ Str::limit($addonLabel, 18) }}
+                                                        @if($addonPrice > 0)
+                                                            · Rp {{ number_format($addonPrice, 0, ',', '.') }}
+                                                        @endif
+                                                        @if($addonUnit !== '')
+                                                            / {{ $addonUnit }}
+                                                        @endif
+                                                    </span>
+                                                @endforeach
+                                                @if(count($pkg->addons) > 2)
+                                                    <span class="px-3 py-1.5 rounded-full bg-white border border-[#E3D5C4] text-[#8B7359] text-xs">
+                                                        +{{ count($pkg->addons) - 2 }} add-on
+                                                    </span>
+                                                @endif
+                                            </div>
+                                        </div>
                                     @endif
                                 </div>
-                            @endif
 
-                            {{-- Max People --}}
-                            @if($pkg->max_people)
-                                <p class="text-xs text-[#8b7359] flex items-center gap-1 mb-3">
-                                    <i class="fa-solid fa-user"></i>
-                                    Max {{ $pkg->max_people }} orang
-                                </p>
-                            @endif
-
-                            {{-- Action Buttons --}}
-                            <div class="flex items-center gap-2 pt-3 border-t border-[#e3d5c4]">
-                                <a href="{{ route('admin.packages.show', $pkg) }}" 
-                                   class="flex-1 inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg border border-[#d7c5b2] text-xs text-[#5b422b] hover:bg-white/80 transition-colors">
-                                    <i class="fa-solid fa-eye"></i>
-                                    Detail
-                                </a>
-                                <a href="{{ route('admin.packages.edit', $pkg) }}" 
-                                   class="flex-1 inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg border border-[#d7c5b2] text-xs text-[#5b422b] hover:bg-white/80 transition-colors">
-                                    <i class="fa-solid fa-pen-to-square"></i>
-                                    Edit
-                                </a>
-                                <button type="button"
-                                        @click="confirmDelete = true"
-                                        class="flex-1 w-full inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg border border-red-200 text-xs text-red-600 hover:bg-red-50 transition-colors">
-                                    <i class="fa-solid fa-trash-can"></i>
-                                    Hapus
-                                </button>
+                                <!-- Action Buttons -->
+                                <div class="mt-auto flex items-center gap-3 pt-6 border-t border-[#EDE0D0]">
+                                    <a href="{{ route('admin.packages.show', $pkg) }}"
+                                       class="flex-1 text-center py-3 rounded-3xl border border-[#E1D3C5] text-[#5C432C] hover:bg-white transition-all text-sm font-medium">
+                                        Detail
+                                    </a>
+                                    <a href="{{ route('admin.packages.edit', $pkg) }}"
+                                       class="flex-1 text-center py-3 rounded-3xl border border-[#E1D3C5] text-[#5C432C] hover:bg-white transition-all text-sm font-medium">
+                                        Edit
+                                    </a>
+                                    <button type="button"
+                                            @click="confirmDelete = true"
+                                            class="flex-1 py-3 rounded-3xl border border-red-200 text-red-600 hover:bg-red-50 transition-all text-sm font-medium">
+                                        Hapus
+                                    </button>
+                                </div>
                             </div>
+                        </div>
 
-                            <div x-show="confirmDelete" x-cloak class="fixed inset-0 z-50" x-transition.opacity>
-                                <div class="absolute inset-0 bg-black/45" @click="confirmDelete = false"></div>
-                                <div class="relative h-full w-full flex items-center justify-center p-4">
-                                    <div class="w-full max-w-md rounded-2xl bg-white border border-[#e3d5c4] shadow-2xl p-5" @click.stop>
-                                        <div class="flex items-start gap-3">
-                                            <div class="w-10 h-10 rounded-full bg-red-100 text-red-600 flex items-center justify-center">
-                                                <i class="fa-solid fa-triangle-exclamation"></i>
-                                            </div>
-                                            <div>
-                                                <h4 class="text-lg font-semibold text-[#3f2b1b]">Hapus Paket?</h4>
-                                                <p class="text-sm text-[#6f5134] mt-1">
-                                                    Paket <span class="font-medium">{{ $pkg->name }}</span> akan dihapus permanen. Lanjutkan?
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <div class="mt-5 flex justify-end gap-2">
-                                            <button type="button"
-                                                    @click="confirmDelete = false"
-                                                    class="px-4 py-2 rounded-lg border border-[#d7c5b2] text-[#5b422b] hover:bg-[#f7efe5] transition-colors">
-                                                Batal
-                                            </button>
-                                            <form method="POST" action="/admin/packages/{{ $pkg->id }}">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button class="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors">
-                                                    <i class="fa-solid fa-trash-can mr-1"></i>
-                                                    Hapus
-                                                </button>
-                                            </form>
-                                        </div>
+                        <!-- Delete Confirmation Modal -->
+                        <div x-show="confirmDelete" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60" x-transition.opacity>
+                            <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8" @click.stop>
+                                <div class="flex items-start gap-4">
+                                    <div class="w-12 h-12 rounded-2xl bg-red-100 flex items-center justify-center text-red-600 flex-shrink-0">
+                                        <i class="fa-solid fa-triangle-exclamation text-2xl"></i>
                                     </div>
+                                    <div>
+                                        <h4 class="text-xl font-semibold text-[#3F2B1B]">Hapus Paket?</h4>
+                                        <p class="text-[#7A5B3A] mt-2">
+                                            Paket <span class="font-medium">"{{ $pkg->name }}"</span> akan dihapus secara permanen. 
+                                            Tindakan ini tidak dapat dibatalkan.
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="mt-8 flex justify-end gap-3">
+                                    <button type="button"
+                                            @click="confirmDelete = false"
+                                            class="px-6 py-3 rounded-3xl border border-[#E1D3C5] text-[#5C432C] hover:bg-white transition-all">
+                                        Batal
+                                    </button>
+                                    <form method="POST" action="{{ route('admin.packages.destroy', $pkg) }}">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit"
+                                                class="px-6 py-3 rounded-3xl bg-red-600 text-white hover:bg-red-700 transition-all">
+                                            <i class="fa-solid fa-trash-can mr-2"></i>
+                                            Hapus Paket
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
                         </div>
                     </div>
                 @empty
-                    <div class="col-span-full">
-                        <div class="relative group">
-                            <div class="absolute inset-0 bg-gradient-to-r from-[#b58042]/10 to-[#8b5b2e]/10 rounded-2xl blur-xl"></div>
-                            <div class="relative bg-white/70 backdrop-blur-xl border border-[#e3d5c4] rounded-2xl p-12 text-center">
-                                <div class="flex flex-col items-center">
-                                    <div class="w-16 h-16 mb-3 rounded-full bg-[#f0e4d6] flex items-center justify-center">
-                                        <i class="fa-solid fa-box-open text-2xl text-[#8b7359]"></i>
-                                    </div>
-                                    <p class="text-[#6f5134] font-medium">Belum ada paket</p>
-                                    <p class="text-sm text-[#8b7359] mt-1">Klik "Tambah Paket" untuk membuat paket baru</p>
-                                </div>
-                            </div>
+                    <div class="col-span-full py-20">
+                        <div class="bg-white rounded-3xl border border-[#EDE0D0] p-16 text-center">
+                            <i class="fa-solid fa-box-open text-7xl text-[#8B7359] mb-6 opacity-40"></i>
+                            <p class="text-2xl font-medium text-[#3F2B1B] mb-2">Belum ada paket dalam kategori ini</p>
+                            <p class="text-[#7A5B3A] mb-8">Klik tombol di atas untuk menambahkan paket baru</p>
                         </div>
                     </div>
                 @endforelse

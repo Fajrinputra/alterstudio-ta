@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Enums\Role;
+use App\Models\Booking;
+use App\Models\Project;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -14,12 +16,24 @@ use Illuminate\Support\Facades\Hash;
 class UserManagementController extends Controller
 {
     /** Halaman kelola pengguna (admin & manager). */
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::orderBy('role')->orderBy('name')->paginate(12);
+        $roleFilter = $request->query('role_filter');
+
+        $users = User::query()
+            ->when($roleFilter === 'photographer', fn ($query) => $query->withRole(Role::PHOTOGRAPHER))
+            ->when($roleFilter === 'editor', fn ($query) => $query->withRole(Role::EDITOR))
+            ->when($roleFilter === 'dual_crew', function ($query) {
+                $query->withRole(Role::PHOTOGRAPHER)
+                    ->withRole(Role::EDITOR);
+            })
+            ->orderBy('role')
+            ->orderBy('name')
+            ->paginate(12)
+            ->withQueryString();
         $roles = Role::all();
 
-        return view('admin.users.index', compact('users', 'roles'));
+        return view('admin.users.index', compact('users', 'roles', 'roleFilter'));
     }
 
     /** Halaman form create. */
@@ -43,16 +57,20 @@ class UserManagementController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'role' => ['required', Rule::in(Role::all())],
+            'roles' => ['nullable', 'array'],
+            'roles.*' => ['string', Rule::in([Role::PHOTOGRAPHER->value, Role::EDITOR->value])],
             'password' => ['nullable', 'string', 'min:8'],
             'no_hp' => ['nullable', 'string', 'max:30'],
         ]);
 
         $password = $data['password'] ?? 'password';
+        $roles = $this->normalizeRoles($data['role'], $data['roles'] ?? []);
 
         User::create([
             'name' => $data['name'],
             'email' => $data['email'],
             'role' => $data['role'],
+            'roles' => $roles,
             'no_hp' => $data['no_hp'] ?? null,
             'password' => Hash::make($password),
             'is_active' => true,
@@ -68,6 +86,8 @@ class UserManagementController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
             'role' => ['required', Rule::in(Role::all())],
+            'roles' => ['nullable', 'array'],
+            'roles.*' => ['string', Rule::in([Role::PHOTOGRAPHER->value, Role::EDITOR->value])],
             'password' => ['nullable', 'string', 'min:8'],
             'no_hp' => ['nullable', 'string', 'max:30'],
             'is_active' => ['nullable', 'boolean'],
@@ -77,6 +97,7 @@ class UserManagementController extends Controller
             'name' => $data['name'],
             'email' => $data['email'],
             'role' => $data['role'],
+            'roles' => $this->normalizeRoles($data['role'], $data['roles'] ?? []),
             'no_hp' => $data['no_hp'] ?? null,
         ];
 
@@ -86,6 +107,10 @@ class UserManagementController extends Controller
 
         // Lindungi akun Manager: tidak boleh dinonaktifkan atau dihapus.
         if ($user->role !== Role::MANAGER && array_key_exists('is_active', $data)) {
+            if ((bool) $data['is_active'] === false && $this->hasActiveOperationalWork($user)) {
+                return back()->with('status', 'Akun tidak dapat dinonaktifkan karena masih memiliki booking atau project yang belum selesai.');
+            }
+
             $payload['is_active'] = (bool) $data['is_active'];
         }
 
@@ -99,13 +124,21 @@ class UserManagementController extends Controller
     }
 
     /** Nonaktif/aktifkan pengguna. */
-    public function toggle(User $user)
+    public function toggle(Request $request, User $user)
     {
         if ($user->role === Role::MANAGER) {
             return back()->with('status', 'Akun manajer tidak boleh dinonaktifkan.');
         }
 
-        $user->update(['is_active' => !$user->is_active]);
+        $data = $request->validate([
+            'is_active' => ['required', 'boolean'],
+        ]);
+
+        if ((bool) $data['is_active'] === false && $this->hasActiveOperationalWork($user)) {
+            return back()->with('status', 'Akun tidak dapat dinonaktifkan karena masih memiliki booking atau project yang belum selesai.');
+        }
+
+        $user->update(['is_active' => (bool) $data['is_active']]);
 
         return back()->with('user_status', 'Status pengguna diperbarui.');
     }
@@ -117,8 +150,55 @@ class UserManagementController extends Controller
             return back()->with('status', 'Akun manajer tidak boleh dihapus.');
         }
 
+        if ($this->hasActiveOperationalWork($user)) {
+            return back()->with('status', 'Akun tidak dapat dihapus karena masih memiliki booking atau project yang belum selesai.');
+        }
+
         $user->delete();
 
         return back()->with('user_status', 'Pengguna dihapus.');
+    }
+
+    /**
+     * Role utama tetap satu, tetapi akun kru boleh punya akses ganda fotografer+editor.
+     *
+     * @param array<int, string> $roles
+     * @return array<int, string>
+     */
+    protected function normalizeRoles(string $primaryRole, array $roles): array
+    {
+        $crewRoles = [Role::PHOTOGRAPHER->value, Role::EDITOR->value];
+
+        if (! in_array($primaryRole, $crewRoles, true)) {
+            return [$primaryRole];
+        }
+
+        $normalized = array_values(array_unique(array_filter(array_merge([$primaryRole], $roles))));
+
+        return array_values(array_intersect($normalized, $crewRoles));
+    }
+
+    protected function hasActiveOperationalWork(User $user): bool
+    {
+        $hasActiveClientBookings = $user->bookings()
+            ->where('status', '!=', Booking::STATUS_CANCELLED)
+            ->where(function ($query) {
+                $query->whereDoesntHave('project')
+                    ->orWhereHas('project', fn ($project) => $project->where('status', '!=', Project::STATUS_FINAL));
+            })
+            ->exists();
+
+        if ($hasActiveClientBookings) {
+            return true;
+        }
+
+        return Project::query()
+            ->where(function ($query) use ($user) {
+                $query->where('photographer_id', $user->id)
+                    ->orWhere('editor_id', $user->id);
+            })
+            ->whereHas('booking', fn ($booking) => $booking->where('status', '!=', Booking::STATUS_CANCELLED))
+            ->where('status', '!=', Project::STATUS_FINAL)
+            ->exists();
     }
 }

@@ -27,6 +27,7 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'roles',
         'is_active',
         'avatar_path',
         'no_hp',
@@ -53,6 +54,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'role' => Role::class,
+            'roles' => 'array',
             'is_active' => 'boolean',
             'avatar_path' => 'string',
         ];
@@ -69,9 +71,35 @@ class User extends Authenticatable
             return $role instanceof Role ? $role->value : $role;
         }, $roles);
 
-        $current = $this->role instanceof Role ? $this->role->value : $this->role;
+        return count(array_intersect($this->effectiveRoles(), $target)) > 0;
+    }
 
-        return in_array($current, $target, true);
+    /**
+     * Seluruh akses role efektif user (role utama + akses tambahan).
+     *
+     * @return array<int, string>
+     */
+    public function effectiveRoles(): array
+    {
+        $current = $this->role instanceof Role ? $this->role->value : (string) $this->role;
+        $extra = is_array($this->roles) ? $this->roles : [];
+
+        return array_values(array_unique(array_filter(array_merge([$current], $extra))));
+    }
+
+    public function hasBothCrewRoles(): bool
+    {
+        return $this->isRole(Role::PHOTOGRAPHER) && $this->isRole(Role::EDITOR);
+    }
+
+    public function scopeWithRole($query, string|Role $role)
+    {
+        $roleValue = $role instanceof Role ? $role->value : $role;
+
+        return $query->where(function ($inner) use ($roleValue) {
+            $inner->where('role', $roleValue)
+                ->orWhereJsonContains('roles', $roleValue);
+        });
     }
 
     public function bookings(): HasMany
@@ -90,23 +118,13 @@ class User extends Authenticatable
         return $this->hasMany(PhotoSelection::class, 'client_id');
     }
 
-    public function revisionPinsCreated(): HasMany
-    {
-        return $this->hasMany(RevisionPin::class, 'client_id');
-    }
-
-    public function revisionPinsResolved(): HasMany
-    {
-        return $this->hasMany(RevisionPin::class, 'resolved_by');
-    }
-
     public function schedulesAsPhotographer(): HasMany
     {
-        return $this->hasMany(Schedule::class, 'photographer_id');
+        return $this->hasMany(Project::class, 'photographer_id');
     }
 
     public function schedulesAsEditor(): HasMany
     {
-        return $this->hasMany(Schedule::class, 'editor_id');
+        return $this->hasMany(Project::class, 'editor_id');
     }
 }

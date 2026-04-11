@@ -1,97 +1,98 @@
 <x-guest-layout>
-    <div class="relative bg-[#F8F1E7] text-[#4a301f] min-h-screen flex items-center justify-center p-4">
-        <div class="absolute inset-0 pointer-events-none opacity-40 bg-[radial-gradient(circle_at_15%_20%,rgba(181,128,66,0.12),transparent_45%),radial-gradient(circle_at_85%_80%,rgba(139,91,46,0.12),transparent_40%)]"></div>
+    <div class="relative bg-[#FAF6F0] min-h-screen flex items-center justify-center p-4">
         
+        <!-- Subtle Background -->
+        <div class="absolute inset-0 pointer-events-none opacity-30 bg-[radial-gradient(circle_at_20%_30%,rgba(212,160,23,0.08),transparent_50%),radial-gradient(circle_at_80%_70%,rgba(224,122,95,0.08),transparent_50%)]"></div>
+
         <div class="w-full max-w-md">
+            
             <!-- Logo -->
-            <div class="text-center mb-6">
-                <a href="/" class="inline-flex items-center gap-3">
-                    <span class="h-12 w-12 rounded-2xl bg-gradient-to-br from-[#b58042] to-[#8b5b2e] flex items-center justify-center text-white font-black text-xl shadow-lg shadow-[#b58042]/30">A</span>
-                    <div class="leading-tight text-left">
-                        <p class="font-display text-lg text-[#3f2b1b]">Alter Studio</p>
-                        <p class="text-xs text-[#8b7359]">Premium Photography</p>
+            <div class="text-center mb-8">
+                <a href="/" class="inline-flex items-center gap-3 mx-auto">
+                    <div class="relative">
+                        <div class="absolute inset-0 bg-gradient-to-br from-[#D4A017] to-[#E07A5F] rounded-2xl blur-xl opacity-40"></div>
+                        <div class="relative h-14 w-14 rounded-2xl bg-gradient-to-br from-[#D4A017] to-[#E07A5F] flex items-center justify-center text-white font-black text-2xl shadow-inner">
+                            A
+                        </div>
+                    </div>
+                    <div class="text-left leading-tight">
+                        <p class="font-display text-2xl text-[#3F2B1B]">Alter Studio</p>
+                        <p class="text-xs text-[#8B7359]">Premium Photography</p>
                     </div>
                 </a>
             </div>
 
             <!-- Card -->
-            <div class="bg-white/95 border border-[#e3d5c4] rounded-2xl p-8 shadow-xl shadow-[#d7c5b2]/40 backdrop-blur">
-                <div class="text-center space-y-2 mb-6">
-                    <div class="inline-flex items-center justify-center h-14 w-14 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 text-white mb-2">
-                        <i class="fa-solid fa-rotate-left text-xl"></i>
+            <div class="bg-white rounded-3xl shadow-2xl border border-[#EDE0D0] p-8 sm:p-10">
+                <div class="text-center mb-8">
+                    <div class="mx-auto mb-5 flex items-center justify-center h-16 w-16 rounded-2xl bg-gradient-to-br from-[#D4A017] to-[#E07A5F] text-white">
+                        <i class="fa-solid fa-rotate-left text-3xl"></i>
                     </div>
-                    <h2 class="text-2xl font-display font-semibold text-[#3f2b1b]">Reset Password</h2>
-                    <p class="text-sm text-[#7a5b3a]">Buat password baru untuk akun Anda</p>
+                    <h2 class="font-display text-3xl font-semibold text-[#3F2B1B]">Reset Password</h2>
+                    <p class="text-[#7A5B3A] mt-3 text-[15px]">Buat password baru untuk akun Anda</p>
                 </div>
 
-                <form method="POST" action="{{ route('password.store') }}" class="space-y-4">
+                <form method="POST" action="{{ route('password.store') }}" class="space-y-6">
                     @csrf
-
-                    <!-- Password Reset Token -->
                     <input type="hidden" name="token" value="{{ $request->route('token') }}">
 
-                    <!-- Email Address -->
+                    <!-- Email -->
                     <div class="space-y-2">
-                        <x-input-label for="email" :value="__('Email')" class="text-sm font-medium text-[#6f5134]" />
-                        
+                        <label for="email" class="block text-sm font-medium text-[#5C432C]">Alamat Email</label>
                         <div class="relative">
-                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-[#b58042]">
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-[#D4A017]">
                                 <i class="fa-solid fa-envelope"></i>
                             </span>
-                            <x-text-input id="email" 
-                                class="block w-full pl-10 pr-4 py-3 bg-[#fdf8f2] border border-[#d7c5b2] rounded-xl text-[#1c2432] placeholder:text-[#b39b82] focus:border-[#b58042] focus:ring-[#b58042]" 
-                                type="email" 
-                                name="email" 
-                                :value="old('email', $request->email)" 
+                            <x-text-input id="email"
+                                class="block w-full pl-11 pr-4 py-4 bg-[#FAF6F0] border border-[#E1D3C5] rounded-2xl text-[#3F2B1B] placeholder:text-[#9C7C5E] focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/30 transition-all"
+                                type="email"
+                                name="email"
+                                :value="old('email', $request->email)"
                                 required autofocus autocomplete="username"
-                                placeholder="contoh@email.com" />
+                                placeholder="nama@email.com" />
                         </div>
-
-                        <x-input-error :messages="$errors->get('email')" class="text-rose-500 text-sm mt-1" />
+                        <x-input-error :messages="$errors->get('email')" class="text-rose-500 text-sm" />
                     </div>
 
                     <!-- Password -->
                     <div class="space-y-2">
-                        <x-input-label for="password" :value="__('Password')" class="text-sm font-medium text-[#6f5134]" />
-                        
+                        <label for="password" class="block text-sm font-medium text-[#5C432C]">Password Baru</label>
                         <div class="relative">
-                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-[#b58042]">
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-[#D4A017]">
                                 <i class="fa-solid fa-lock"></i>
                             </span>
-                            <x-text-input id="password" 
-                                class="block w-full pl-10 pr-4 py-3 bg-[#fdf8f2] border border-[#d7c5b2] rounded-xl text-[#1c2432] placeholder:text-[#b39b82] focus:border-[#b58042] focus:ring-[#b58042]" 
+                            <x-text-input id="password"
+                                class="block w-full pl-11 pr-4 py-4 bg-[#FAF6F0] border border-[#E1D3C5] rounded-2xl text-[#3F2B1B] placeholder:text-[#9C7C5E] focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/30 transition-all"
                                 type="password"
                                 name="password"
                                 required autocomplete="new-password"
                                 placeholder="Minimal 8 karakter" />
                         </div>
-
-                        <x-input-error :messages="$errors->get('password')" class="text-rose-500 text-sm mt-1" />
+                        <x-input-error :messages="$errors->get('password')" class="text-rose-500 text-sm" />
                     </div>
 
                     <!-- Confirm Password -->
                     <div class="space-y-2">
-                        <x-input-label for="password_confirmation" :value="__('Confirm Password')" class="text-sm font-medium text-[#6f5134]" />
-                        
+                        <label for="password_confirmation" class="block text-sm font-medium text-[#5C432C]">Konfirmasi Password Baru</label>
                         <div class="relative">
-                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-[#b58042]">
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-[#D4A017]">
                                 <i class="fa-solid fa-lock"></i>
                             </span>
-                            <x-text-input id="password_confirmation" 
-                                class="block w-full pl-10 pr-4 py-3 bg-[#fdf8f2] border border-[#d7c5b2] rounded-xl text-[#1c2432] placeholder:text-[#b39b82] focus:border-[#b58042] focus:ring-[#b58042]" 
+                            <x-text-input id="password_confirmation"
+                                class="block w-full pl-11 pr-4 py-4 bg-[#FAF6F0] border border-[#E1D3C5] rounded-2xl text-[#3F2B1B] placeholder:text-[#9C7C5E] focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/30 transition-all"
                                 type="password"
-                                name="password_confirmation" 
+                                name="password_confirmation"
                                 required autocomplete="new-password"
                                 placeholder="Ketik ulang password" />
                         </div>
-
-                        <x-input-error :messages="$errors->get('password_confirmation')" class="text-rose-500 text-sm mt-1" />
+                        <x-input-error :messages="$errors->get('password_confirmation')" class="text-rose-500 text-sm" />
                     </div>
 
-                    <button type="submit" 
-                            class="w-full inline-flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl bg-gradient-to-r from-[#b58042] to-[#8b5b2e] text-white font-semibold shadow-lg shadow-[#b58042]/30 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 mt-4">
+                    <!-- Submit Button -->
+                    <button type="submit"
+                            class="w-full mt-6 py-4 rounded-2xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] text-white font-semibold text-lg shadow-lg shadow-[#D4A017]/30 hover:shadow-xl hover:-translate-y-0.5 transition-all flex items-center justify-center gap-3">
                         <i class="fa-solid fa-circle-check"></i>
-                        {{ __('Reset Password') }}
+                        Reset Password
                     </button>
                 </form>
             </div>

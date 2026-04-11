@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * File media project (mis. RAW dari fotografer / FINAL dari editor).
@@ -13,6 +12,14 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class MediaAsset extends Model
 {
     use HasFactory;
+
+    public const TYPE_RAW = 'RAW';
+    public const TYPE_FINAL = 'FINAL';
+
+    public const TYPES = [
+        self::TYPE_RAW,
+        self::TYPE_FINAL,
+    ];
 
     protected $fillable = [
         'project_id',
@@ -38,9 +45,4 @@ class MediaAsset extends Model
         return $this->belongsTo(User::class, 'uploaded_by');
     }
 
-    /** Pin revisi yang ditempel di asset ini. */
-    public function revisionPins(): HasMany
-    {
-        return $this->hasMany(RevisionPin::class);
-    }
 }

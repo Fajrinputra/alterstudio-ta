@@ -13,6 +13,14 @@ class Payment extends Model
 {
     use HasFactory;
 
+    public const TYPE_DP = Booking::PAYMENT_TYPE_DP;
+    public const TYPE_FULL = Booking::PAYMENT_TYPE_FULL;
+
+    public const STATUS_PENDING = 'PENDING';
+    public const STATUS_PAID = 'PAID';
+    public const STATUS_EXPIRED = 'EXPIRED';
+    public const STATUS_FAILED = 'FAILED';
+
     protected $fillable = [
         'booking_id',
         'type',

@@ -21,7 +21,18 @@ class ServicePackageFactory extends Factory
             'name' => 'Standard Package',
             'price' => 1500000,
             'description' => 'Standard photo session',
-            'features' => ['2 hours shoot', '20 edited photos'],
+            'features' => [
+                '2 hours shoot',
+                '20 edited photos',
+            ],
+            'addons' => [
+                [
+                    'label' => 'Extra print',
+                    'price' => 50000,
+                    'is_active' => true,
+                ],
+            ],
+            'gallery' => [],
         ];
     }
 }

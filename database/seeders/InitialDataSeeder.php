@@ -85,8 +85,34 @@ class InitialDataSeeder extends Seeder
         foreach ($data as $categoryName => $packages) {
             $cat = \App\Models\ServiceCategory::firstOrCreate(['name' => $categoryName], ['description' => $categoryName]);
             foreach ($packages as $pkg) {
+                $features = $pkg['features'] ?? [];
+                $addons = $pkg['addons'] ?? [];
+
+                unset($pkg['features'], $pkg['addons']);
                 $pkg['category_id'] = $cat->id;
-                \App\Models\ServicePackage::firstOrCreate(['name' => $pkg['name']], $pkg);
+
+                \App\Models\ServicePackage::updateOrCreate(
+                    ['name' => $pkg['name']],
+                    $pkg + [
+                        'features' => array_values($features),
+                        'addons' => array_values(array_map(function ($addon) {
+                            if (is_array($addon)) {
+                                return [
+                                    'label' => (string) ($addon['label'] ?? ''),
+                                    'price' => (int) ($addon['price'] ?? 0),
+                                    'is_active' => (bool) ($addon['is_active'] ?? true),
+                                ];
+                            }
+
+                            return [
+                                'label' => (string) $addon,
+                                'price' => 0,
+                                'is_active' => true,
+                            ];
+                        }, $addons)),
+                        'gallery' => [],
+                    ]
+                );
             }
         }
     }

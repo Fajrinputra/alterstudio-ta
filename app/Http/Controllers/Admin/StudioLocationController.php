@@ -22,7 +22,7 @@ class StudioLocationController extends Controller
     /** Halaman kelola cabang (form + list). */
     public function manage(Request $request)
     {
-        $locations = StudioLocation::with('rooms')->orderBy('name')->get();
+        $locations = StudioLocation::with(['rooms'])->orderBy('name')->get();
         $editing = null;
         if ($request->filled('edit')) {
             $editing = StudioLocation::find($request->query('edit'));
@@ -43,10 +43,7 @@ class StudioLocationController extends Controller
             foreach ($request->file('photos') as $file) {
                 $paths[] = $file->storePublicly("locations/{$location->id}", 'public');
             }
-            $location->update([
-                'photo_path' => $paths[0] ?? null,
-                'photo_gallery' => $paths,
-            ]);
+            $this->syncPhotos($location, $paths);
         }
 
         if ($request->wantsJson()) {
@@ -70,7 +67,6 @@ class StudioLocationController extends Controller
             foreach ($gallery as $p) {
                 \Storage::disk('public')->delete($p);
             }
-            $studioLocation->update(['photo_gallery' => [], 'photo_path' => null]);
             $gallery = collect();
         }
 
@@ -78,10 +74,7 @@ class StudioLocationController extends Controller
             foreach ($request->file('photos') as $file) {
                 $gallery->push($file->storePublicly("locations/{$studioLocation->id}", 'public'));
             }
-            $studioLocation->update([
-                'photo_gallery' => $gallery->values()->all(),
-                'photo_path' => $gallery->first(),
-            ]);
+            $this->syncPhotos($studioLocation, $gallery->values()->all());
         }
 
         if ($request->wantsJson()) {
@@ -127,5 +120,42 @@ class StudioLocationController extends Controller
         StudioRoom::create($data);
 
         return back()->with('status', 'Studio/ruang ditambahkan.');
+    }
+
+    /** Ubah nama/deskripsi/status ruangan studio. */
+    public function updateRoom(Request $request, StudioRoom $studioRoom)
+    {
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
+            'is_active' => ['nullable', 'boolean'],
+        ]);
+
+        $studioRoom->update([
+            'name' => $data['name'],
+            'description' => $data['description'] ?? null,
+            'is_active' => (bool) ($data['is_active'] ?? false),
+        ]);
+
+        return back()->with('status', 'Studio/ruang diperbarui.');
+    }
+
+    /** Hapus ruangan jika belum pernah dipakai booking; jika sudah dipakai wajib nonaktifkan. */
+    public function destroyRoom(StudioRoom $studioRoom)
+    {
+        if ($studioRoom->bookings()->exists()) {
+            $studioRoom->update(['is_active' => false]);
+            return back()->with('status', 'Ruangan sudah dipakai booking, status diubah menjadi nonaktif.');
+        }
+
+        $studioRoom->delete();
+        return back()->with('status', 'Studio/ruang dihapus.');
+    }
+
+    protected function syncPhotos(StudioLocation $location, array $paths): void
+    {
+        $location->update([
+            'photo_gallery' => array_values(array_filter($paths)),
+        ]);
     }
 }

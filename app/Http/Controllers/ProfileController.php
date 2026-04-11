@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Models\Booking;
+use App\Models\Project;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -70,6 +72,16 @@ class ProfileController extends Controller
 
         $user = $request->user();
 
+        if ($user->role === \App\Enums\Role::MANAGER) {
+            return Redirect::route('profile.edit')
+                ->withErrors(['account' => 'Akun manajer tidak boleh dihapus.'], 'userDeletion');
+        }
+
+        if ($this->hasActiveOperationalWork($user->id)) {
+            return Redirect::route('profile.edit')
+                ->withErrors(['account' => 'Akun tidak dapat dihapus karena masih memiliki booking atau project yang belum selesai.'], 'userDeletion');
+        }
+
         Auth::logout();
 
         $user->delete();
@@ -78,5 +90,30 @@ class ProfileController extends Controller
         $request->session()->regenerateToken();
 
         return Redirect::to('/');
+    }
+
+    protected function hasActiveOperationalWork(int $userId): bool
+    {
+        $hasActiveClientBookings = Booking::query()
+            ->where('client_id', $userId)
+            ->where('status', '!=', Booking::STATUS_CANCELLED)
+            ->where(function ($query) {
+                $query->whereDoesntHave('project')
+                    ->orWhereHas('project', fn ($project) => $project->where('status', '!=', Project::STATUS_FINAL));
+            })
+            ->exists();
+
+        if ($hasActiveClientBookings) {
+            return true;
+        }
+
+        return Project::query()
+            ->where(function ($query) use ($userId) {
+                $query->where('photographer_id', $userId)
+                    ->orWhere('editor_id', $userId);
+            })
+            ->whereHas('booking', fn ($booking) => $booking->where('status', '!=', Booking::STATUS_CANCELLED))
+            ->where('status', '!=', Project::STATUS_FINAL)
+            ->exists();
     }
 }

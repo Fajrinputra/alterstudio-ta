@@ -27,12 +27,12 @@ class BookingCreatedNotification extends Notification implements ShouldQueue
 
     public function toMail(object $notifiable): MailMessage
     {
-        // Gunakan data booking terbaru yang sudah diload relasinya.
         $booking = $this->booking;
         $packageName = $booking->package->name ?? 'Paket';
         $status = $booking->status;
         $total = number_format($booking->total_price);
         $date = optional($booking->booking_date)->format('d M Y');
+        $isClientRecipient = (int) ($notifiable->id ?? 0) === (int) $booking->client_id;
 
         return (new MailMessage)
             ->subject("[Alter Studio] Booking #{$booking->id} - {$packageName}")
@@ -42,6 +42,7 @@ class BookingCreatedNotification extends Notification implements ShouldQueue
                 'status' => $status,
                 'total' => $total,
                 'date' => $date,
+                'isClientRecipient' => $isClientRecipient,
             ]);
     }
 }

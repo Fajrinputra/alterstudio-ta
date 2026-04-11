@@ -2,7 +2,7 @@
 
 namespace App\Notifications;
 
-use App\Models\Schedule;
+use App\Models\Project;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -15,7 +15,7 @@ class ScheduleAssignedNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    public function __construct(protected int $scheduleId)
+    public function __construct(protected int $projectId)
     {
     }
 
@@ -26,20 +26,20 @@ class ScheduleAssignedNotification extends Notification implements ShouldQueue
 
     public function toMail(object $notifiable): MailMessage
     {
-        $schedule = Schedule::with(['project.booking.package'])->find($this->scheduleId);
-        $booking = $schedule?->project?->booking;
+        $project = Project::with(['booking.package', 'booking.studioLocation', 'booking.studioRoom', 'photographer', 'editor'])->find($this->projectId);
+        $booking = $project?->booking;
         $packageName = $booking?->package?->name ?? 'Paket';
-        $start = optional($schedule?->start_at)->format('d M Y H:i');
-        $end = optional($schedule?->end_at)->format('d M Y H:i');
+        $start = optional($project?->start_at)->format('d M Y H:i');
+        $end = optional($project?->end_at)->format('d M Y H:i');
 
         return (new MailMessage)
-            ->subject('[Alter Studio] Jadwal tugas baru')
+            ->subject('[Alter Studio] Penugasan jadwal baru')
             ->greeting('Halo '.$notifiable->name.',')
-            ->line('Anda mendapatkan penugasan baru.')
+            ->line('Anda mendapatkan penugasan baru di Alter Studio.')
             ->line('Paket: '.$packageName)
             ->line('Jadwal: '.($start ?: '-').' s/d '.($end ?: '-'))
-            ->line('Lokasi: '.($schedule?->location ?? '-'))
+            ->line('Lokasi: '.($booking?->location ?? '-'))
             ->action('Lihat Jadwal', url('/admin/schedules'))
-            ->line('Terima kasih.');
+            ->line('Silakan cek detail jadwal untuk menindaklanjuti tugas tersebut.');
     }
 }

@@ -31,12 +31,12 @@ class RawPhotosUploadedNotification extends Notification implements ShouldQueue
         $packageName = $booking?->package?->name ?? 'Paket';
 
         return (new MailMessage)
-            ->subject('[Alter Studio] Foto telah diupload')
+            ->subject('[Alter Studio] Foto RAW telah diunggah')
             ->greeting('Halo '.$notifiable->name.',')
             ->line('Foto untuk sesi Anda sudah diunggah ke sistem.')
             ->line('Paket: '.$packageName)
             ->line('Silakan buka halaman pemesanan untuk melihat foto dan memilih maksimal 5 foto yang ingin diedit.')
             ->action('Lihat Pemesanan', route('bookings.index'))
-            ->line('Terima kasih.');
+            ->line('Terima kasih telah menggunakan layanan Alter Studio.');
     }
 }

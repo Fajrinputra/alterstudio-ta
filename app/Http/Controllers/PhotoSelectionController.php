@@ -82,11 +82,11 @@ class PhotoSelectionController extends Controller
 
         $project->update([
             'selections_locked' => true,
-            'status' => 'EDITING',
+            'status' => Project::STATUS_EDITING,
         ]);
 
         // Saat finalize, editor terkait diberi notifikasi job baru.
-        $editor = $project->schedule?->editor;
+        $editor = $project->editor;
         if ($editor) {
             $editor->notify(new EditRequestSubmittedNotification($project->id));
         }

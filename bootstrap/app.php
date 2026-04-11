@@ -11,6 +11,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withSchedule(function (\Illuminate\Console\Scheduling\Schedule $schedule) {
+        $schedule->command('bookings:cancel-expired')->everyMinute();
         // Bersihkan media kedaluwarsa setiap hari pukul 02:00.
         $schedule->command('media:cleanup-expired')->dailyAt('02:00');
     })

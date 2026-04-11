@@ -5,104 +5,97 @@
 
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center justify-between">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-                <p class="text-sm text-[#7a5b3a] flex items-center gap-2">
-                    <i class="fa-solid fa-user text-[#b58042]"></i>
+                <p class="text-sm text-[#8B7359] tracking-[1.5px] uppercase font-medium flex items-center gap-2">
+                    <i class="fa-solid fa-user text-[#D4A017]"></i>
                     Profil
                 </p>
-                <h2 class="font-display font-bold text-3xl text-[#3f2b1b]">Informasi Akun</h2>
+                <h2 class="font-display text-4xl md:text-5xl font-semibold tracking-[-1px] text-[#3F2B1B]">
+                    Informasi Akun
+                </h2>
             </div>
-            <a href="{{ route('profile.form') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-[#d7c5b2] text-[#5b422b] hover:bg-white hover:shadow-md transition-all">
+            <a href="{{ route('profile.form') }}" 
+               class="inline-flex items-center justify-center gap-3 px-6 py-3 rounded-3xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] text-white font-semibold shadow-xl hover:shadow-2xl hover:-translate-y-0.5 transition-all">
                 <i class="fa-solid fa-pen-to-square"></i>
                 Edit Profil
             </a>
         </div>
     </x-slot>
 
-    <div class="py-8">
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+    <div class="py-8 bg-[#FAF6F0]">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+          
             {{-- Session Status --}}
             @if (session('status'))
                 @php
                     $mapStatus = [
                         'profile-updated' => 'Profil berhasil diperbarui.',
-                        'avatar-updated' => 'Avatar berhasil diperbarui.',
+                        'avatar-updated'  => 'Avatar berhasil diperbarui.',
                     ];
                     $flashText = $mapStatus[session('status')] ?? session('status');
                 @endphp
-                <div class="flex items-center gap-3 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700">
-                    <i class="fa-solid fa-circle-check text-emerald-500"></i>
-                    <span class="text-sm font-medium">{{ $flashText }}</span>
+                <div class="flex items-center gap-3 p-5 rounded-3xl bg-emerald-50 border border-emerald-200 text-emerald-700 shadow-sm">
+                    <i class="fa-solid fa-circle-check text-2xl"></i>
+                    <span class="font-medium">{{ $flashText }}</span>
                 </div>
             @endif
 
-            {{-- Profile Card --}}
-            <div class="bg-white/80 backdrop-blur-sm border border-[#e3d5c4] rounded-2xl shadow-xl overflow-hidden">
-                {{-- Header with gradient --}}
-                <div class="h-24 bg-gradient-to-r from-[#b58042] to-[#8b5b2e] relative">
-                    <div class="absolute -bottom-12 left-8">
-                        @if($user->avatar_path)
-                            <img src="{{ Storage::url($user->avatar_path) }}" class="h-24 w-24 rounded-2xl border-4 border-white shadow-xl object-cover" alt="Avatar">
-                        @else
-                            @php $initial = strtoupper(mb_substr($user->name,0,1)); @endphp
-                            <div class="h-24 w-24 rounded-2xl border-4 border-white shadow-xl bg-gradient-to-br from-[#b58042] to-[#8b5b2e] flex items-center justify-center text-white text-3xl font-bold">
-                                {{ $initial }}
-                            </div>
-                        @endif
-                    </div>
-                </div>
-
-                {{-- Content --}}
-                <div class="pt-16 p-8">
-                    <div class="grid md:grid-cols-2 gap-6">
-                        {{-- Left Column --}}
-                        <div class="space-y-4">
-                            <div class="bg-[#fcf7f1] rounded-xl p-4">
-                                <p class="text-xs text-[#7a5b3a] mb-1 flex items-center gap-1">
-                                    <i class="fa-solid fa-user text-[#b58042]"></i>
-                                    Nama Lengkap
-                                </p>
-                                <p class="font-semibold text-lg text-[#3f2b1b]">{{ $user->name }}</p>
-                            </div>
-
-                            <div class="bg-[#fcf7f1] rounded-xl p-4">
-                                <p class="text-xs text-[#7a5b3a] mb-1 flex items-center gap-1">
-                                    <i class="fa-solid fa-envelope text-[#b58042]"></i>
-                                    Email
-                                </p>
-                                <p class="font-semibold text-[#3f2b1b]">{{ $user->email }}</p>
-                            </div>
+            {{-- Profile Card Premium --}}
+            <div class="relative group">
+                <div class="absolute inset-0 bg-gradient-to-br from-[#D4A017]/10 via-[#E07A5F]/10 rounded-3xl blur-3xl"></div>
+                <div class="relative bg-white/80 backdrop-blur-2xl border border-[#EDE0D0] rounded-3xl shadow-2xl overflow-hidden">
+                    
+                    {{-- Header dengan Gradient + Avatar --}}
+                    <div class="h-48 bg-gradient-to-r from-[#D4A017] via-[#E07A5F] to-[#D4A017] relative">
+                        <div class="absolute -bottom-12 left-8">
+                            @if($user->avatar_path)
+                                <img src="{{ Storage::url($user->avatar_path) }}" 
+                                     class="h-28 w-28 rounded-3xl border-4 border-white shadow-2xl object-cover" alt="Avatar">
+                            @else
+                                @php $initial = strtoupper(mb_substr($user->name ?? '', 0, 1)); @endphp
+                                <div class="h-28 w-28 rounded-3xl border-4 border-white shadow-2xl bg-gradient-to-br from-white to-[#F4EDE4] flex items-center justify-center text-[#D4A017] text-5xl font-bold">
+                                    {{ $initial }}
+                                </div>
+                            @endif
                         </div>
+                    </div>
 
-                        {{-- Right Column --}}
-                        <div class="space-y-4">
-                            <div class="bg-[#fcf7f1] rounded-xl p-4">
-                                <p class="text-xs text-[#7a5b3a] mb-1 flex items-center gap-1">
-                                    <i class="fa-solid fa-phone text-[#b58042]"></i>
-                                    No. HP
-                                </p>
-                                <p class="font-semibold text-[#3f2b1b]">{{ $user->no_hp ?? '-' }}</p>
+                    {{-- Content --}}
+                    <div class="pt-20 px-8 pb-10">
+                        <div class="grid md:grid-cols-2 gap-6">
+                            
+                            {{-- Left Column --}}
+                            <div class="space-y-6">
+                                <div class="bg-[#FAF6F0] border border-[#EDE0D0] rounded-3xl p-6">
+                                    <p class="text-xs font-medium text-[#7A5B3A] tracking-widest mb-2">NAMA LENGKAP</p>
+                                    <p class="text-xl font-semibold text-[#3F2B1B]">{{ $user->name }}</p>
+                                </div>
+
+                                <div class="bg-[#FAF6F0] border border-[#EDE0D0] rounded-3xl p-6">
+                                    <p class="text-xs font-medium text-[#7A5B3A] tracking-widest mb-2">EMAIL</p>
+                                    <p class="text-lg text-[#3F2B1B]">{{ $user->email }}</p>
+                                </div>
                             </div>
 
-                            <div class="bg-[#fcf7f1] rounded-xl p-4">
-                                <p class="text-xs text-[#7a5b3a] mb-1 flex items-center gap-1">
-                                    <i class="fa-solid fa-tag text-[#b58042]"></i>
-                                    Role
-                                </p>
-                                <p class="font-semibold text-[#3f2b1b]">
-                                    <span class="px-3 py-1 rounded-full text-xs bg-[#b58042]/10 text-[#b58042] border border-[#b58042]/20">
-                                        {{ $user->role }}
+                            {{-- Right Column --}}
+                            <div class="space-y-6">
+                                <div class="bg-[#FAF6F0] border border-[#EDE0D0] rounded-3xl p-6">
+                                    <p class="text-xs font-medium text-[#7A5B3A] tracking-widest mb-2">NOMOR HP</p>
+                                    <p class="text-lg text-[#3F2B1B]">{{ $user->no_hp ?? 'Belum diisi' }}</p>
+                                </div>
+
+                                <div class="bg-[#FAF6F0] border border-[#EDE0D0] rounded-3xl p-6">
+                                    <p class="text-xs font-medium text-[#7A5B3A] tracking-widest mb-2">ROLE AKUN</p>
+                                    <span class="inline-block px-6 py-2 rounded-3xl bg-[#D4A017]/10 text-[#D4A017] border border-[#D4A017]/20 font-medium">
+                                        {{ ucfirst($user->role?->value ?? $user->role) }}
                                     </span>
-                                </p>
-                            </div>
+                                </div>
 
-                            <div class="bg-[#fcf7f1] rounded-xl p-4">
-                                <p class="text-xs text-[#7a5b3a] mb-1 flex items-center gap-1">
-                                    <i class="fa-solid fa-calendar text-[#b58042]"></i>
-                                    Member Sejak
-                                </p>
-                                <p class="font-semibold text-[#3f2b1b]">{{ $user->created_at->format('d F Y') }}</p>
+                                <div class="bg-[#FAF6F0] border border-[#EDE0D0] rounded-3xl p-6">
+                                    <p class="text-xs font-medium text-[#7A5B3A] tracking-widest mb-2">MEMBER SEJAK</p>
+                                    <p class="text-lg text-[#3F2B1B]">{{ $user->created_at->format('d F Y') }}</p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -111,7 +104,7 @@
 
             {{-- Delete Account Section --}}
             @if($user->role !== \App\Enums\Role::MANAGER)
-                <div class="bg-white/80 backdrop-blur-sm border border-[#e3d5c4] rounded-2xl shadow-xl p-6">
+                <div class="bg-white/80 backdrop-blur-sm border border-[#EDE0D0] rounded-3xl shadow-xl p-8">
                     @include('profile.partials.delete-user-form')
                 </div>
             @endif

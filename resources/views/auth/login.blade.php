@@ -1,77 +1,102 @@
 <x-guest-layout>
-    <div class="relative bg-[#F8F1E7] text-[#4a301f] min-h-screen flex items-center justify-center p-4">
-        <div class="absolute inset-0 pointer-events-none opacity-40 bg-[radial-gradient(circle_at_15%_20%,rgba(181,128,66,0.12),transparent_45%),radial-gradient(circle_at_85%_10%,rgba(139,91,46,0.12),transparent_40%),radial-gradient(circle_at_60%_70%,rgba(214,182,149,0.16),transparent_40%)]"></div>
+    <div class="relative bg-[#FAF6F0] min-h-screen flex items-center justify-center p-4 overflow-hidden">
+        
+        <!-- Subtle Background Pattern -->
+        <div class="absolute inset-0 pointer-events-none opacity-30 bg-[radial-gradient(circle_at_20%_30%,rgba(212,160,23,0.08),transparent_50%),radial-gradient(circle_at_80%_70%,rgba(224,122,95,0.08),transparent_50%)]"></div>
 
         <div class="w-full max-w-5xl">
-            <div class="grid md:grid-cols-2 gap-8 items-center">
-                <!-- Hero copy (hidden on small) -->
-                <div class="hidden md:block bg-white/70 rounded-3xl border border-[#e3d5c4] shadow-xl shadow-[#d7c5b2]/40 p-8 backdrop-blur">
-                    <div class="flex items-center gap-3 mb-6">
-                        <span class="h-14 w-14 rounded-2xl bg-gradient-to-br from-[#b58042] to-[#8b5b2e] flex items-center justify-center text-white font-black text-2xl">A</span>
+            <div class="grid md:grid-cols-2 gap-10 items-center">
+
+                <!-- Left Side - Branding -->
+                <div class="hidden md:flex flex-col justify-center bg-white/70 backdrop-blur-xl border border-[#EDE0D0] rounded-3xl shadow-2xl p-10 h-full">
+                    <div class="flex items-center gap-4 mb-8">
+                        <div class="relative">
+                            <div class="absolute inset-0 bg-gradient-to-br from-[#D4A017] to-[#E07A5F] rounded-2xl blur-xl opacity-40"></div>
+                            <div class="relative h-16 w-16 rounded-2xl bg-gradient-to-br from-[#D4A017] to-[#E07A5F] flex items-center justify-center text-white font-black text-3xl shadow-inner">
+                                A
+                            </div>
+                        </div>
                         <div>
-                            <p class="font-display text-2xl text-[#3f2b1b]">Alter Studio</p>
-                            <p class="text-sm text-[#8b7359]">Premium Photography</p>
+                            <p class="font-display text-3xl tracking-tight text-[#3F2B1B]">Alter Studio</p>
+                            <p class="text-sm text-[#8B7359]">Premium Photography</p>
                         </div>
                     </div>
-                    
-                    <h1 class="text-3xl font-display font-bold leading-tight text-[#3f2b1b] mb-4">Masuk ke Workflow Management</h1>
-                    <p class="text-base text-[#6b4a2d] mb-6">
-                        Kelola booking, jadwal kru, kolaborasi editing, dan pembayaran dalam satu portal.
+
+                    <h1 class="font-display text-4xl leading-tight font-semibold text-[#3F2B1B] mb-6">
+                        Selamat Datang Kembali
+                    </h1>
+                    <p class="text-[#5C432C] text-lg mb-8">
+                        Masuk ke akun Anda untuk mengelola pemesanan, melihat portofolio, dan mengakses fitur studio.
                     </p>
-                    
-                    <div class="space-y-3">
-                        <div class="flex items-center gap-3 text-sm text-[#6b4a2d]">
-                            <i class="fa-solid fa-circle-check text-[#b58042]"></i>
-                            <span>Midtrans-ready dengan Snap & Webhook</span>
+
+                    <div class="space-y-5 text-[#5C432C]">
+                        <div class="flex items-start gap-4">
+                            <i class="fa-solid fa-circle-check text-[#D4A017] mt-1 text-xl"></i>
+                            <div>
+                                <p class="font-medium">Midtrans Integration</p>
+                                <p class="text-sm text-[#7A5B3A]">Pembayaran cepat & aman</p>
+                            </div>
                         </div>
-                        <div class="flex items-center gap-3 text-sm text-[#6b4a2d]">
-                            <i class="fa-solid fa-circle-check text-[#b58042]"></i>
-                            <span>RBAC dengan 5 role berbeda</span>
+                        <div class="flex items-start gap-4">
+                            <i class="fa-solid fa-circle-check text-[#D4A017] mt-1 text-xl"></i>
+                            <div>
+                                <p class="font-medium">Jadwal Anti-Bentrok</p>
+                                <p class="text-sm text-[#7A5B3A]">Booking kru & studio real-time</p>
+                            </div>
                         </div>
-                        <div class="flex items-center gap-3 text-sm text-[#6b4a2d]">
-                            <i class="fa-solid fa-circle-check text-[#b58042]"></i>
-                            <span>Versioning aset & limit seleksi 5 foto</span>
-                        </div>
-                        <div class="flex items-center gap-3 text-sm text-[#6b4a2d]">
-                            <i class="fa-solid fa-circle-check text-[#b58042]"></i>
-                            <span>Jadwal anti-bentrok & payroll otomatis</span>
+                        <div class="flex items-start gap-4">
+                            <i class="fa-solid fa-circle-check text-[#D4A017] mt-1 text-xl"></i>
+                            <div>
+                                <p class="font-medium">Portofolio & Download</p>
+                                <p class="text-sm text-[#7A5B3A]">Hasil foto siap diunduh kapan saja</p>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Form -->
+                <!-- Right Side - Login Form -->
                 <div class="relative">
-                    <div class="w-full bg-white/95 border border-[#e3d5c4] rounded-2xl p-6 sm:p-8 shadow-xl shadow-[#d7c5b2]/40 backdrop-blur">
-                        <div class="text-center space-y-2 mb-6">
-                            <div class="inline-flex items-center justify-center h-14 w-14 rounded-2xl bg-gradient-to-br from-[#b58042] to-[#8b5b2e] text-white font-black text-xl shadow-lg shadow-[#b58042]/30 mx-auto">
-                                <i class="fa-solid fa-user text-2xl"></i>
+                    <div class="bg-white rounded-3xl shadow-2xl border border-[#EDE0D0] p-8 sm:p-12">
+                        
+                        <!-- Form Header -->
+                        <div class="text-center mb-8">
+                            <div class="mx-auto mb-5 flex items-center justify-center">
+                                <div class="h-16 w-16 rounded-2xl bg-gradient-to-br from-[#D4A017] to-[#E07A5F] flex items-center justify-center text-white shadow-lg">
+                                    <i class="fa-solid fa-user text-3xl"></i>
+                                </div>
                             </div>
-                            <h2 class="text-2xl font-display font-semibold text-[#3f2b1b]">Selamat Datang</h2>
-                            <p class="text-sm text-[#7a5b3a]">Masuk ke akun Alter Studio Anda</p>
-                            <a href="/" class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[#d7c5b2] text-[#5c432c] font-semibold hover:bg-[#f7efe6] text-xs transition-all">
+                            <h2 class="font-display text-4xl font-semibold text-[#3F2B1B] tracking-tight">Selamat Datang Kembali</h2>
+                            <p class="text-[#7A5B3A] mt-2">Masuk ke akun Alter Studio Anda</p>
+                        </div>
+
+                        <!-- Tombol Kembali ke Landing Page -->
+                        <div class="flex justify-center mb-8">
+                            <a href="/" 
+                               class="inline-flex items-center gap-2 px-6 py-3 rounded-2xl border border-[#E1D3C5] text-[#5C432C] hover:border-[#D4A017] hover:text-[#D4A017] hover:bg-white transition-all text-sm font-medium">
                                 <i class="fa-solid fa-arrow-left"></i>
-                                Kembali ke Landing
+                                <span>Kembali ke Landing Page</span>
                             </a>
                         </div>
 
-                        <x-auth-session-status class="mb-4 text-emerald-600 bg-emerald-50 p-3 rounded-lg text-sm" :status="session('status')" />
+                        <!-- Session Status -->
+                        <x-auth-session-status class="mb-6 text-emerald-700 bg-emerald-50 border border-emerald-100 p-4 rounded-2xl text-sm" :status="session('status')" />
 
-                        <form method="POST" action="{{ route('login') }}" class="space-y-4">
+                        <form method="POST" action="{{ route('login') }}" class="space-y-6">
                             @csrf
 
                             <!-- Email -->
                             <div class="space-y-2">
-                                <label for="email" class="block text-sm font-medium text-[#6f5134]">Email</label>
+                                <label for="email" class="block text-sm font-medium text-[#5C432C]">Email</label>
                                 <div class="relative">
-                                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-[#b58042]">
+                                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-[#D4A017]">
                                         <i class="fa-solid fa-envelope"></i>
                                     </span>
-                                    <x-text-input id="email" 
-                                        class="block w-full pl-10 pr-4 py-3 bg-[#fdf8f2] border border-[#d7c5b2] rounded-xl text-[#1c2432] placeholder:text-[#b39b82] focus:border-[#b58042] focus:ring-[#b58042]" 
-                                        type="email" 
-                                        name="email" 
-                                        :value="old('email')" 
-                                        required autofocus 
+                                    <x-text-input id="email"
+                                        class="block w-full pl-11 pr-4 py-4 bg-[#FAF6F0] border border-[#E1D3C5] rounded-2xl text-[#3F2B1B] placeholder:text-[#9C7C5E] focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/30 transition-all"
+                                        type="email"
+                                        name="email"
+                                        :value="old('email')"
+                                        required autofocus
                                         placeholder="nama@email.com" />
                                 </div>
                                 <x-input-error :messages="$errors->get('email')" class="text-rose-500 text-sm" />
@@ -79,83 +104,82 @@
 
                             <!-- Password -->
                             <div class="space-y-2">
-                                <label for="password" class="block text-sm font-medium text-[#6f5134]">Password</label>
+                                <label for="password" class="block text-sm font-medium text-[#5C432C]">Password</label>
                                 <div class="relative">
-                                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-[#b58042]">
+                                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-[#D4A017]">
                                         <i class="fa-solid fa-lock"></i>
                                     </span>
-                                    <x-text-input id="password" 
-                                        class="block w-full pl-10 pr-12 py-3 bg-[#fdf8f2] border border-[#d7c5b2] rounded-xl text-[#1c2432] placeholder:text-[#b39b82] focus:border-[#b58042] focus:ring-[#b58042]"
+                                    <x-text-input id="password"
+                                        class="block w-full pl-11 pr-12 py-4 bg-[#FAF6F0] border border-[#E1D3C5] rounded-2xl text-[#3F2B1B] placeholder:text-[#9C7C5E] focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/30 transition-all"
                                         type="password"
                                         name="password"
                                         required autocomplete="current-password"
-                                        placeholder="********" />
-                                    <button type="button"
-                                            id="toggle-password"
-                                            class="absolute right-3 top-1/2 -translate-y-1/2 text-[#8b7359] hover:text-[#5c432c] transition-colors"
-                                            aria-label="Tampilkan password">
+                                        placeholder="••••••••" />
+                                    <button type="button" id="toggle-password"
+                                        class="absolute right-4 top-1/2 -translate-y-1/2 text-[#8B7359] hover:text-[#5C432C] transition-colors">
                                         <i id="toggle-password-icon" class="fa-solid fa-eye"></i>
                                     </button>
                                 </div>
                                 <x-input-error :messages="$errors->get('password')" class="text-rose-500 text-sm" />
                             </div>
 
-                            <!-- Remember & Forgot -->
-                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-sm">
+                            <!-- Remember Me & Forgot Password -->
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-sm">
                                 <label for="remember_me" class="inline-flex items-center gap-2 cursor-pointer">
                                     <input id="remember_me" type="checkbox" 
-                                        class="rounded bg-[#fdf8f2] border-[#d7c5b2] text-[#b58042] focus:ring-[#b58042] focus:ring-offset-0"
-                                        name="remember">
-                                    <span class="text-[#6f5134]">Ingat saya</span>
+                                           class="w-5 h-5 rounded-xl border-[#E1D3C5] text-[#D4A017] focus:ring-[#D4A017]"
+                                           name="remember">
+                                    <span class="text-[#5C432C]">Ingat saya</span>
                                 </label>
-                                
+
                                 @if (Route::has('password.request'))
-                                    <a class="text-[#b58042] hover:text-[#8b5b2e] font-medium inline-flex items-center gap-1" href="{{ route('password.request') }}">
-                                        <i class="fa-solid fa-circle-question"></i>
+                                    <a href="{{ route('password.request') }}" 
+                                       class="text-[#D4A017] hover:text-[#E07A5F] font-medium flex items-center gap-1 transition-colors">
+                                        <i class="fa-solid fa-key"></i>
                                         Lupa password?
                                     </a>
                                 @endif
                             </div>
 
-                            <!-- Submit Button -->
-                            <button type="submit" 
-                                    class="w-full inline-flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl bg-gradient-to-r from-[#b58042] to-[#8b5b2e] text-white font-semibold shadow-lg shadow-[#b58042]/30 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 mt-2">
+                            <!-- Login Button -->
+                            <button type="submit"
+                                    class="w-full mt-4 py-4 rounded-2xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] text-white font-semibold text-lg shadow-lg shadow-[#D4A017]/30 hover:shadow-xl hover:-translate-y-0.5 transition-all flex items-center justify-center gap-3">
                                 <i class="fa-solid fa-arrow-right-to-bracket"></i>
-                                Masuk
+                                Masuk Sekarang
                             </button>
 
                             <!-- Register Link -->
-                            <p class="text-center text-sm text-[#7a5b3a] mt-4">
-                                Belum punya akun?
+                            <p class="text-center text-sm text-[#7A5B3A] mt-6">
+                                Belum punya akun? 
                                 @if (Route::has('register'))
-                                    <a href="{{ route('register') }}" class="text-[#b58042] hover:text-[#8b5b2e] font-semibold inline-flex items-center gap-1">
+                                    <a href="{{ route('register') }}" 
+                                       class="text-[#D4A017] font-semibold hover:text-[#E07A5F] transition-colors">
                                         Daftar sekarang
-                                        <i class="fa-solid fa-arrow-right text-xs"></i>
                                     </a>
                                 @endif
                             </p>
                         </form>
                     </div>
                 </div>
+
             </div>
         </div>
     </div>
 
+    <!-- Password Toggle Script -->
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const toggleBtn = document.getElementById('toggle-password');
             const passwordInput = document.getElementById('password');
             const toggleIcon = document.getElementById('toggle-password-icon');
 
-            if (!toggleBtn || !passwordInput || !toggleIcon) {
-                return;
-            }
+            if (!toggleBtn || !passwordInput || !toggleIcon) return;
 
             toggleBtn.addEventListener('click', function () {
                 const isHidden = passwordInput.type === 'password';
                 passwordInput.type = isHidden ? 'text' : 'password';
-                toggleIcon.className = isHidden ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
-                toggleBtn.setAttribute('aria-label', isHidden ? 'Sembunyikan password' : 'Tampilkan password');
+                toggleIcon.classList.toggle('fa-eye', !isHidden);
+                toggleIcon.classList.toggle('fa-eye-slash', isHidden);
             });
         });
     </script>

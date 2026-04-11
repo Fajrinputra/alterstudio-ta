@@ -19,9 +19,14 @@ class StudioLocation extends Model
         'address',
         'description',
         'map_url',
-        'photo_path',
-        'photo_gallery',
         'is_active',
+        'city',
+        'phone',
+        'email',
+        'latitude',
+        'longitude',
+        'facilities',
+        'photo_gallery',
     ];
 
     protected $casts = [
@@ -38,5 +43,29 @@ class StudioLocation extends Model
     public function bookings(): HasMany
     {
         return $this->hasMany(Booking::class, 'studio_location_id');
+    }
+
+    public function getPhotoGalleryAttribute($value): array
+    {
+        return collect(is_array($value) ? $value : (json_decode((string) $value, true) ?: []))
+            ->map(function ($item) {
+                if (is_string($item)) {
+                    return $item;
+                }
+
+                if (is_array($item)) {
+                    return $item['path'] ?? null;
+                }
+
+                return null;
+            })
+            ->filter()
+            ->values()
+            ->all();
+    }
+
+    public function getPhotoPathAttribute($value): ?string
+    {
+        return collect($this->photo_gallery)->first();
     }
 }

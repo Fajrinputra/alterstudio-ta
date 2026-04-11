@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\ServicePackage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\Rule;
 
 /**
  * CRUD paket layanan + manajemen file gambar paket.
@@ -27,6 +26,8 @@ class ServicePackageController extends Controller
         // Validasi + normalisasi field paket.
         $data = $this->prepareData($request);
         $package = ServicePackage::create($data);
+        $this->syncFeatures($package, $data['features'] ?? []);
+        $this->syncAddons($package, $data['addons'] ?? []);
         $this->handleOverviewImage($request, $package);
         $this->syncGallery($request, $package);
 
@@ -59,6 +60,8 @@ class ServicePackageController extends Controller
         // Update data paket tanpa memaksa ganti file.
         $data = $this->prepareData($request, $servicePackage->id);
         $servicePackage->update($data);
+        $this->syncFeatures($servicePackage, $data['features'] ?? []);
+        $this->syncAddons($servicePackage, $data['addons'] ?? []);
         $this->handleOverviewImage($request, $servicePackage);
         $this->syncGallery($request, $servicePackage);
 
@@ -115,6 +118,7 @@ class ServicePackageController extends Controller
             'addons' => ['nullable', 'array'],
             'addons.*.label' => ['nullable', 'string', 'max:255'],
             'addons.*.price' => ['nullable', 'integer', 'min:0'],
+            'addons.*.unit' => ['nullable', 'string', 'max:50'],
             'terms' => ['nullable', 'string'],
             'overview_image' => ['nullable', 'image', 'max:20480'],
             'is_active' => ['boolean'],
@@ -125,6 +129,7 @@ class ServicePackageController extends Controller
 
         $validated['features'] = $this->toArray($validated['features'] ?? null, "\n");
         $validated['addons'] = $this->normalizeAddons($validated['addons'] ?? []);
+        $validated['is_active'] = $request->boolean('is_active');
 
         // file ditangani terpisah
         unset($validated['gallery'], $validated['overview_image']);
@@ -161,6 +166,7 @@ class ServicePackageController extends Controller
                 return [
                     'label' => $label,
                     'price' => max(0, $price),
+                    'unit' => trim((string) ($addon['unit'] ?? '')),
                 ];
             })
             ->filter()
@@ -182,25 +188,37 @@ class ServicePackageController extends Controller
 
         $existing = $this->cleanedGallery($package->gallery);
         $merged = array_slice(array_merge($existing, $paths), 0, 20);
-        $package->update(['gallery' => $merged]);
+        $this->syncGalleryItems($package, $merged);
     }
 
     protected function handleOverviewImage(Request $request, ServicePackage $package): void
     {
         // Mendukung hapus overview atau ganti overview.
         if ($request->boolean('remove_overview')) {
-            if ($package->overview_image) {
-                Storage::disk('public')->delete($package->overview_image);
+            $gallery = collect($package->gallery)->filter()->values();
+            $cover = $package->overview_image;
+
+            if ($cover) {
+                Storage::disk('public')->delete($cover);
+                $gallery = $gallery->reject(fn ($path) => $path === $cover)->values();
+                $this->syncGalleryItems($package, $gallery->all());
             }
-            $package->update(['overview_image' => null]);
         }
 
         if ($request->hasFile('overview_image')) {
             $path = $request->file('overview_image')->storePublicly("packages/{$package->id}/overview", 'public');
-            if ($package->overview_image) {
-                Storage::disk('public')->delete($package->overview_image);
+            $previousCover = $package->overview_image;
+            if ($previousCover) {
+                Storage::disk('public')->delete($previousCover);
             }
-            $package->update(['overview_image' => $path]);
+
+            $gallery = collect($package->gallery)->filter()->values()->all();
+            if ($previousCover) {
+                $gallery = array_values(array_filter($gallery, fn ($item) => $item !== $previousCover));
+            }
+            array_unshift($gallery, $path);
+            $gallery = array_values(array_unique($gallery));
+            $this->syncGalleryItems($package, $gallery, $path);
         }
     }
 
@@ -219,5 +237,35 @@ class ServicePackageController extends Controller
             ->filter()
             ->values()
             ->all();
+    }
+
+    protected function syncFeatures(ServicePackage $package, array $features): void
+    {
+        $package->update([
+            'features' => array_values(array_filter(array_map('trim', $features), fn ($value) => $value !== '')),
+        ]);
+    }
+
+    protected function syncAddons(ServicePackage $package, array $addons): void
+    {
+        $package->update([
+            'addons' => array_values(array_map(function ($addon) {
+                return [
+                    'label' => trim((string) ($addon['label'] ?? '')),
+                    'price' => (int) ($addon['price'] ?? 0),
+                    'unit' => trim((string) ($addon['unit'] ?? '')),
+                    'is_active' => (bool) ($addon['is_active'] ?? true),
+                ];
+            }, $addons)),
+        ]);
+    }
+
+    protected function syncGalleryItems(ServicePackage $package, array $paths, ?string $coverPath = null): void
+    {
+        $cover = $coverPath ?? ($paths[0] ?? null);
+        $package->update([
+            'gallery' => array_values(array_filter($paths)),
+            'cover_image' => $cover,
+        ]);
     }
 }

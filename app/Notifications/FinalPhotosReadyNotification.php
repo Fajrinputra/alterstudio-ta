@@ -31,7 +31,7 @@ class FinalPhotosReadyNotification extends Notification implements ShouldQueue
         $packageName = $booking?->package?->name ?? 'Paket';
 
         return (new MailMessage)
-            ->subject('[Alter Studio] Foto final telah diterima')
+            ->subject('[Alter Studio] Foto final Anda sudah siap')
             ->greeting('Halo '.$notifiable->name.',')
             ->line('Hasil edit final Anda sudah tersedia.')
             ->line('Paket: '.$packageName)
