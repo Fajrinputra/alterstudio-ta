@@ -51,7 +51,6 @@ Route::middleware('auth')->group(function () {
         Route::get('/admin/bookings', [\App\Http\Controllers\BookingController::class, 'index']);
         Route::post('/projects/{project}/schedule', [\App\Http\Controllers\ScheduleController::class, 'store']);
         Route::put('/projects/{project}/schedule', [\App\Http\Controllers\ScheduleController::class, 'update'])->name('projects.schedule.update');
-        Route::delete('/projects/{project}/schedule', [\App\Http\Controllers\ScheduleController::class, 'destroy'])->name('projects.schedule.destroy');
     });
 
     // Kelola pengguna dan cabang hanya untuk manajer

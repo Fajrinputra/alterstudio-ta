@@ -16,7 +16,7 @@ class PhotoSelectionLimitTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_client_cannot_select_more_than_five_photos(): void
+    public function test_client_cannot_select_more_than_ten_photos(): void
     {
         $package = ServicePackage::factory()->create();
         $client = User::factory()->create(['role' => Role::CLIENT]);
@@ -29,12 +29,12 @@ class PhotoSelectionLimitTest extends TestCase
 
         $project = Project::factory()->create(['booking_id' => $booking->id]);
 
-        MediaAsset::factory()->count(6)->create(['project_id' => $project->id]);
+        MediaAsset::factory()->count(11)->create(['project_id' => $project->id]);
 
         $assets = MediaAsset::where('project_id', $project->id)->get();
 
-        // Seed 5 selections
-        foreach ($assets->take(5) as $asset) {
+        // Seed 10 selections
+        foreach ($assets->take(10) as $asset) {
             PhotoSelection::create([
                 'project_id' => $project->id,
                 'client_id' => $client->id,
@@ -42,13 +42,13 @@ class PhotoSelectionLimitTest extends TestCase
             ]);
         }
 
-        $sixth = $assets->last();
+        $eleventh = $assets->last();
 
         $this->actingAs($client)
             ->post("/projects/{$project->id}/selections", [
-                'media_asset_id' => $sixth->id,
+                'media_asset_id' => $eleventh->id,
             ])
             ->assertRedirect()
-            ->assertSessionHas('error', 'Maksimum 5 foto dapat dipilih.');
+            ->assertSessionHas('error', 'Maksimum 10 foto dapat dipilih.');
     }
 }

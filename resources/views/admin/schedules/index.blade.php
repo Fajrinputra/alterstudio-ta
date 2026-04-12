@@ -411,9 +411,9 @@
                                     </div>
 
                                     @if($canManageSchedule)
-                                        <div x-data="{ showDeleteSchedule: false }" class="mt-8 grid md:grid-cols-4 gap-6 items-end">
+                                        <div class="mt-8">
                                             <form method="POST" action="{{ route('projects.schedule.update', $project) }}" 
-                                                  class="grid md:grid-cols-3 md:col-span-3 gap-6 items-end">
+                                                  class="grid md:grid-cols-4 gap-6 items-end">
                                                 @csrf
                                                 @method('PUT')
                                                 <!-- Photographer, Editor, Room fields (sama seperti atas, tapi disingkat untuk ruang) -->
@@ -445,15 +445,10 @@
                                                     <i class="fa-solid fa-pen-to-square"></i> Simpan Perubahan
                                                 </button>
                                             </form>
-                                            
-                                            <button type="button" @click="showDeleteSchedule = true"
-                                                    class="h-14 rounded-3xl bg-red-600 text-white font-semibold hover:bg-red-700 transition-all flex items-center justify-center gap-3">
-                                                <i class="fa-solid fa-trash"></i> Hapus Jadwal
-                                            </button>
                                         </div>
                                     @else
                                         <p class="text-xs text-[#8B7359] mt-6 px-2">
-                                            Jadwal tidak dapat diubah karena project sudah memasuki tahap produksi atau final.
+                                            Jadwal tidak dapat diubah karena project sudah memasuki tahap produksi, final, atau pemesanan telah dibatalkan.
                                         </p>
                                     @endif
                                 @endif

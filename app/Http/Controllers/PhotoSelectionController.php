@@ -13,7 +13,7 @@ use Illuminate\Http\Request;
  */
 class PhotoSelectionController extends Controller
 {
-    /** Client memilih foto (max 5) hanya untuk project miliknya. */
+    /** Client memilih foto (max 10) hanya untuk project miliknya. */
     public function store(Request $request, Project $project)
     {
         $user = $request->user();
@@ -33,7 +33,7 @@ class PhotoSelectionController extends Controller
             ->where('project_id', $project->id)
             ->firstOrFail();
 
-        // Toggle: jika sudah dipilih, hapus. Jika belum, tambahkan (maks 5).
+        // Toggle: jika sudah dipilih, hapus. Jika belum, tambahkan (maks 10).
         $existing = PhotoSelection::where('project_id', $project->id)
             ->where('client_id', $user->id)
             ->where('media_asset_id', $asset->id)
@@ -44,8 +44,8 @@ class PhotoSelectionController extends Controller
             $message = 'Pilihan dibatalkan.';
         } else {
             $currentCount = PhotoSelection::where('project_id', $project->id)->count();
-            if ($currentCount >= 5) {
-                return back()->with('error', 'Maksimum 5 foto dapat dipilih.');
+            if ($currentCount >= 10) {
+                return back()->with('error', 'Maksimum 10 foto dapat dipilih.');
             }
 
             $selection = PhotoSelection::create([

@@ -5,6 +5,7 @@
             {{ __('Ganti Password') }}
         </h2>
         <p class="text-sm text-[#7A5B3A] mt-2">Gunakan password yang kuat untuk menjaga keamanan akun Anda.</p>
+        <p class="text-xs text-[#A2876A] mt-2">Untuk menyimpan password baru, isi dulu password saat ini sebagai konfirmasi.</p>
     </header>
 
     <form method="post" action="{{ route('password.update') }}" class="space-y-6">
@@ -12,8 +13,8 @@
         @method('put')
 
         {{-- Current Password --}}
-        <div class="space-y-2">
-            <label class="block text-xs font-medium text-[#7A5B3A] tracking-widest">Password Saat Ini</label>
+        <div class="space-y-2 rounded-3xl border border-[#F0DEC8] bg-[#FAF6F0] p-5">
+            <label class="block text-xs font-medium text-[#7A5B3A] tracking-widest">Password Saat Ini (Wajib)</label>
             <div class="relative">
                 <span class="absolute left-5 top-1/2 -translate-y-1/2 text-[#D4A017]">
                     <i class="fa-solid fa-lock"></i>
