@@ -108,13 +108,15 @@ class BusinessRulesSafetyTest extends TestCase
             'booking_date' => now()->addDays(3),
             'booking_time' => '12:00',
             'status' => Booking::STATUS_WAITING_PAYMENT,
+            'confirmed_at' => now()->subMinutes(31),
+            'payment_started_at' => now()->subMinutes(31),
             'payment_type' => Booking::PAYMENT_TYPE_FULL,
             'addon_total' => 0,
             'total_price' => 400000,
         ]);
 
         $booking->forceFill([
-            'created_at' => now()->subMinutes(31),
+            'created_at' => now()->subMinutes(32),
             'updated_at' => now()->subMinutes(31),
         ])->saveQuietly();
 

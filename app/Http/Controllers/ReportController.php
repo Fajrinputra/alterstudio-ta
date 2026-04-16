@@ -149,7 +149,7 @@ class ReportController extends Controller
                 $booking->package->name ?? '-',
                 $booking->client->name ?? '-',
                 $booking->booking_date,
-                $booking->status,
+                $booking->statusLabel(),
                 $booking->total_price,
             ]);
         }

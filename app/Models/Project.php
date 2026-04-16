@@ -97,4 +97,16 @@ class Project extends Model
     {
         return $this->start_at !== null && $this->end_at !== null;
     }
+
+    public function statusLabel(): string
+    {
+        return match ($this->status) {
+            self::STATUS_DRAFT => 'Belum Dijadwalkan',
+            self::STATUS_SCHEDULED => 'Terjadwal',
+            self::STATUS_SHOOT_DONE => 'Sesi Foto Selesai',
+            self::STATUS_EDITING => 'Permintaan Edit Dikirim',
+            self::STATUS_FINAL => 'Hasil Final Siap',
+            default => $this->status,
+        };
+    }
 }

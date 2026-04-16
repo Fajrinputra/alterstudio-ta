@@ -28,7 +28,7 @@
         </a>
 
         <div style="margin-top: 16px; font-size: 12px; line-height: 1.6; color: #F3E2C5;">
-            Studio fotografi untuk pengalaman booking, produksi, dan hasil akhir yang lebih rapi.
+            Studio fotografi untuk pengalaman pemesanan, produksi, dan hasil akhir yang lebih rapi.
         </div>
     </td>
 </tr>

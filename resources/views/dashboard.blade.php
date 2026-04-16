@@ -61,7 +61,7 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                         @php $metrics = $data['metrics'] ?? []; @endphp
                         <x-stat-card label="Total Pemesanan" :value="$metrics['bookings'] ?? 0" />
-                        <x-stat-card label="Menunggu Pembayaran" :value="$metrics['waiting_payment'] ?? 0" color="amber" />
+                        <x-stat-card label="Menunggu Tinjauan / Pembayaran" :value="$metrics['waiting_payment'] ?? 0" color="amber" />
                         <x-stat-card label="Sedang Berjalan" :value="$metrics['in_progress'] ?? 0" color="blue" />
                         <x-stat-card label="Final Siap Unduh" :value="$metrics['final_ready'] ?? 0" color="emerald" />
                     </div>
@@ -92,7 +92,7 @@
                                         <td class="px-8 py-5 text-center">{{ $booking->booking_date->translatedFormat('d M Y') }}</td>
                                         <td class="px-8 py-5 text-center">{{ $booking->package->name ?? '-' }}</td>
                                         <td class="px-8 py-5 text-center">
-                                            <x-status-badge :status="$booking->status" />
+                                            <x-status-badge :status="$booking->status" :confirmed-at="$booking->confirmed_at" />
                                         </td>
                                         <td class="px-8 py-5 text-center">{{ $booking->project?->status ?? '-' }}</td>
                                     </tr>
@@ -114,7 +114,7 @@
                 <section>
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
                         <x-stat-card label="Total Pemesanan" :value="$data['metrics']['bookings'] ?? 0" />
-                        <x-stat-card label="Menunggu Pembayaran" :value="$data['metrics']['waiting_payment'] ?? 0" color="amber" />
+                        <x-stat-card label="Pengajuan & Pembayaran" :value="$data['metrics']['waiting_payment'] ?? 0" color="amber" />
                         <x-stat-card label="Project Final" :value="$data['metrics']['projects_final'] ?? 0" color="emerald" />
                     </div>
                 </section>
@@ -130,7 +130,7 @@
                             @foreach(['WAITING_PAYMENT','DP_PAID','PAID','CANCELLED'] as $status)
                                 @php
                                     $labels = [
-                                        'WAITING_PAYMENT' => 'Menunggu Pembayaran',
+                                        'WAITING_PAYMENT' => 'Diajukan / Dikonfirmasi',
                                         'DP_PAID' => 'DP Dibayar',
                                         'PAID' => 'Lunas',
                                         'CANCELLED' => 'Dibatalkan',

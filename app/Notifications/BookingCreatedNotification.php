@@ -35,7 +35,7 @@ class BookingCreatedNotification extends Notification implements ShouldQueue
         $isClientRecipient = (int) ($notifiable->id ?? 0) === (int) $booking->client_id;
 
         return (new MailMessage)
-            ->subject("[Alter Studio] Booking #{$booking->id} - {$packageName}")
+            ->subject("[Alter Studio] Pemesanan #{$booking->id} - {$packageName}")
             ->markdown('mail.booking.created', [
                 'booking' => $booking,
                 'packageName' => $packageName,

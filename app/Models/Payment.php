@@ -43,4 +43,15 @@ class Payment extends Model
     {
         return $this->belongsTo(Booking::class);
     }
+
+    public function statusLabel(): string
+    {
+        return match ($this->status) {
+            self::STATUS_PENDING => 'Menunggu Pembayaran',
+            self::STATUS_PAID => 'Lunas',
+            self::STATUS_EXPIRED => 'Kedaluwarsa',
+            self::STATUS_FAILED => 'Gagal',
+            default => $this->status,
+        };
+    }
 }

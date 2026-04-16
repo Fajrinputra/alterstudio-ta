@@ -41,7 +41,7 @@
                             <i class="fa-solid fa-circle-check text-[#D4A017] mt-1 text-xl"></i>
                             <div>
                                 <p class="font-medium">Jadwal Anti-Bentrok</p>
-                                <p class="text-sm text-[#7A5B3A]">Booking kru & studio real-time</p>
+                                <p class="text-sm text-[#7A5B3A]">Pemesanan kru & studio real-time</p>
                             </div>
                         </div>
                         <div class="flex items-start gap-4">

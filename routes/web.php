@@ -30,6 +30,7 @@ Route::middleware('auth')->group(function () {
     // Client booking flow
     Route::middleware('role:CLIENT')->group(function () {
         Route::get('/bookings/create', [\App\Http\Controllers\BookingController::class, 'create'])->name('bookings.create');
+        Route::get('/bookings/availability', [\App\Http\Controllers\BookingController::class, 'availability'])->name('bookings.availability');
         Route::post('/bookings', [\App\Http\Controllers\BookingController::class, 'store'])->name('bookings.store');
         Route::get('/bookings', [\App\Http\Controllers\BookingController::class, 'index'])->name('bookings.index');
         Route::get('/bookings/{booking}', [\App\Http\Controllers\BookingController::class, 'show'])->name('bookings.show');
@@ -73,6 +74,9 @@ Route::middleware('auth')->group(function () {
         Route::post('/admin/locations/room', [\App\Http\Controllers\Admin\StudioLocationController::class, 'storeRoom'])->name('admin.locations.room.store');
         Route::put('/admin/locations/room/{studioRoom}', [\App\Http\Controllers\Admin\StudioLocationController::class, 'updateRoom'])->name('admin.locations.room.update');
         Route::delete('/admin/locations/room/{studioRoom}', [\App\Http\Controllers\Admin\StudioLocationController::class, 'destroyRoom'])->name('admin.locations.room.destroy');
+        Route::post('/admin/locations/holidays', [\App\Http\Controllers\Admin\StudioLocationController::class, 'storeHoliday'])->name('admin.locations.holidays.store');
+        Route::put('/admin/locations/holidays/{studioHoliday}', [\App\Http\Controllers\Admin\StudioLocationController::class, 'updateHoliday'])->name('admin.locations.holidays.update');
+        Route::delete('/admin/locations/holidays/{studioHoliday}', [\App\Http\Controllers\Admin\StudioLocationController::class, 'destroyHoliday'])->name('admin.locations.holidays.destroy');
     });
 
     // Kelola katalog untuk admin + manajer

@@ -21,6 +21,24 @@
     <div class="max-w-6xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
         
         {{-- Session Messages --}}
+        @if(request('paid'))
+            <div class="mb-6 p-5 bg-emerald-50 border border-emerald-200 rounded-3xl shadow-sm">
+                <div class="flex gap-3 text-emerald-700">
+                    <i class="fa-solid fa-circle-check text-emerald-500 mt-0.5 text-xl"></i>
+                    <p class="font-medium">Pembayaran berhasil diproses. Status pemesanan sudah diperbarui.</p>
+                </div>
+            </div>
+        @endif
+
+        @if(request('pending'))
+            <div class="mb-6 p-5 bg-amber-50 border border-amber-200 rounded-3xl shadow-sm">
+                <div class="flex gap-3 text-amber-700">
+                    <i class="fa-solid fa-hourglass-half text-amber-500 mt-0.5 text-xl"></i>
+                    <p class="font-medium">Pembayaran masih menunggu penyelesaian. Silakan cek kembali status transaksi Anda.</p>
+                </div>
+            </div>
+        @endif
+
         @if(session('success'))
             <div class="mb-6 p-5 bg-emerald-50 border border-emerald-200 rounded-3xl shadow-sm">
                 <div class="flex gap-3 text-emerald-700">
@@ -39,42 +57,35 @@
             </div>
         @endif
 
-        {{-- Booking List --}}
+        {{-- Daftar Pemesanan --}}
         <div class="space-y-8">
             @forelse($bookings as $booking)
                 @php
                     $project = $booking->project;
-                    $projectStatus = $project?->status ?? 'DRAFT';
-                    $statusMap = [
-                        'DRAFT' => 'Menunggu jadwal',
-                        'SCHEDULED' => 'Terjadwal',
-                        'SHOOT_DONE' => 'Sesi Foto Selesai',
-                        'EDITING' => 'Permintaan edit dikirimkan',
-                        'FINAL' => 'Foto hasil edit diunggah',
-                    ];
-                    $statusText = $statusMap[$projectStatus] ?? $projectStatus;
+                    $statusText = $project?->statusLabel() ?? 'Belum Dijadwalkan';
                     
                     $rawAssets = $project?->mediaAssets->where('type','RAW')->sortBy('version') ?? collect();
                     $finalAssets = $project?->mediaAssets->where('type','FINAL')->sortBy('version') ?? collect();
                     $selections = $project?->selections ?? collect();
                     $selectedIds = $selections->pluck('media_asset_id')->all();
-                    $remaining = 5 - $selections->count();
+                    $remaining = 10 - $selections->count();
                     $locked = $project?->selections_locked;
+                    $paidAmount = $booking->paidAmount();
+                    $remainingAmount = $booking->remainingAmount();
                     
-                    $bookingStatus = [
-                        'WAITING_PAYMENT' => 'Menunggu Pembayaran',
-                        'DP_PAID' => 'Pembayaran DP',
-                        'PAID' => 'Pembayaran LUNAS',
-                        'CANCELLED' => 'Dibatalkan',
-                    ][$booking->status] ?? $booking->status;
+                    $bookingStatus = $booking->statusLabel();
                     
                     $statusColors = [
-                        'WAITING_PAYMENT' => 'bg-amber-100 text-amber-700 border-amber-200',
+                        'SUBMITTED' => 'bg-amber-100 text-amber-700 border-amber-200',
+                        'WAITING_PAYMENT' => 'bg-sky-100 text-sky-700 border-sky-200',
                         'DP_PAID' => 'bg-blue-100 text-blue-700 border-blue-200',
                         'PAID' => 'bg-emerald-100 text-emerald-700 border-emerald-200',
                         'CANCELLED' => 'bg-red-100 text-red-700 border-red-200',
                     ];
-                    $statusColor = $statusColors[$booking->status] ?? 'bg-[#FAF6F0] text-[#5C432C] border-[#EDE0D0]';
+                    $statusKey = $booking->isSubmitted()
+                        ? 'SUBMITTED'
+                        : ($booking->isConfirmedAwaitingPayment() ? 'WAITING_PAYMENT' : $booking->status);
+                    $statusColor = $statusColors[$statusKey] ?? 'bg-[#FAF6F0] text-[#5C432C] border-[#EDE0D0]';
                 @endphp
 
                 <div class="bg-white rounded-3xl border border-[#EDE0D0] shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden">
@@ -134,7 +145,23 @@
                     <div class="p-8 space-y-8">
                         
                         {{-- Payment Pending Alert --}}
-                        @if($booking->status === 'WAITING_PAYMENT')
+                        @if($booking->isSubmitted())
+                            <div class="bg-amber-50 border border-amber-200 rounded-3xl p-6">
+                                <div class="flex flex-col sm:flex-row sm:items-center gap-6">
+                                    <div class="flex items-center gap-4">
+                                        <div class="w-12 h-12 rounded-2xl bg-amber-100 flex items-center justify-center">
+                                            <i class="fa-solid fa-hourglass-half text-amber-600 text-2xl"></i>
+                                        </div>
+                                        <div>
+                                            <p class="font-semibold text-amber-800">Pemesanan Sedang Ditinjau</p>
+                                            <p class="text-sm text-amber-600">Admin akan meninjau jadwal yang Anda ajukan terlebih dahulu. Pembayaran akan dibuka setelah pemesanan dikonfirmasi.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+
+                        @if($booking->isConfirmedAwaitingPayment())
                             <div class="bg-amber-50 border border-amber-200 rounded-3xl p-6">
                                 <div class="flex flex-col sm:flex-row sm:items-center gap-6">
                                     <div class="flex items-center gap-4">
@@ -142,13 +169,33 @@
                                             <i class="fa-solid fa-clock text-amber-600 text-2xl"></i>
                                         </div>
                                         <div>
-                                            <p class="font-semibold text-amber-800">Menunggu Pembayaran</p>
-                                            <p class="text-sm text-amber-600">Segera selesaikan pembayaran agar sesi foto dapat dijadwalkan.</p>
+                                            <p class="font-semibold text-amber-800">Pemesanan Sudah Dikonfirmasi</p>
+                                            <p class="text-sm text-amber-600">Lanjutkan pembayaran dalam waktu 30 menit sejak konfirmasi admin agar sesi foto dapat diproses.</p>
                                         </div>
                                     </div>
                                     <a href="{{ route('bookings.pay', $booking) }}" 
                                        class="sm:ml-auto px-8 py-4 rounded-3xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] text-white font-semibold hover:brightness-110 transition-all">
-                                        Bayar Sekarang
+                                        Lanjutkan Pembayaran
+                                    </a>
+                                </div>
+                            </div>
+                        @endif
+
+                        @if($booking->status === 'DP_PAID' && $remainingAmount > 0)
+                            <div class="bg-blue-50 border border-blue-200 rounded-3xl p-6">
+                                <div class="flex flex-col sm:flex-row sm:items-center gap-6">
+                                    <div class="flex items-center gap-4">
+                                        <div class="w-12 h-12 rounded-2xl bg-blue-100 flex items-center justify-center">
+                                            <i class="fa-solid fa-wallet text-blue-600 text-2xl"></i>
+                                        </div>
+                                        <div>
+                                            <p class="font-semibold text-blue-800">DP Sudah Diterima</p>
+                                            <p class="text-sm text-blue-600">Sudah dibayar Rp {{ number_format($paidAmount) }}. Sisa pelunasan Rp {{ number_format($remainingAmount) }}.</p>
+                                        </div>
+                                    </div>
+                                    <a href="{{ route('bookings.pay', $booking) }}"
+                                       class="sm:ml-auto px-8 py-4 rounded-3xl bg-gradient-to-r from-[#3B82F6] to-[#2563EB] text-white font-semibold hover:brightness-110 transition-all">
+                                        Lunasi Sekarang
                                     </a>
                                 </div>
                             </div>
@@ -164,7 +211,7 @@
                                         </div>
                                         <div>
                                             <h4 class="font-semibold text-[#3F2B1B]">Foto RAW dari Fotografer</h4>
-                                            <p class="text-sm text-[#7A5B3A]">Pilih hingga 5 foto terbaik untuk diedit</p>
+                                            <p class="text-sm text-[#7A5B3A]">Pilih hingga 10 foto terbaik untuk diedit</p>
                                         </div>
                                     </div>
                                     <a href="{{ route('projects.raw.download', $project) }}" 

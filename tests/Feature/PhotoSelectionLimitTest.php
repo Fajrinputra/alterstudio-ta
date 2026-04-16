@@ -51,4 +51,31 @@ class PhotoSelectionLimitTest extends TestCase
             ->assertRedirect()
             ->assertSessionHas('error', 'Maksimum 10 foto dapat dipilih.');
     }
+
+    public function test_client_can_only_select_raw_photos_for_editing(): void
+    {
+        $package = ServicePackage::factory()->create();
+        $client = User::factory()->create(['role' => Role::CLIENT]);
+
+        $booking = Booking::factory()->create([
+            'client_id' => $client->id,
+            'package_id' => $package->id,
+            'status' => 'PAID',
+        ]);
+
+        $project = Project::factory()->create(['booking_id' => $booking->id]);
+
+        $finalAsset = MediaAsset::factory()->create([
+            'project_id' => $project->id,
+            'type' => MediaAsset::TYPE_FINAL,
+            'path' => "projects/{$project->id}/FINAL/final.jpg",
+        ]);
+
+        $this->actingAs($client)
+            ->post("/projects/{$project->id}/selections", [
+                'media_asset_id' => $finalAsset->id,
+            ])
+            ->assertRedirect()
+            ->assertSessionHas('error', 'Hanya foto RAW yang dapat dipilih untuk diedit.');
+    }
 }

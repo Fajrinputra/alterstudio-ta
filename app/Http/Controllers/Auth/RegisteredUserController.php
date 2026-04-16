@@ -18,16 +18,14 @@ use Illuminate\View\View;
  */
 class RegisteredUserController extends Controller
 {
-    /**
-     * Display the registration view.
-     */
+    /** Menampilkan halaman registrasi akun. */
     public function create(): View
     {
         return view('auth.register');
     }
 
     /**
-     * Handle an incoming registration request.
+     * Menangani proses registrasi akun baru.
      *
      * @throws \Illuminate\Validation\ValidationException
      */

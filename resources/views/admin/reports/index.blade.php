@@ -181,8 +181,12 @@
                                         <td class="px-6 py-5">{{ $b->client->name ?? '-' }}</td>
                                         <td class="px-6 py-5 text-center">{{ optional($b->booking_date)->format('d M Y') }}</td>
                                         @php
+                                            $reportStatusKey = $b->isSubmitted()
+                                                ? 'SUBMITTED'
+                                                : ($b->isConfirmedAwaitingPayment() ? 'WAITING_PAYMENT' : $b->status);
                                             $statusLabels = [
-                                                'WAITING_PAYMENT' => 'Menunggu Pembayaran',
+                                                'SUBMITTED' => 'Diajukan',
+                                                'WAITING_PAYMENT' => 'Dikonfirmasi',
                                                 'DP_PAID' => 'DP Dibayar',
                                                 'PAID' => 'Lunas',
                                                 'CANCELLED' => 'Dibatalkan',
@@ -190,15 +194,16 @@
                                                 'FAILED' => 'Gagal',
                                             ];
                                             $statusColors = [
-                                                'WAITING_PAYMENT' => 'bg-amber-100 text-amber-700',
+                                                'SUBMITTED' => 'bg-amber-100 text-amber-700',
+                                                'WAITING_PAYMENT' => 'bg-sky-100 text-sky-700',
                                                 'DP_PAID' => 'bg-blue-100 text-blue-700',
                                                 'PAID' => 'bg-emerald-100 text-emerald-700',
                                                 'CANCELLED' => 'bg-red-100 text-red-700',
                                             ];
                                         @endphp
                                         <td class="px-6 py-5 text-center">
-                                            <span class="inline-block px-5 py-2 rounded-3xl text-xs font-medium {{ $statusColors[$b->status] ?? 'bg-gray-100 text-gray-700' }}">
-                                                {{ $statusLabels[$b->status] ?? $b->status }}
+                                            <span class="inline-block px-5 py-2 rounded-3xl text-xs font-medium {{ $statusColors[$reportStatusKey] ?? 'bg-gray-100 text-gray-700' }}">
+                                                {{ $statusLabels[$reportStatusKey] ?? $reportStatusKey }}
                                             </span>
                                         </td>
                                         <td class="px-6 py-5 font-medium text-[#3F2B1B]">

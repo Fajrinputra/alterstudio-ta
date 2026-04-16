@@ -174,7 +174,7 @@
                     <div class="bg-gradient-to-br from-[#D4A017] via-[#E07A5F] to-[#B56D3E] rounded-3xl p-8 text-white shadow-xl">
                         <h3 class="font-display text-3xl mb-3">Siap Abadikan Momen?</h3>
                         <p class="text-white/90 mb-8 leading-relaxed">
-                            Pilih paket favorit Anda dan booking sesi foto di studio ini sekarang.
+                            Pilih paket favorit Anda dan lakukan pemesanan sesi foto di studio ini sekarang.
                         </p>
                         <a href="{{ route('catalog.public') }}" 
                            class="block w-full py-4 text-center bg-white text-[#3F2B1B] font-semibold rounded-2xl hover:bg-[#F4EDE4] transition-all shadow-lg">

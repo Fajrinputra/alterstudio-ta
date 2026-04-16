@@ -1,8 +1,9 @@
-@props(['status' => ''])
+@props(['status' => '', 'confirmedAt' => null])
 
 @php
     $map = [
-        'WAITING_PAYMENT' => ['bg' => 'bg-amber-50 text-amber-700 border-amber-200', 'dot' => 'bg-amber-500', 'label' => 'Menunggu Pembayaran', 'icon' => 'fa-solid fa-clock'],
+        'WAITING_PAYMENT' => ['bg' => 'bg-sky-50 text-sky-700 border-sky-200', 'dot' => 'bg-sky-500', 'label' => 'Dikonfirmasi', 'icon' => 'fa-solid fa-clock'],
+        'SUBMITTED' => ['bg' => 'bg-amber-50 text-amber-700 border-amber-200', 'dot' => 'bg-amber-500', 'label' => 'Diajukan', 'icon' => 'fa-solid fa-hourglass-half'],
         'DP_PAID' => ['bg' => 'bg-blue-50 text-blue-700 border-blue-200', 'dot' => 'bg-blue-500', 'label' => 'DP Dibayar', 'icon' => 'fa-solid fa-credit-card'],
         'PAID' => ['bg' => 'bg-emerald-50 text-emerald-700 border-emerald-200', 'dot' => 'bg-emerald-500', 'label' => 'Lunas', 'icon' => 'fa-solid fa-circle-check'],
         'CANCELLED' => ['bg' => 'bg-rose-50 text-rose-700 border-rose-200', 'dot' => 'bg-rose-500', 'label' => 'Dibatalkan', 'icon' => 'fa-solid fa-circle-xmark'],
@@ -16,7 +17,8 @@
         'FINAL' => ['bg' => 'bg-emerald-50 text-emerald-700 border-emerald-200', 'dot' => 'bg-emerald-500', 'label' => 'Final', 'icon' => 'fa-solid fa-circle-check'],
     ];
 
-    $badge = $map[$status] ?? ['bg' => 'bg-slate-50 text-slate-700 border-slate-200', 'dot' => 'bg-slate-500', 'label' => $status, 'icon' => 'fa-solid fa-tag'];
+    $statusKey = $status === 'WAITING_PAYMENT' && blank($confirmedAt) ? 'SUBMITTED' : $status;
+    $badge = $map[$statusKey] ?? ['bg' => 'bg-slate-50 text-slate-700 border-slate-200', 'dot' => 'bg-slate-500', 'label' => $statusKey, 'icon' => 'fa-solid fa-tag'];
 @endphp
 
 <span {{ $attributes->class("inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border shadow-sm {$badge['bg']}") }}>

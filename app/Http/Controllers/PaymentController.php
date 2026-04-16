@@ -12,43 +12,65 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 /**
- * Integrasi pembayaran Midtrans + sinkron status booking.
+ * Menangani pembuatan transaksi Midtrans dan sinkronisasi status pembayaran.
  */
 class PaymentController extends Controller
 {
-    /** Generate token Snap (dummy placeholder) untuk bayar booking client/admin. */
+    /** Membuat token Snap untuk pembayaran klien. */
     public function createSnap(Request $request, Booking $booking)
     {
         $this->authorizeBooking($request, $booking);
-
-        if ($booking->status === Booking::STATUS_CANCELLED) {
-            return response()->json([
-                'message' => 'Booking sudah dibatalkan dan tidak dapat dibayar kembali.',
-            ], 422);
-        }
-
-        if ($this->cancelIfPaymentWindowExpired($booking)) {
-            return response()->json([
-                'message' => 'Waktu pembayaran 30 menit sudah habis. Booking dibatalkan otomatis, silakan pesan ulang.',
-            ], 422);
-        }
-
-        if (in_array($booking->status, [Booking::STATUS_PAID, Booking::STATUS_DP_PAID], true)) {
-            return response()->json([
-                'message' => 'Booking sudah memiliki pembayaran terkonfirmasi.',
-            ], 422);
-        }
 
         $validated = $request->validate([
             'type' => ['required', 'in:' . Payment::TYPE_DP . ',' . Payment::TYPE_FULL],
         ]);
 
-        $amount = $validated['type'] === Payment::TYPE_DP
-            ? (int) min($booking->total_price, 100000)
-            : (int) $booking->total_price;
+        if ($booking->status === Booking::STATUS_CANCELLED) {
+            return response()->json([
+                'message' => 'Pemesanan sudah dibatalkan dan tidak dapat dibayar kembali.',
+            ], 422);
+        }
 
-        // Reuse transaksi pending agar tidak membuat multiple payment record
-        // ketika user klik bayar berulang.
+        if ($booking->isSubmitted()) {
+            return response()->json([
+                'message' => 'Pemesanan masih menunggu konfirmasi admin. Pembayaran belum dapat dilakukan.',
+            ], 422);
+        }
+
+        if ($this->cancelIfPaymentWindowExpired($booking)) {
+            return response()->json([
+                'message' => 'Waktu pembayaran 30 menit sudah habis. Pemesanan dibatalkan otomatis, silakan pesan ulang.',
+            ], 422);
+        }
+
+        if ($booking->status === Booking::STATUS_PAID) {
+            return response()->json([
+                'message' => 'Pemesanan sudah lunas dan tidak memerlukan pembayaran tambahan.',
+            ], 422);
+        }
+
+        $expectedType = $booking->nextPaymentType();
+        if ($validated['type'] !== $expectedType) {
+            return response()->json([
+                'message' => $booking->status === Booking::STATUS_DP_PAID
+                    ? 'DP sudah dibayar. Lanjutkan dengan pelunasan sisa pembayaran.'
+                    : 'Jenis pembayaran tidak sesuai dengan pilihan pemesanan.',
+            ], 422);
+        }
+
+        $isSettlement = $booking->status === Booking::STATUS_DP_PAID && $validated['type'] === Payment::TYPE_FULL;
+        $amount = $isSettlement
+            ? $booking->remainingAmount()
+            : $booking->nextPayableAmount();
+
+        if ($amount <= 0) {
+            return response()->json([
+                'message' => 'Sisa pembayaran sudah tidak ada.',
+            ], 422);
+        }
+
+        // Gunakan transaksi pending yang masih aktif agar tidak membuat data ganda
+        // ketika pengguna menekan tombol bayar lebih dari satu kali.
         $existingPending = Payment::where('booking_id', $booking->id)
             ->where('type', $validated['type'])
             ->where('status', Payment::STATUS_PENDING)
@@ -68,7 +90,7 @@ class PaymentController extends Controller
 
         $orderId = 'ORDER-'.$booking->id.'-'.Str::uuid();
 
-        // Call Midtrans Snap API (sandbox)
+        // Kirim permintaan pembuatan transaksi ke Midtrans.
         $serverKey = config('services.midtrans.server_key');
         if (!is_string($serverKey) || trim($serverKey) === '') {
             Log::error('Midtrans configuration missing: MIDTRANS_SERVER_KEY');
@@ -81,16 +103,23 @@ class PaymentController extends Controller
             ? 'https://app.sandbox.midtrans.com'
             : 'https://app.midtrans.com';
 
-        $itemDetails = [
-            [
+        if ($isSettlement) {
+            $itemDetails = [[
+                'id' => 'settlement-'.$booking->id,
+                'price' => $amount,
+                'quantity' => 1,
+                'name' => 'Pelunasan Pemesanan #'.$booking->id,
+            ]];
+        } else {
+            $itemDetails = [[
                 'id' => $booking->package_id,
                 'price' => $validated['type'] === Payment::TYPE_FULL ? (int) $booking->package->price : $amount,
                 'quantity' => 1,
                 'name' => ($booking->package->name ?? 'Paket').($validated['type'] === Payment::TYPE_DP ? ' (DP)' : ''),
-            ]
-        ];
+            ]];
+        }
 
-        if ($validated['type'] === Payment::TYPE_FULL && !empty($booking->selected_addons)) {
+        if (! $isSettlement && $validated['type'] === Payment::TYPE_FULL && !empty($booking->selected_addons)) {
             foreach ($booking->selected_addons as $idx => $addon) {
                 $price = (int) ($addon['price'] ?? 0);
                 $quantity = max(1, (int) ($addon['quantity'] ?? 1));
@@ -110,6 +139,11 @@ class PaymentController extends Controller
             'transaction_details' => [
                 'order_id' => $orderId,
                 'gross_amount' => $amount,
+            ],
+            'enabled_payments' => [
+                'bank_transfer',
+                'gopay',
+                'qris',
             ],
             'item_details' => $itemDetails,
             'customer_details' => [
@@ -162,7 +196,7 @@ class PaymentController extends Controller
         ]);
     }
 
-    /** Terima webhook Midtrans dan sinkron status payment + booking. */
+    /** Menerima webhook Midtrans dan menyamakan status internal. */
     public function webhook(Request $request)
     {
         $orderId = $request->input('order_id');
@@ -176,23 +210,28 @@ class PaymentController extends Controller
         return response()->json(['message' => 'ok']);
     }
 
-    /**
-     * Fallback konfirmasi dari callback frontend (server-side verify ke Midtrans).
-     */
+    /** Verifikasi ulang status transaksi dari sisi server setelah popup Snap ditutup. */
     public function confirm(Request $request, Booking $booking)
     {
         $this->authorizeBooking($request, $booking);
 
         if ($booking->status === Booking::STATUS_CANCELLED) {
             return response()->json([
-                'message' => 'Booking sudah dibatalkan.',
+                'message' => 'Pemesanan sudah dibatalkan.',
+                'booking_status' => $booking->status,
+            ], 422);
+        }
+
+        if ($booking->isSubmitted()) {
+            return response()->json([
+                'message' => 'Pemesanan masih menunggu konfirmasi admin.',
                 'booking_status' => $booking->status,
             ], 422);
         }
 
         if ($this->cancelIfPaymentWindowExpired($booking)) {
             return response()->json([
-                'message' => 'Waktu pembayaran 30 menit sudah habis. Booking dibatalkan otomatis.',
+                'message' => 'Waktu pembayaran 30 menit sudah habis. Pemesanan dibatalkan otomatis.',
                 'booking_status' => $booking->fresh()->status,
             ], 422);
         }
@@ -204,7 +243,7 @@ class PaymentController extends Controller
 
         if (!$payment) {
             return response()->json([
-                'message' => 'Tidak ada transaksi pending.',
+                'message' => 'Tidak ada transaksi pembayaran yang sedang diproses.',
                 'booking_status' => $booking->status,
             ]);
         }
@@ -242,7 +281,7 @@ class PaymentController extends Controller
         ]);
     }
 
-    /** Pastikan hanya owner booking atau admin yang boleh buat pembayaran. */
+    /** Hanya pemilik pemesanan atau admin yang boleh memproses pembayaran. */
     protected function authorizeBooking(Request $request, Booking $booking): void
     {
         $user = $request->user();
@@ -256,7 +295,7 @@ class PaymentController extends Controller
         $booking = $payment->booking;
         $previousStatus = $payment->status;
 
-        // Mapping status Midtrans -> status payment internal.
+        // Ubah status bawaan Midtrans ke status pembayaran internal aplikasi.
         $statusMap = [
             'settlement' => Payment::STATUS_PAID,
             'capture' => Payment::STATUS_PAID,
@@ -283,7 +322,9 @@ class PaymentController extends Controller
                 $booking->client?->notify(new PaymentConfirmedNotification($payment->id));
             }
         } elseif (in_array($newStatus, [Payment::STATUS_EXPIRED, Payment::STATUS_FAILED], true)) {
-            $booking->status = Booking::STATUS_WAITING_PAYMENT;
+            $booking->status = $booking->remainingAmount() > 0 && $booking->paidAmount() > 0
+                ? Booking::STATUS_DP_PAID
+                : Booking::STATUS_WAITING_PAYMENT;
             $booking->save();
         }
     }

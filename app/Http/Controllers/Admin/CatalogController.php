@@ -19,7 +19,7 @@ class CatalogController extends Controller
         return view('admin.catalog.index', compact('categories'));
     }
 
-    /** Tampilan katalog read-only untuk semua role. */
+    /** Menampilkan katalog dalam mode baca saja. */
     public function publicIndex()
     {
         $categories = ServiceCategory::with(['packages' => fn ($q) => $q->orderBy('name')])->orderBy('name')->get();
@@ -28,7 +28,7 @@ class CatalogController extends Controller
 
     public function publicShow(ServicePackage $servicePackage)
     {
-        // Detail paket pada halaman katalog client (read-only).
+        // Detail paket untuk halaman katalog publik/klien.
         $servicePackage->load(['category']);
         return view('admin.catalog.show', compact('servicePackage'));
     }
@@ -40,7 +40,7 @@ class CatalogController extends Controller
 
     public function store(Request $request)
     {
-        // Simpan kategori baru beserta paket awal (opsional).
+        // Simpan kategori baru berikut paket awal jika diisi pada form.
         $data = $request->validate([
             'name' => ['required','string','max:255'],
             'description' => ['nullable','string'],
@@ -76,12 +76,12 @@ class CatalogController extends Controller
             $this->syncFeatures($package, $features);
             $this->syncAddons($package, $addons);
 
-            // overview image per paket (packages[index][overview_image])
+            // Gambar utama per paket (packages[index][overview_image]).
             if ($request->hasFile("packages.$index.overview_image")) {
                 $path = $request->file("packages.$index.overview_image")->storePublicly("packages/{$package->id}/overview", 'public');
                 $this->syncGalleryItems($package, array_values(array_unique(array_merge([$path], $package->gallery))));
             }
-            // gallery per paket
+            // Galeri tambahan per paket.
             if ($request->hasFile("packages.$index.gallery")) {
                 $paths = [];
                 foreach ($request->file("packages.$index.gallery") as $file) {
@@ -96,7 +96,7 @@ class CatalogController extends Controller
 
     public function packages(ServiceCategory $category)
     {
-        // Daftar paket per kategori.
+        // Ambil daftar paket yang ada pada kategori terpilih.
         $packages = ServicePackage::where('category_id', $category->id)->orderBy('name')->get();
         return view('admin.catalog.packages', compact('category','packages'));
     }
@@ -108,7 +108,7 @@ class CatalogController extends Controller
 
     public function storePackage(Request $request, ServiceCategory $category)
     {
-        // Tambah satu paket ke kategori tertentu.
+        // Tambahkan satu paket baru ke kategori yang dipilih.
         $data = $request->validate([
             'name' => ['required','string','max:255'],
             'price' => ['required','integer','min:0'],
@@ -159,7 +159,7 @@ class CatalogController extends Controller
 
     protected function toArray($value, string $delimiter): array
     {
-        // Normalisasi input textarea/string menjadi array bersih.
+        // Ubah input textarea atau string menjadi array yang rapi.
         if (is_array($value)) {
             return array_values(array_filter(array_map('trim', $value), fn ($v) => $v !== ''));
         }
@@ -174,7 +174,7 @@ class CatalogController extends Controller
 
     protected function normalizeAddons(array $addons): array
     {
-        // Pastikan add-on tersimpan sebagai [{label, price}] yang valid.
+        // Pastikan data add-on tersimpan dalam format yang konsisten.
         return collect($addons)
             ->map(function ($addon) {
                 $label = trim((string) ($addon['label'] ?? ''));

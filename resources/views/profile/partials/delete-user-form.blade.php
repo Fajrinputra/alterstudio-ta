@@ -47,7 +47,7 @@
             <div class="mx-8 bg-red-50 border border-red-200 rounded-3xl p-6 mb-6">
                 <p class="text-sm text-red-700 flex items-start gap-3">
                     <i class="fa-solid fa-circle-exclamation mt-1"></i>
-                    <span>Semua data akun, booking, project, dan foto akan dihapus secara permanen dan tidak dapat dikembalikan.</span>
+                    <span>Semua data akun, pemesanan, project, dan foto akan dihapus secara permanen dan tidak dapat dikembalikan.</span>
                 </p>
             </div>
 
@@ -91,5 +91,6 @@
         </div>
     </div>
 </section>
+
 
 

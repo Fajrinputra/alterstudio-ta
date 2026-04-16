@@ -100,7 +100,7 @@ class ServicePackageController extends Controller
         $servicePackage->delete();
 
         if (request()->wantsJson()) {
-            return response()->json(['message' => 'deleted']);
+            return response()->json(['message' => 'Paket berhasil dihapus.']);
         }
         return back()->with('status', 'Paket dihapus.');
     }

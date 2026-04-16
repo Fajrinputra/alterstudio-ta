@@ -11,12 +11,12 @@ use Illuminate\Support\Facades\Auth;
  */
 class ProjectController extends Controller
 {
-    /** Tampilkan galeri project + assets + seleksi */
+    /** Menampilkan detail project, galeri media, dan pilihan foto klien. */
     public function show(Project $project)
     {
         $user = Auth::user();
 
-        // akses: owner client, admin, photog, editor
+        // Akses hanya untuk pemilik project atau kru/admin yang terlibat.
         if ($user->role === \App\Enums\Role::CLIENT && $project->booking->client_id !== $user->id) {
             abort(403);
         }

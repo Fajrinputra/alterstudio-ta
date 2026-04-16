@@ -39,14 +39,7 @@
     </x-slot>
 
     @php
-        $statusMap = [
-            'DRAFT' => 'Belum dijadwalkan',
-            'SCHEDULED' => 'Terjadwal',
-            'SHOOT_DONE' => 'Sesi Foto Selesai',
-            'EDITING' => 'Permintaan edit dikirimkan',
-            'FINAL' => 'Foto hasil edit diunggah',
-        ];
-        $statusText = $statusMap[$project->status] ?? $project->status;
+        $statusText = $project->statusLabel();
         
         $statusColors = [
             'DRAFT' => 'bg-gray-100 text-gray-700',
@@ -217,7 +210,7 @@
                             <i class="fa-solid fa-star text-[#D4A017]"></i>
                             Seleksi Foto Favorit
                         </h3>
-                        <p class="text-[#7A5B3A] mt-1">Pilih maksimal 5 foto terbaik untuk proses editing</p>
+                        <p class="text-[#7A5B3A] mt-1">Pilih maksimal 10 foto terbaik untuk proses editing</p>
                     </div>
                     <div class="px-6 py-3 rounded-3xl text-sm font-semibold {{ $selections->count() >= 5 ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700' }}">
                         {{ $selections->count() }}/5 Terpilih

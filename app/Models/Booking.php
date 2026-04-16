@@ -23,6 +23,8 @@ class Booking extends Model
         'booking_time',
         'notes',
         'status',
+        'confirmed_at',
+        'payment_started_at',
         'payment_type',
         'addon_total',
         'total_price',
@@ -33,6 +35,8 @@ class Booking extends Model
 
     protected $casts = [
         'booking_date' => 'datetime',
+        'confirmed_at' => 'datetime',
+        'payment_started_at' => 'datetime',
         'addon_total' => 'integer',
         'total_price' => 'integer',
         'selected_addons' => 'array',
@@ -134,12 +138,83 @@ class Booking extends Model
 
     public function paymentDeadlineAt(): ?Carbon
     {
-        return $this->created_at?->copy()->addMinutes(30);
+        return $this->payment_started_at?->copy()->addMinutes(30);
     }
 
     public function isPaymentWindowExpired(): bool
     {
         return $this->status === self::STATUS_WAITING_PAYMENT
+            && $this->payment_started_at !== null
             && $this->paymentDeadlineAt()?->isPast() === true;
+    }
+
+    public function isSubmitted(): bool
+    {
+        return $this->status === self::STATUS_WAITING_PAYMENT
+            && $this->confirmed_at === null;
+    }
+
+    public function isConfirmedAwaitingPayment(): bool
+    {
+        return $this->status === self::STATUS_WAITING_PAYMENT
+            && $this->confirmed_at !== null;
+    }
+
+    public function hasPaymentWindowStarted(): bool
+    {
+        return $this->payment_started_at !== null;
+    }
+
+    public function statusLabel(): string
+    {
+        return match (true) {
+            $this->isSubmitted() => 'Diajukan',
+            $this->isConfirmedAwaitingPayment() => 'Dikonfirmasi',
+            $this->status === self::STATUS_DP_PAID => 'DP Dibayar',
+            $this->status === self::STATUS_PAID => 'Lunas',
+            $this->status === self::STATUS_CANCELLED => 'Dibatalkan',
+            default => $this->status,
+        };
+    }
+
+    public function paidAmount(): int
+    {
+        if ($this->relationLoaded('payments')) {
+            return (int) $this->payments
+                ->where('status', Payment::STATUS_PAID)
+                ->sum('amount');
+        }
+
+        return (int) $this->payments()
+            ->where('status', Payment::STATUS_PAID)
+            ->sum('amount');
+    }
+
+    public function remainingAmount(): int
+    {
+        return max(0, (int) $this->total_price - $this->paidAmount());
+    }
+
+    public function nextPaymentType(): string
+    {
+        return $this->status === self::STATUS_DP_PAID
+            ? self::PAYMENT_TYPE_FULL
+            : $this->payment_type;
+    }
+
+    public function nextPayableAmount(): int
+    {
+        if ($this->status === self::STATUS_DP_PAID) {
+            return $this->remainingAmount();
+        }
+
+        return $this->payment_type === self::PAYMENT_TYPE_DP
+            ? (int) min($this->total_price, 100000)
+            : (int) $this->total_price;
+    }
+
+    public function isAwaitingSettlement(): bool
+    {
+        return $this->status === self::STATUS_DP_PAID && $this->remainingAmount() > 0;
     }
 }

@@ -117,20 +117,14 @@
                         $endText        = $startCarbon ? $startCarbon->clone()->addMinutes($duration)->format('d M Y H:i') : '-';
                         
                         $statusBadge = [
-                            'DRAFT'       => ['label' => 'Belum dijadwalkan', 'color' => 'bg-gray-100 text-gray-700'],
+                            'DRAFT'       => ['label' => 'Belum Dijadwalkan', 'color' => 'bg-gray-100 text-gray-700'],
                             'SCHEDULED'   => ['label' => 'Terjadwal', 'color' => 'bg-blue-100 text-blue-700'],
                             'SHOOT_DONE'  => ['label' => 'Sesi Foto Selesai', 'color' => 'bg-purple-100 text-purple-700'],
-                            'EDITING'     => ['label' => 'Permintaan edit', 'color' => 'bg-orange-100 text-orange-700'],
-                            'FINAL'       => ['label' => 'Foto diunggah', 'color' => 'bg-emerald-100 text-emerald-700'],
-                        ][$project->status] ?? ['label' => $project->status, 'color' => 'bg-gray-100'];
+                            'EDITING'     => ['label' => 'Permintaan Edit Dikirim', 'color' => 'bg-orange-100 text-orange-700'],
+                            'FINAL'       => ['label' => 'Hasil Final Siap', 'color' => 'bg-emerald-100 text-emerald-700'],
+                        ][$project->status] ?? ['label' => $project->statusLabel(), 'color' => 'bg-gray-100'];
                         
-                        $bookingStatus = [
-                            'WAITING_PAYMENT' => 'Menunggu Pembayaran',
-                            'DP_PAID'         => 'Pembayaran DP',
-                            'PAID'            => 'Pembayaran LUNAS',
-                            'CANCELLED'       => 'Dibatalkan',
-                            'DRAFT'           => 'Draft',
-                        ][$project->booking->status] ?? $project->booking->status;
+                        $bookingStatus = $project->booking->statusLabel();
                         
                         $finalAssets   = $project->mediaAssets->where('type','FINAL');
                         $rawAssets     = $project->mediaAssets->where('type','RAW')->sortBy('version');
@@ -389,7 +383,7 @@
                                             <button class="w-full h-14 rounded-3xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] text-white font-semibold shadow-xl hover:shadow-2xl hover:-translate-y-0.5 transition-all flex items-center justify-center gap-3 text-base"
                                                     @if(!$canSchedule) disabled @endif>
                                                 <i class="fa-solid fa-calendar-check"></i>
-                                                {{ $canSchedule ? 'Simpan Jadwal' : 'Menunggu Pembayaran' }}
+                                                {{ $canSchedule ? 'Simpan Jadwal' : 'Belum Bisa Dijadwalkan' }}
                                             </button>
                                         </div>
                                     </form>
@@ -468,7 +462,7 @@
                             <i class="fa-solid fa-calendar-xmark text-5xl text-[#8B7359]"></i>
                         </div>
                         <p class="text-[#3F2B1B] text-xl font-medium">Belum ada project untuk dijadwalkan</p>
-                        <p class="text-[#7A5B3A] mt-2">Project akan muncul setelah booking dikonfirmasi pembayarannya</p>
+                        <p class="text-[#7A5B3A] mt-2">Project akan muncul setelah pemesanan dikonfirmasi pembayarannya</p>
                     </div>
                 @endforelse
             </div>

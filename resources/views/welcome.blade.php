@@ -170,7 +170,7 @@
             $defaultHero = (object) [
                 'eyebrow' => 'CASA DE ALTER & SIGNATURE',
                 'title' => 'Abadikan Momen Berharga Anda',
-                'subtitle' => 'Sentuhan profesional dari booking, pembayaran, penjadwalan kru, hingga hasil akhir siap diunduh.',
+                'subtitle' => 'Sentuhan profesional dari pemesanan, pembayaran, penjadwalan kru, hingga hasil akhir siap diunduh.',
                 'image_path' => null,
             ];
             $heroFallbackImage = 'https://images.unsplash.com/photo-1516035052735-0ffcdf4edb5b?auto=format&fit=crop&w=2000&q=80';
@@ -359,7 +359,7 @@
                                 @else
                                     <a href="{{ route('register') }}" 
                                        class="block w-full text-center py-4 rounded-3xl border-2 border-[#D4A017] text-[#D4A017] font-semibold hover:bg-[#D4A017] hover:text-white transition-all">
-                                        Daftar untuk Booking
+                                        Daftar untuk Pemesanan
                                     </a>
                                 @endauth
                             </div>

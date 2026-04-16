@@ -63,7 +63,7 @@ class ServiceCategoryController extends Controller
         $serviceCategory->delete();
 
         if (request()->wantsJson()) {
-            return response()->json(['message' => 'deleted']);
+            return response()->json(['message' => 'Kategori berhasil dihapus.']);
         }
         return back()->with('status', 'Kategori dihapus.');
     }

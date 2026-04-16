@@ -108,7 +108,7 @@ class UserManagementController extends Controller
         // Lindungi akun Manager: tidak boleh dinonaktifkan atau dihapus.
         if ($user->role !== Role::MANAGER && array_key_exists('is_active', $data)) {
             if ((bool) $data['is_active'] === false && $this->hasActiveOperationalWork($user)) {
-                return back()->with('status', 'Akun tidak dapat dinonaktifkan karena masih memiliki booking atau project yang belum selesai.');
+                return back()->with('status', 'Akun tidak dapat dinonaktifkan karena masih memiliki pemesanan atau project yang belum selesai.');
             }
 
             $payload['is_active'] = (bool) $data['is_active'];
@@ -135,7 +135,7 @@ class UserManagementController extends Controller
         ]);
 
         if ((bool) $data['is_active'] === false && $this->hasActiveOperationalWork($user)) {
-            return back()->with('status', 'Akun tidak dapat dinonaktifkan karena masih memiliki booking atau project yang belum selesai.');
+            return back()->with('status', 'Akun tidak dapat dinonaktifkan karena masih memiliki pemesanan atau project yang belum selesai.');
         }
 
         $user->update(['is_active' => (bool) $data['is_active']]);
@@ -151,7 +151,7 @@ class UserManagementController extends Controller
         }
 
         if ($this->hasActiveOperationalWork($user)) {
-            return back()->with('status', 'Akun tidak dapat dihapus karena masih memiliki booking atau project yang belum selesai.');
+            return back()->with('status', 'Akun tidak dapat dihapus karena masih memiliki pemesanan atau project yang belum selesai.');
         }
 
         $user->delete();

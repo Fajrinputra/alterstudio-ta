@@ -134,13 +134,13 @@ class ScheduleController extends Controller
         $booking = $project->booking;
         if (! in_array($booking->status, [Booking::STATUS_PAID, Booking::STATUS_DP_PAID], true)) {
             return $request->wantsJson()
-                ? response()->json(['message' => 'Booking must be paid before scheduling'], 422)
-                : back()->with('error', 'Booking harus dibayar (DP/Lunas) sebelum dijadwalkan.');
+                ? response()->json(['message' => 'Pemesanan harus sudah dibayar minimal DP sebelum dijadwalkan.'], 422)
+                : back()->with('error', 'Pemesanan harus sudah dibayar minimal DP sebelum dijadwalkan.');
         }
 
         if ($project->hasSchedule()) {
             return $request->wantsJson()
-                ? response()->json(['message' => 'Jadwal sudah dikunci'], 422)
+                ? response()->json(['message' => 'Jadwal sudah tersimpan dan tidak dapat diubah dari proses ini.'], 422)
                 : back()->with('error', 'Jadwal sudah dikunci dan tidak dapat diubah.');
         }
 
@@ -166,7 +166,7 @@ class ScheduleController extends Controller
         [$start, $end] = $this->buildScheduleWindow($project);
         if ($this->hasOverlap($start, $end, $validated['photographer_id'], $validated['editor_id'], $project->id)) {
             return $request->wantsJson()
-                ? response()->json(['message' => 'Schedule conflict detected'], 422)
+                ? response()->json(['message' => 'Bentrok jadwal terdeteksi untuk kru yang dipilih.'], 422)
                 : back()->with('error', 'Bentrok jadwal terdeteksi untuk kru yang dipilih.');
         }
 
@@ -236,7 +236,7 @@ class ScheduleController extends Controller
         [$start, $end] = $this->buildScheduleWindow($project);
         if ($this->hasOverlap($start, $end, $validated['photographer_id'], $validated['editor_id'], $project->id)) {
             return $request->wantsJson()
-                ? response()->json(['message' => 'Schedule conflict detected'], 422)
+                ? response()->json(['message' => 'Bentrok jadwal terdeteksi untuk kru yang dipilih.'], 422)
                 : back()->with('error', 'Bentrok jadwal terdeteksi.');
         }
 

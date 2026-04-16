@@ -34,9 +34,7 @@ class ProfileController extends Controller
         ]);
     }
 
-    /**
-     * Update the user's profile information.
-     */
+    /** Menyimpan perubahan data profil pengguna. */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
         $data = $request->validated();
@@ -61,9 +59,7 @@ class ProfileController extends Controller
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
 
-    /**
-     * Delete the user's account.
-     */
+    /** Menghapus akun pengguna jika tidak masih terlibat pada proses aktif. */
     public function destroy(Request $request): RedirectResponse
     {
         $request->validateWithBag('userDeletion', [
@@ -79,7 +75,7 @@ class ProfileController extends Controller
 
         if ($this->hasActiveOperationalWork($user->id)) {
             return Redirect::route('profile.edit')
-                ->withErrors(['account' => 'Akun tidak dapat dihapus karena masih memiliki booking atau project yang belum selesai.'], 'userDeletion');
+                ->withErrors(['account' => 'Akun tidak dapat dihapus karena masih memiliki pemesanan atau project yang belum selesai.'], 'userDeletion');
         }
 
         Auth::logout();

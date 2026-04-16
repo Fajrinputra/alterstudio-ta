@@ -10,13 +10,15 @@ class CancelExpiredBookings extends Command
 {
     protected $signature = 'bookings:cancel-expired';
 
-    protected $description = 'Batalkan booking menunggu pembayaran yang melewati batas 30 menit';
+    protected $description = 'Batalkan pemesanan menunggu pembayaran yang melewati batas 30 menit';
 
     public function handle(): int
     {
+        // Hanya pemesanan yang sudah membuka alur pembayaran yang ikut dihitung timeout.
         $expiredBookings = Booking::query()
             ->where('status', Booking::STATUS_WAITING_PAYMENT)
-            ->where('created_at', '<=', now()->subMinutes(30))
+            ->whereNotNull('payment_started_at')
+            ->where('payment_started_at', '<=', now()->subMinutes(30))
             ->get();
 
         $count = 0;

@@ -39,6 +39,12 @@ class StudioLocation extends Model
         return $this->hasMany(StudioRoom::class);
     }
 
+    /** Daftar hari libur khusus untuk cabang ini. */
+    public function holidays(): HasMany
+    {
+        return $this->hasMany(StudioHoliday::class);
+    }
+
     /** Booking yang memilih cabang ini. */
     public function bookings(): HasMany
     {

@@ -195,6 +195,104 @@
                     </div>
                 </div>
             </div>
+
+            <div class="relative group">
+                <div class="absolute inset-0 bg-gradient-to-br from-[#D4A017]/10 via-[#E07A5F]/10 rounded-3xl blur-3xl"></div>
+                <div class="relative bg-white/80 backdrop-blur-2xl border border-[#EDE0D0] rounded-3xl p-8 shadow-2xl">
+                    <div class="flex items-center gap-4 mb-8">
+                        <div class="w-12 h-12 rounded-3xl bg-gradient-to-br from-[#D4A017]/10 to-[#E07A5F]/10 flex items-center justify-center">
+                            <i class="fa-solid fa-calendar-xmark text-[#D4A017] text-3xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-display text-3xl text-[#3F2B1B]">Kelola Hari Libur Studio</h3>
+                            <p class="text-sm text-[#7A5B3A] mt-1">Tanggal di bagian ini otomatis ditutup pada form pemesanan klien.</p>
+                        </div>
+                    </div>
+
+                    <div class="grid xl:grid-cols-[380px_minmax(0,1fr)] gap-8">
+                        <form method="POST" action="{{ route('admin.locations.holidays.store') }}" class="space-y-5 bg-[#FAF6F0] border border-[#EDE0D0] rounded-3xl p-6">
+                            @csrf
+                            <div class="space-y-2">
+                                <label class="block text-xs font-medium text-[#7A5B3A] tracking-widest">Cabang Studio</label>
+                                <select name="studio_location_id" required class="w-full px-5 py-4 rounded-3xl border border-[#E1D3C5] bg-white text-[#3F2B1B]">
+                                    <option value="">Pilih cabang studio</option>
+                                    @foreach($locations as $loc)
+                                        <option value="{{ $loc->id }}" @selected(old('studio_location_id') == $loc->id)>{{ $loc->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="space-y-2">
+                                <label class="block text-xs font-medium text-[#7A5B3A] tracking-widest">Tanggal Libur</label>
+                                <input type="date" name="holiday_date" value="{{ old('holiday_date') }}" required class="w-full px-5 py-4 rounded-3xl border border-[#E1D3C5] bg-white text-[#3F2B1B]">
+                            </div>
+
+                            <div class="space-y-2">
+                                <label class="block text-xs font-medium text-[#7A5B3A] tracking-widest">Nama Libur</label>
+                                <input type="text" name="name" value="{{ old('name') }}" required placeholder="Contoh: Libur Lebaran" class="w-full px-5 py-4 rounded-3xl border border-[#E1D3C5] bg-white text-[#3F2B1B]">
+                            </div>
+
+                            <div class="space-y-2">
+                                <label class="block text-xs font-medium text-[#7A5B3A] tracking-widest">Catatan</label>
+                                <input type="text" name="notes" value="{{ old('notes') }}" placeholder="Opsional" class="w-full px-5 py-4 rounded-3xl border border-[#E1D3C5] bg-white text-[#3F2B1B]">
+                            </div>
+
+                            <label class="flex items-center gap-3 text-sm text-[#3F2B1B]">
+                                <input type="checkbox" name="is_active" value="1" checked class="w-5 h-5 rounded-xl border-[#E1D3C5] text-[#D4A017]">
+                                Aktifkan hari libur ini
+                            </label>
+
+                            <button type="submit" class="w-full py-4 rounded-3xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] text-white font-semibold shadow-xl hover:shadow-2xl transition-all">
+                                Simpan Hari Libur
+                            </button>
+                        </form>
+
+                        <div class="space-y-4">
+                            @forelse($holidays as $holiday)
+                                <div class="bg-white border border-[#EDE0D0] rounded-3xl p-5">
+                                    <div class="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_auto] gap-3 items-center">
+                                        <form method="POST" action="{{ route('admin.locations.holidays.update', $holiday) }}" class="grid grid-cols-1 xl:grid-cols-[170px_minmax(0,1fr)_minmax(0,1fr)_auto] gap-3 items-center">
+                                            @csrf
+                                            @method('PUT')
+
+                                            <select name="studio_location_id" required class="w-full px-4 py-3 rounded-full border border-[#E1D3C5] bg-white text-sm">
+                                                @foreach($locations as $loc)
+                                                    <option value="{{ $loc->id }}" @selected($holiday->studio_location_id === $loc->id)>{{ $loc->name }}</option>
+                                                @endforeach
+                                            </select>
+                                            <input type="date" name="holiday_date" value="{{ optional($holiday->holiday_date)->toDateString() }}" required class="w-full px-4 py-3 rounded-full border border-[#E1D3C5] bg-white text-sm">
+                                            <input type="text" name="name" value="{{ $holiday->name }}" required class="w-full px-4 py-3 rounded-full border border-[#E1D3C5] bg-white text-sm">
+                                            <input type="text" name="notes" value="{{ $holiday->notes }}" placeholder="Catatan" class="w-full px-4 py-3 rounded-full border border-[#E1D3C5] bg-white text-sm">
+
+                                            <label class="flex items-center gap-2 whitespace-nowrap text-sm px-3">
+                                                <input type="checkbox" name="is_active" value="1" @checked($holiday->is_active) class="w-5 h-5 rounded-xl border-[#E1D3C5] text-[#D4A017]">
+                                                <span>Aktif</span>
+                                            </label>
+
+                                            <button type="submit" class="px-6 py-3 rounded-full bg-gradient-to-r from-[#D4A017] to-[#E07A5F] text-white text-sm font-semibold hover:brightness-110 transition-all whitespace-nowrap">
+                                                Simpan
+                                            </button>
+                                        </form>
+
+                                        <form method="POST" action="{{ route('admin.locations.holidays.destroy', $holiday) }}" class="justify-self-start xl:justify-self-end">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="px-6 py-3 rounded-full border-2 border-red-400 text-red-600 hover:bg-red-50 transition-all text-sm font-semibold whitespace-nowrap">
+                                                Hapus
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            @empty
+                                <div class="text-center py-14 bg-white/70 border border-[#EDE0D0] rounded-3xl">
+                                    <i class="fa-solid fa-calendar-day text-5xl text-[#D4A017]/30"></i>
+                                    <p class="mt-4 text-[#3F2B1B]">Belum ada hari libur manual.</p>
+                                </div>
+                            @endforelse
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </x-app-layout>

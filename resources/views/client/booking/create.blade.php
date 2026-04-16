@@ -10,7 +10,7 @@
                     Buat Pemesanan Layanan
                 </h2>
             </div>
-            <a href="{{ route('catalog.public') }}" 
+            <a href="{{ route('catalog.public') }}"
                class="inline-flex items-center gap-3 px-6 py-3 rounded-3xl border border-[#E1D3C5] text-[#5C432C] hover:bg-white hover:shadow-md transition-all">
                 <i class="fa-solid fa-arrow-left"></i>
                 Kembali ke Katalog
@@ -19,10 +19,7 @@
     </x-slot>
 
     <div class="max-w-5xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
-        
         <div class="bg-white rounded-3xl border border-[#EDE0D0] shadow-2xl p-10">
-            
-            <!-- Progress Step -->
             <div class="flex items-center justify-center gap-4 mb-12">
                 <div class="flex items-center">
                     <div class="w-9 h-9 rounded-2xl bg-gradient-to-br from-[#D4A017] to-[#E07A5F] text-white flex items-center justify-center font-bold text-lg shadow-inner">1</div>
@@ -31,7 +28,7 @@
                 <div class="flex-1 max-w-[80px] h-px bg-gradient-to-r from-[#D4A017] to-[#EDE0D0]"></div>
                 <div class="flex items-center">
                     <div class="w-9 h-9 rounded-2xl bg-gradient-to-br from-[#D4A017] to-[#E07A5F] text-white flex items-center justify-center font-bold text-lg shadow-inner">2</div>
-                    <span class="ml-3 font-medium text-[#3F2B1B]">Detail & Pembayaran</span>
+                    <span class="ml-3 font-medium text-[#3F2B1B]">Detail Pemesanan</span>
                 </div>
                 <div class="flex-1 max-w-[80px] h-px bg-[#EDE0D0]"></div>
                 <div class="flex items-center opacity-40">
@@ -45,7 +42,7 @@
                     <i class="fa-solid fa-box-open text-6xl text-[#D4A017] mb-6 opacity-70"></i>
                     <p class="font-semibold text-[#3F2B1B] text-xl mb-2">Belum ada paket yang dipilih</p>
                     <p class="text-[#7A5B3A] mb-8">Silakan pilih paket dari katalog terlebih dahulu</p>
-                    <a href="{{ route('catalog.public') }}" 
+                    <a href="{{ route('catalog.public') }}"
                        class="inline-flex items-center gap-3 px-8 py-4 rounded-3xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] text-white font-semibold shadow-lg">
                         <i class="fa-solid fa-camera"></i>
                         Buka Katalog Paket
@@ -54,19 +51,34 @@
             @else
                 @php
                     $basePrice = (int) $selectedPackage->price;
+                    $oldDate = old('booking_date');
+                    $oldLocationId = old('studio_location_id');
+                    $oldTime = old('booking_time');
                 @endphp
 
-                <form method="POST" action="{{ route('bookings.store') }}" class="space-y-10" id="booking-form" data-base-price="{{ $basePrice }}">
+                @if ($errors->any())
+                    <div class="mb-8 rounded-3xl border border-red-200 bg-red-50 px-6 py-5">
+                        <div class="flex items-start gap-3 text-red-700">
+                            <i class="fa-solid fa-circle-exclamation mt-1"></i>
+                            <div class="space-y-1 text-sm">
+                                @foreach ($errors->all() as $error)
+                                    <p>{{ $error }}</p>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
+                <form method="POST" action="{{ route('bookings.store') }}" class="space-y-10" id="booking-form" data-base-price="{{ $basePrice }}" data-availability-url="{{ route('bookings.availability') }}" data-package-id="{{ $selectedPackage->id }}" data-old-time="{{ $oldTime }}">
                     @csrf
                     <input type="hidden" name="package_id" value="{{ $selectedPackage->id }}">
 
-                    <!-- Selected Package Card -->
                     <div class="rounded-3xl border border-[#EDE0D0] bg-white p-8">
                         <p class="uppercase tracking-widest text-xs text-[#8B7359] mb-3">Paket Terpilih</p>
                         <div class="flex flex-col md:flex-row gap-6 items-start">
                             @if($selectedPackage->overview_image)
-                                <img src="{{ Storage::url($selectedPackage->overview_image) }}" 
-                                     class="w-full md:w-40 h-40 rounded-2xl object-cover border border-[#EDE0D0] shadow-sm" 
+                                <img src="{{ Storage::url($selectedPackage->overview_image) }}"
+                                     class="w-full md:w-40 h-40 rounded-2xl object-cover border border-[#EDE0D0] shadow-sm"
                                      alt="{{ $selectedPackage->name }}">
                             @else
                                 <div class="w-full md:w-40 h-40 rounded-2xl bg-[#FAF6F0] border border-[#EDE0D0] flex items-center justify-center">
@@ -83,7 +95,6 @@
                         </div>
                     </div>
 
-                    <!-- Add-ons -->
                     @if(!empty($addonOptions))
                         <div>
                             <label class="block text-sm font-medium text-[#5C432C] mb-4">Pilih Add-on (Opsional)</label>
@@ -131,45 +142,47 @@
                         </div>
                     @endif
 
-                    <!-- Booking Details -->
                     <div class="grid md:grid-cols-2 gap-6">
                         <div class="space-y-2">
-                            <label class="block text-sm font-medium text-[#5C432C]">Tanggal Booking</label>
-                            <input type="date" 
-                                   name="booking_date" 
-                                   required 
+                            <label class="block text-sm font-medium text-[#5C432C]">Tanggal Pemesanan</label>
+                            <input type="date"
+                                   id="booking-date"
+                                   name="booking_date"
+                                   required
                                    class="w-full px-5 py-4 rounded-3xl border border-[#E1D3C5] bg-white focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20 transition-all"
-                                   min="{{ date('Y-m-d') }}">
+                                   min="{{ date('Y-m-d') }}"
+                                   value="{{ $oldDate }}">
                         </div>
                         <div class="space-y-2">
-                            <label class="block text-sm font-medium text-[#5C432C]">Jam Booking (11:00 - 22:00)</label>
-                            <input type="time" 
-                                   name="booking_time" 
-                                   required 
-                                   min="11:00" 
-                                   max="22:00" 
-                                   value="11:00"
-                                   class="w-full px-5 py-4 rounded-3xl border border-[#E1D3C5] bg-white focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20 transition-all">
-                            <p class="text-xs text-[#8B7359]">Studio beroperasi pukul 11:00 - 22:00</p>
+                            <label class="block text-sm font-medium text-[#5C432C]">Jam Pemesanan yang Tersedia</label>
+                            <select name="booking_time"
+                                    id="booking-time"
+                                    required
+                                    disabled
+                                    class="w-full px-5 py-4 rounded-3xl border border-[#E1D3C5] bg-white focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20 transition-all disabled:bg-[#F3ECE3] disabled:text-[#8B7359]">
+                                <option value="">Pilih tanggal dan cabang terlebih dahulu</option>
+                            </select>
+                            <p class="text-xs text-[#8B7359]">Hanya slot yang masih tersedia yang ditampilkan.</p>
                         </div>
                     </div>
 
-                    <!-- Studio Location -->
                     <div class="space-y-2">
                         <label class="block text-sm font-medium text-[#5C432C]">Cabang Studio</label>
-                        <select name="studio_location_id" 
-                                required 
+                        <select name="studio_location_id"
+                                id="studio-location-id"
+                                required
                                 class="w-full px-5 py-4 rounded-3xl border border-[#E1D3C5] bg-white focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20 transition-all">
                             <option value="">Pilih cabang studio</option>
                             @foreach($locations as $loc)
-                                <option value="{{ $loc->id }}" @selected(old('studio_location_id') == $loc->id)>
-                                    {{ $loc->name }} — {{ $loc->address }}
+                                <option value="{{ $loc->id }}" @selected($oldLocationId == $loc->id)>
+                                    {{ $loc->name }} - {{ $loc->address }}
                                 </option>
                             @endforeach
                         </select>
                     </div>
 
-                    <!-- Payment Type -->
+                    <div id="availability-alert" class="hidden rounded-3xl border px-6 py-5 text-sm"></div>
+
                     <div class="space-y-3">
                         <label class="block text-sm font-medium text-[#5C432C]">Jenis Pembayaran</label>
                         <div class="grid sm:grid-cols-2 gap-4">
@@ -184,21 +197,19 @@
                                 <input type="radio" name="payment_type" value="FULL" class="w-5 h-5 text-[#D4A017]">
                                 <div>
                                     <span class="font-semibold text-[#3F2B1B]">Bayar Lunas</span>
-                                    <p class="text-xs text-[#7A5B3A]">Bayar penuh sekarang</p>
+                                    <p class="text-xs text-[#7A5B3A]">Bayar penuh setelah pemesanan dikonfirmasi admin</p>
                                 </div>
                             </label>
                         </div>
                     </div>
 
-                    <!-- Notes -->
                     <div class="space-y-2">
                         <label class="block text-sm font-medium text-[#5C432C]">Catatan Tambahan (Opsional)</label>
-                        <textarea name="notes" rows="4" 
+                        <textarea name="notes" rows="4"
                                   class="w-full px-5 py-4 rounded-3xl border border-[#E1D3C5] bg-white focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20 resize-none"
-                                  placeholder="Permintaan khusus, tema foto, atau catatan lain..."></textarea>
+                                  placeholder="Permintaan khusus, tema foto, atau catatan lain...">{{ old('notes') }}</textarea>
                     </div>
 
-                    <!-- Price Summary -->
                     <div class="rounded-3xl border border-[#EDE0D0] bg-[#FAF6F0] p-8 space-y-4">
                         <div class="flex justify-between text-[#5C432C]">
                             <span>Harga Paket Dasar</span>
@@ -212,18 +223,21 @@
                             <span class="font-semibold text-[#3F2B1B]">Total Keseluruhan</span>
                             <span class="font-bold text-2xl text-[#D4A017]">Rp <span id="grand-total">{{ number_format($basePrice) }}</span></span>
                         </div>
+                        <div class="pt-4 border-t border-[#EDE0D0] text-sm text-[#7A5B3A]">
+                            Setelah formulir dikirim, pemesanan akan masuk ke admin untuk ditinjau. Pembayaran baru dibuka setelah admin mengonfirmasi pemesanan.
+                        </div>
                     </div>
 
-                    <!-- Action Buttons -->
                     <div class="flex flex-col sm:flex-row gap-4 pt-6">
-                        <a href="{{ route('catalog.public') }}" 
+                        <a href="{{ route('catalog.public') }}"
                            class="flex-1 text-center py-4 rounded-3xl border border-[#E1D3C5] text-[#5C432C] hover:bg-white transition-all">
                             Batal
                         </a>
-                        <button type="submit" 
+                        <button type="submit"
+                                id="booking-submit"
                                 class="flex-1 flex items-center justify-center gap-3 py-4 rounded-3xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] text-white font-semibold shadow-lg shadow-[#D4A017]/30 hover:shadow-xl hover:-translate-y-0.5 transition-all">
                             <i class="fa-solid fa-paper-plane"></i>
-                            Lanjut ke Pembayaran
+                            Simpan dan Kirim Pemesanan
                         </button>
                     </div>
                 </form>
@@ -231,7 +245,6 @@
         </div>
     </div>
 
-    <!-- JavaScript untuk dynamic total -->
     <script>
         (function () {
             const form = document.getElementById('booking-form');
@@ -243,6 +256,12 @@
             const addonTotalEl = document.getElementById('addon-total');
             const grandTotalEl = document.getElementById('grand-total');
             const format = new Intl.NumberFormat('id-ID');
+            const locationInput = document.getElementById('studio-location-id');
+            const dateInput = document.getElementById('booking-date');
+            const timeInput = document.getElementById('booking-time');
+            const availabilityAlert = document.getElementById('availability-alert');
+            const submitButton = document.getElementById('booking-submit');
+            const oldTime = form.dataset.oldTime || '';
 
             const updateTotal = () => {
                 let addonTotal = 0;
@@ -262,9 +281,119 @@
                 grandTotalEl.textContent = format.format(grandTotal);
             };
 
+            const showAlert = (message, variant = 'info') => {
+                if (!message) {
+                    availabilityAlert.className = 'hidden rounded-3xl border px-6 py-5 text-sm';
+                    availabilityAlert.textContent = '';
+                    return;
+                }
+
+                const styles = {
+                    info: 'border-[#EDE0D0] bg-[#FAF6F0] text-[#5C432C]',
+                    warning: 'border-amber-200 bg-amber-50 text-amber-700',
+                    danger: 'border-red-200 bg-red-50 text-red-700',
+                    success: 'border-emerald-200 bg-emerald-50 text-emerald-700',
+                };
+
+                availabilityAlert.className = `rounded-3xl border px-6 py-5 text-sm ${styles[variant] || styles.info}`;
+                availabilityAlert.textContent = message;
+            };
+
+            const setSubmitState = (enabled) => {
+                submitButton.disabled = !enabled;
+                submitButton.classList.toggle('opacity-60', !enabled);
+                submitButton.classList.toggle('cursor-not-allowed', !enabled);
+            };
+
+            const resetSlots = (message = '') => {
+                timeInput.innerHTML = '<option value="">Pilih tanggal dan cabang terlebih dahulu</option>';
+                timeInput.disabled = true;
+                setSubmitState(false);
+                showAlert(message, message ? 'warning' : 'info');
+            };
+
+            const loadAvailability = async () => {
+                const bookingDate = dateInput.value;
+                const locationId = locationInput.value;
+                const packageId = form.dataset.packageId;
+
+                if (!bookingDate || !locationId || !packageId) {
+                    resetSlots('');
+                    return;
+                }
+
+                timeInput.disabled = true;
+                timeInput.innerHTML = '<option value="">Memuat slot tersedia...</option>';
+                setSubmitState(false);
+                showAlert('Memeriksa ketersediaan jam studio...', 'info');
+
+                try {
+                    const url = new URL(form.dataset.availabilityUrl, window.location.origin);
+                    url.searchParams.set('package_id', packageId);
+                    url.searchParams.set('studio_location_id', locationId);
+                    url.searchParams.set('booking_date', bookingDate);
+
+                    const response = await fetch(url.toString(), {
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                        },
+                    });
+
+                    const data = await response.json();
+                    if (!response.ok) {
+                        throw new Error(data.message || 'Gagal memuat jadwal yang tersedia.');
+                    }
+
+                    if (data.is_closed) {
+                        timeInput.innerHTML = '<option value="">Studio tutup pada tanggal ini</option>';
+                        setSubmitState(false);
+                        showAlert(data.reason || 'Studio tutup pada tanggal yang dipilih.', 'danger');
+                        return;
+                    }
+
+                    const slots = Array.isArray(data.available_times) ? data.available_times : [];
+                    if (!slots.length) {
+                        timeInput.innerHTML = '<option value="">Tidak ada slot tersedia</option>';
+                        setSubmitState(false);
+                        showAlert('Semua slot pada tanggal ini sudah terisi. Silakan pilih tanggal lain.', 'warning');
+                        return;
+                    }
+
+                    timeInput.disabled = false;
+                    timeInput.innerHTML = '<option value="">Pilih jam sesi foto</option>';
+                    slots.forEach((slot) => {
+                        const option = document.createElement('option');
+                        option.value = slot.value;
+                        option.textContent = slot.label;
+                        if (oldTime && oldTime === slot.value) {
+                            option.selected = true;
+                        }
+                        timeInput.appendChild(option);
+                    });
+
+                    setSubmitState(Boolean(timeInput.value));
+                    showAlert('Slot yang tersedia sudah diperbarui. Pilih jam sesi foto untuk melanjutkan.', 'success');
+                } catch (error) {
+                    timeInput.innerHTML = '<option value="">Gagal memuat slot</option>';
+                    setSubmitState(false);
+                    showAlert(error.message || 'Gagal memuat jadwal yang tersedia.', 'danger');
+                }
+            };
+
             addonInputs.forEach(input => input.addEventListener('change', updateTotal));
             addonQuantityInputs.forEach(input => input.addEventListener('input', updateTotal));
+            locationInput.addEventListener('change', loadAvailability);
+            dateInput.addEventListener('change', loadAvailability);
+            timeInput.addEventListener('change', () => setSubmitState(Boolean(timeInput.value)));
+
             updateTotal();
+
+            if (locationInput.value && dateInput.value) {
+                loadAvailability();
+            } else {
+                resetSlots();
+            }
         })();
     </script>
 </x-app-layout>

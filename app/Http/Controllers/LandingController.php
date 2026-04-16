@@ -14,7 +14,7 @@ class LandingController extends Controller
 {
     public function __invoke()
     {
-        // Ambil kategori + paket aktif dan hitung jumlah booking tiap paket.
+        // Ambil kategori beserta paket aktif dan jumlah pemesanannya.
         $categories = ServiceCategory::with(['packages' => function ($q) {
             $q->where('is_active', true)
                 ->withCount('bookings')
@@ -26,7 +26,7 @@ class LandingController extends Controller
 
         $mostPopularPackageIds = $categories
             ->map(function ($category) {
-                // Simpan 1 paket terpopuler per kategori untuk badge "diminati".
+                // Ambil satu paket terpopuler per kategori untuk penanda favorit.
                 return optional(
                     $category->packages
                         ->sortByDesc('bookings_count')

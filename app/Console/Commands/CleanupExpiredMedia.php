@@ -32,7 +32,7 @@ class CleanupExpiredMedia extends Command
             $count++;
         }
 
-        $this->info("Expired media deleted: {$count}");
+        $this->info("Aset media kedaluwarsa yang dibersihkan: {$count}");
         return self::SUCCESS;
     }
 }

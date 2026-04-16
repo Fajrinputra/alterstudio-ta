@@ -3,31 +3,33 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\StudioHoliday;
 use App\Models\StudioLocation;
 use App\Models\StudioRoom;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 /**
- * Kelola data cabang studio, galeri foto, dan ruangan.
+ * Mengelola cabang studio, ruangan, galeri lokasi, dan hari libur manual.
  */
 class StudioLocationController extends Controller
 {
-    /** Endpoint list lokasi (format JSON). */
+    /** Menampilkan daftar lokasi dalam format JSON. */
     public function index()
     {
         return response()->json(StudioLocation::orderBy('name')->get());
     }
 
-    /** Halaman kelola cabang (form + list). */
+    /** Menampilkan halaman kelola cabang beserta ruangan dan hari libur. */
     public function manage(Request $request)
     {
-        $locations = StudioLocation::with(['rooms'])->orderBy('name')->get();
+        $locations = StudioLocation::with(['rooms', 'holidays'])->orderBy('name')->get();
+        $holidays = StudioHoliday::with('studioLocation')->orderBy('holiday_date')->get();
         $editing = null;
         if ($request->filled('edit')) {
             $editing = StudioLocation::find($request->query('edit'));
         }
-        return view('admin.locations.index', compact('locations', 'editing'));
+        return view('admin.locations.index', compact('locations', 'editing', 'holidays'));
     }
 
     public function store(Request $request)
@@ -38,7 +40,7 @@ class StudioLocationController extends Controller
         $location = StudioLocation::create($data);
 
         if ($request->hasFile('photos')) {
-            // Simpan multi foto sekaligus, dan foto pertama jadi cover default.
+            // Simpan beberapa foto sekaligus untuk galeri lokasi.
             $paths = [];
             foreach ($request->file('photos') as $file) {
                 $paths[] = $file->storePublicly("locations/{$location->id}", 'public');
@@ -63,7 +65,7 @@ class StudioLocationController extends Controller
         $gallery = collect($studioLocation->photo_gallery ?? []);
 
         if ($request->boolean('remove_photos')) {
-            // Hapus semua foto lama bila user meminta reset galeri.
+            // Hapus seluruh foto lama jika pengguna meminta reset galeri.
             foreach ($gallery as $p) {
                 \Storage::disk('public')->delete($p);
             }
@@ -87,14 +89,14 @@ class StudioLocationController extends Controller
     {
         $studioLocation->delete();
         if (request()->wantsJson()) {
-            return response()->json(['message' => 'deleted']);
+            return response()->json(['message' => 'Lokasi berhasil dihapus.']);
         }
         return back()->with('status', 'Lokasi dihapus.');
     }
 
     protected function validateData(Request $request): array
     {
-        // Validasi tunggal agar konsisten antara create/update.
+        // Satu aturan validasi dipakai bersama agar hasil create dan update konsisten.
         return $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'address' => ['nullable', 'string', 'max:500'],
@@ -107,7 +109,7 @@ class StudioLocationController extends Controller
         ]);
     }
 
-    /** Tambah studio/ruang dalam cabang. */
+    /** Menambah ruangan pada cabang studio tertentu. */
     public function storeRoom(Request $request)
     {
         $data = $request->validate([
@@ -122,7 +124,7 @@ class StudioLocationController extends Controller
         return back()->with('status', 'Studio/ruang ditambahkan.');
     }
 
-    /** Ubah nama/deskripsi/status ruangan studio. */
+    /** Mengubah nama, deskripsi, atau status ruangan studio. */
     public function updateRoom(Request $request, StudioRoom $studioRoom)
     {
         $data = $request->validate([
@@ -140,7 +142,7 @@ class StudioLocationController extends Controller
         return back()->with('status', 'Studio/ruang diperbarui.');
     }
 
-    /** Hapus ruangan jika belum pernah dipakai booking; jika sudah dipakai wajib nonaktifkan. */
+    /** Menghapus ruangan jika belum pernah dipakai; jika sudah pernah dipakai, ruangan dinonaktifkan. */
     public function destroyRoom(StudioRoom $studioRoom)
     {
         if ($studioRoom->bookings()->exists()) {
@@ -150,6 +152,78 @@ class StudioLocationController extends Controller
 
         $studioRoom->delete();
         return back()->with('status', 'Studio/ruang dihapus.');
+    }
+
+    public function storeHoliday(Request $request)
+    {
+        $data = $request->validate([
+            'studio_location_id' => ['required', 'exists:studio_locations,id'],
+            'holiday_date' => ['required', 'date'],
+            'name' => ['required', 'string', 'max:255'],
+            'notes' => ['nullable', 'string', 'max:255'],
+            'is_active' => ['nullable', 'boolean'],
+        ]);
+
+        $exists = StudioHoliday::query()
+            ->where('studio_location_id', $data['studio_location_id'])
+            ->whereDate('holiday_date', $data['holiday_date'])
+            ->exists();
+
+        if ($exists) {
+            return back()
+                ->withInput()
+                ->withErrors(['holiday_date' => 'Tanggal libur untuk cabang yang dipilih sudah terdaftar.']);
+        }
+
+        StudioHoliday::create([
+            'studio_location_id' => $data['studio_location_id'],
+            'holiday_date' => $data['holiday_date'],
+            'name' => $data['name'],
+            'notes' => $data['notes'] ?? null,
+            'is_active' => (bool) ($data['is_active'] ?? true),
+        ]);
+
+        return back()->with('status', 'Hari libur studio ditambahkan.');
+    }
+
+    public function updateHoliday(Request $request, StudioHoliday $studioHoliday)
+    {
+        $data = $request->validate([
+            'studio_location_id' => ['required', 'exists:studio_locations,id'],
+            'holiday_date' => ['required', 'date'],
+            'name' => ['required', 'string', 'max:255'],
+            'notes' => ['nullable', 'string', 'max:255'],
+            'is_active' => ['nullable', 'boolean'],
+        ]);
+
+        $exists = StudioHoliday::query()
+            ->where('studio_location_id', $data['studio_location_id'])
+            ->whereDate('holiday_date', $data['holiday_date'])
+            ->whereKeyNot($studioHoliday->id)
+            ->exists();
+
+        if ($exists) {
+            return back()
+                ->withInput()
+                ->withErrors(['holiday_date' => 'Tanggal libur untuk cabang yang dipilih sudah terdaftar.']);
+        }
+
+        $studioHoliday->update([
+            'studio_location_id' => $data['studio_location_id'],
+            'holiday_date' => $data['holiday_date'],
+            'name' => $data['name'],
+            'notes' => $data['notes'] ?? null,
+            'is_active' => (bool) ($data['is_active'] ?? false),
+        ]);
+
+        return back()->with('status', 'Hari libur studio diperbarui.');
+    }
+
+    public function destroyHoliday(StudioHoliday $studioHoliday)
+    {
+        $studioHoliday->delete();
+
+        return back()->with('status', 'Hari libur studio dihapus.');
     }
 
     protected function syncPhotos(StudioLocation $location, array $paths): void

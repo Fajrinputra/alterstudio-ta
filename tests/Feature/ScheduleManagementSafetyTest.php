@@ -64,7 +64,7 @@ class ScheduleManagementSafetyTest extends TestCase
         ]);
     }
 
-    public function test_admin_cannot_delete_schedule_when_project_already_running(): void
+    public function test_schedule_delete_endpoint_is_not_available(): void
     {
         $admin = User::factory()->create(['role' => Role::ADMIN]);
         $photographer = User::factory()->create(['role' => Role::PHOTOGRAPHER]);
@@ -94,7 +94,7 @@ class ScheduleManagementSafetyTest extends TestCase
 
         $this->actingAs($admin)
             ->deleteJson("/projects/{$project->id}/schedule")
-            ->assertStatus(422);
+            ->assertStatus(405);
 
         $this->assertDatabaseHas('projects', [
             'id' => $project->id,

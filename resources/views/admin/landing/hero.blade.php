@@ -55,7 +55,7 @@
                                     <label class="text-xs font-medium text-[#7A5B3A] tracking-widest block mb-2">SUBJUDUL</label>
                                     <textarea name="subtitle" rows="3"
                                               class="w-full px-5 py-4 rounded-3xl border border-[#E1D3C5] bg-white/70 backdrop-blur-md focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20 transition-all text-[#3F2B1B] resize-y"
-                                              placeholder="Sentuhan profesional dari booking hingga hasil akhir...">{{ old('subtitle') }}</textarea>
+                                              placeholder="Sentuhan profesional dari pemesanan hingga hasil akhir...">{{ old('subtitle') }}</textarea>
                                 </div>
                                 
                                 <div class="grid grid-cols-2 gap-4">

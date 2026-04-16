@@ -33,6 +33,10 @@ class PhotoSelectionController extends Controller
             ->where('project_id', $project->id)
             ->firstOrFail();
 
+        if ($asset->type !== MediaAsset::TYPE_RAW) {
+            return back()->with('error', 'Hanya foto RAW yang dapat dipilih untuk diedit.');
+        }
+
         // Toggle: jika sudah dipilih, hapus. Jika belum, tambahkan (maks 10).
         $existing = PhotoSelection::where('project_id', $project->id)
             ->where('client_id', $user->id)

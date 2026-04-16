@@ -22,17 +22,18 @@
                 <div class="relative glass border border-[#EDE0D0] rounded-3xl p-8 shadow-xl backdrop-blur-2xl">
                     <form method="GET" class="space-y-6">
                         <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                            {{-- Status Pembayaran --}}
+                            {{-- Status Pemesanan --}}
                             <div class="space-y-2">
                                 <label class="text-xs font-medium text-[#7A5B3A] flex items-center gap-2 tracking-widest">
                                     <i class="fa-solid fa-credit-card text-[#D4A017]"></i>
-                                    Status Pembayaran
+                                    Status Pemesanan
                                 </label>
                                 <select name="status" class="w-full px-5 py-3.5 rounded-3xl border border-[#E1D3C5] bg-white/70 backdrop-blur-md text-[#3F2B1B] focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20 transition-all text-sm">
                                     <option value="">Semua Status</option>
                                     @php
                                         $statusLabels = [
-                                            'WAITING_PAYMENT' => 'Menunggu Pembayaran',
+                                            'SUBMITTED' => 'Diajukan',
+                                            'WAITING_PAYMENT' => 'Dikonfirmasi',
                                             'DP_PAID' => 'DP Dibayar',
                                             'PAID' => 'Lunas',
                                             'CANCELLED' => 'Dibatalkan',
@@ -123,9 +124,9 @@
                                     <th class="px-6 py-5 text-center text-xs font-semibold text-[#3F2B1B] tracking-widest uppercase">Tanggal</th>
                                     <th class="px-6 py-5 text-center text-xs font-semibold text-[#3F2B1B] tracking-widest uppercase">Studio</th>
                                     <th class="px-6 py-5 text-center text-xs font-semibold text-[#3F2B1B] tracking-widest uppercase">Status Jadwal</th>
-                                    <th class="px-6 py-5 text-center text-xs font-semibold text-[#3F2B1B] tracking-widest uppercase">Status Pembayaran</th>
+                                    <th class="px-6 py-5 text-center text-xs font-semibold text-[#3F2B1B] tracking-widest uppercase">Status Pemesanan</th>
                                     <th class="px-6 py-5 text-center text-xs font-semibold text-[#3F2B1B] tracking-widest uppercase">Project</th>
-                                    <th class="px-6 py-5 text-center text-xs font-semibold text-[#3F2B1B] tracking-widest uppercase">Aksi Pembayaran</th>
+                                    <th class="px-6 py-5 text-center text-xs font-semibold text-[#3F2B1B] tracking-widest uppercase">Aksi Status</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-[#EDE0D0]">
@@ -185,12 +186,16 @@
                                         </td>
                                         <td class="px-6 py-5 text-center">
                                             @php
+                                                $displayStatusKey = $b->isSubmitted()
+                                                    ? 'SUBMITTED'
+                                                    : ($b->isConfirmedAwaitingPayment() ? 'WAITING_PAYMENT' : $b->status);
                                                 $badge = [
-                                                    'WAITING_PAYMENT' => ['bg'=>'bg-amber-100', 'text'=>'text-amber-700', 'label'=>'Menunggu Pembayaran'],
+                                                    'SUBMITTED'       => ['bg'=>'bg-amber-100', 'text'=>'text-amber-700', 'label'=>'Diajukan'],
+                                                    'WAITING_PAYMENT' => ['bg'=>'bg-sky-100', 'text'=>'text-sky-700', 'label'=>'Dikonfirmasi'],
                                                     'DP_PAID'         => ['bg'=>'bg-blue-100', 'text'=>'text-blue-700', 'label'=>'DP Dibayar'],
                                                     'PAID'            => ['bg'=>'bg-emerald-100', 'text'=>'text-emerald-700', 'label'=>'Lunas'],
                                                     'CANCELLED'       => ['bg'=>'bg-red-100', 'text'=>'text-red-700', 'label'=>'Dibatalkan'],
-                                                ][$b->status] ?? ['bg'=>'bg-gray-100', 'text'=>'text-gray-700', 'label'=>$b->status];
+                                                ][$displayStatusKey] ?? ['bg'=>'bg-gray-100', 'text'=>'text-gray-700', 'label'=>$displayStatusKey];
                                             @endphp
                                             <span class="inline-flex items-center gap-2 px-4 py-2 rounded-3xl text-xs font-semibold {{ $badge['bg'] }} {{ $badge['text'] }}">
                                                 <span class="w-2 h-2 rounded-full {{ $badge['text'] }} bg-current"></span>
@@ -211,19 +216,28 @@
                                         <td class="px-6 py-5 text-center">
                                             @php
                                                 $isAdmin = auth()->user()?->role === \App\Enums\Role::ADMIN;
-                                                $canUpdatePayment = $isAdmin && $b->status === 'DP_PAID';
+                                                $availableStatusTransitions = match ($b->status) {
+                                                    'WAITING_PAYMENT' => $b->confirmed_at
+                                                        ? ['CANCELLED' => 'Batalkan Pemesanan']
+                                                        : ['WAITING_PAYMENT' => 'Konfirmasi Pemesanan', 'CANCELLED' => 'Tolak Pemesanan'],
+                                                    'DP_PAID' => ['PAID' => 'Lunas', 'CANCELLED' => 'Batalkan Pemesanan'],
+                                                    'PAID' => ['CANCELLED' => 'Batalkan Pemesanan'],
+                                                    default => [],
+                                                };
+                                                $canUpdatePayment = $isAdmin && !empty($availableStatusTransitions);
                                                 $paymentActionLabel = [
-                                                    'WAITING_PAYMENT' => 'Menunggu Pembayaran',
+                                                    'SUBMITTED' => 'Diajukan',
+                                                    'WAITING_PAYMENT' => 'Dikonfirmasi',
                                                     'DP_PAID' => 'DP Dibayar',
                                                     'PAID' => 'Lunas',
                                                     'CANCELLED' => 'Dibatalkan',
-                                                ][$b->status] ?? $b->status;
+                                                ][$displayStatusKey] ?? $displayStatusKey;
                                             @endphp
                                             @if($canUpdatePayment)
                                                 <div class="space-y-3">
                                                     <div class="flex items-center gap-3 justify-center">
-                                                        <span class="inline-flex items-center px-4 py-2 rounded-3xl border border-blue-200 bg-blue-50 text-sm text-blue-700 font-medium">
-                                                            DP Dibayar
+                                                        <span class="inline-flex items-center px-4 py-2 rounded-3xl border text-sm font-medium {{ $badge['bg'] }} {{ $badge['text'] }} border-current/20">
+                                                            {{ $paymentActionLabel }}
                                                         </span>
                                                         <button type="button"
                                                                 class="px-5 py-2 rounded-3xl border border-[#E1D3C5] bg-white text-xs font-semibold text-[#5C432C] hover:bg-[#FAF6F0] hover:border-[#D4A017] transition-all flex items-center gap-2"
@@ -236,8 +250,9 @@
                                                         @csrf
                                                         <select name="status"
                                                                 class="px-5 py-2 rounded-3xl border border-[#E1D3C5] bg-white/70 text-sm text-[#3F2B1B] focus:border-[#D4A017]">
-                                                            <option value="PAID">Lunas</option>
-                                                            <option value="CANCELLED">Dibatalkan</option>
+                                                            @foreach($availableStatusTransitions as $statusValue => $statusLabel)
+                                                                <option value="{{ $statusValue }}">{{ $statusLabel }}</option>
+                                                            @endforeach
                                                         </select>
                                                         <button class="px-6 py-2 rounded-3xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] text-white text-xs font-semibold hover:brightness-110 transition-all flex items-center gap-2">
                                                             <i class="fa-solid fa-check"></i>
@@ -248,10 +263,11 @@
                                             @else
                                                 @php
                                                     $paymentActionStyle = [
-                                                        'WAITING_PAYMENT' => 'border-amber-200 bg-amber-50 text-amber-700',
+                                                        'SUBMITTED' => 'border-amber-200 bg-amber-50 text-amber-700',
+                                                        'WAITING_PAYMENT' => 'border-sky-200 bg-sky-50 text-sky-700',
                                                         'PAID' => 'border-emerald-200 bg-emerald-50 text-emerald-700',
                                                         'CANCELLED' => 'border-red-200 bg-red-50 text-red-700',
-                                                    ][$b->status] ?? 'border-[#E1D3C5] bg-white/60 text-[#7A5B3A]';
+                                                    ][$displayStatusKey] ?? 'border-[#E1D3C5] bg-white/60 text-[#7A5B3A]';
                                                 @endphp
                                                 <span class="inline-flex items-center px-5 py-2 rounded-3xl border text-sm font-medium {{ $paymentActionStyle }}">
                                                     {{ $paymentActionLabel }}

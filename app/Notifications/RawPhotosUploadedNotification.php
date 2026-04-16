@@ -35,7 +35,7 @@ class RawPhotosUploadedNotification extends Notification implements ShouldQueue
             ->greeting('Halo '.$notifiable->name.',')
             ->line('Foto untuk sesi Anda sudah diunggah ke sistem.')
             ->line('Paket: '.$packageName)
-            ->line('Silakan buka halaman pemesanan untuk melihat foto dan memilih maksimal 5 foto yang ingin diedit.')
+            ->line('Silakan buka halaman pemesanan untuk melihat foto dan memilih maksimal 10 foto yang ingin diedit.')
             ->action('Lihat Pemesanan', route('bookings.index'))
             ->line('Terima kasih telah menggunakan layanan Alter Studio.');
     }
