@@ -19,21 +19,19 @@
     </x-slot>
 
     <div class="max-w-5xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
-        <div class="bg-white rounded-3xl border border-[#EDE0D0] shadow-2xl p-10">
-            <div class="flex items-center justify-center gap-4 mb-12">
-                <div class="flex items-center">
-                    <div class="w-9 h-9 rounded-2xl bg-gradient-to-br from-[#D4A017] to-[#E07A5F] text-white flex items-center justify-center font-bold text-lg shadow-inner">1</div>
-                    <span class="ml-3 font-medium text-[#3F2B1B]">Pilih Paket</span>
+        <div class="bg-white rounded-3xl border border-[#EDE0D0] shadow-2xl p-6 sm:p-8 lg:p-10">
+            <div class="mb-12 grid gap-4 sm:grid-cols-3">
+                <div class="flex items-center gap-3 rounded-3xl border border-[#EDE0D0] bg-[#FAF6F0] px-4 py-3">
+                    <div class="flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-[#D4A017] to-[#E07A5F] text-lg font-bold text-white shadow-inner">1</div>
+                    <span class="font-medium text-[#3F2B1B]">Pilih Paket</span>
                 </div>
-                <div class="flex-1 max-w-[80px] h-px bg-gradient-to-r from-[#D4A017] to-[#EDE0D0]"></div>
-                <div class="flex items-center">
-                    <div class="w-9 h-9 rounded-2xl bg-gradient-to-br from-[#D4A017] to-[#E07A5F] text-white flex items-center justify-center font-bold text-lg shadow-inner">2</div>
-                    <span class="ml-3 font-medium text-[#3F2B1B]">Detail Pemesanan</span>
+                <div class="flex items-center gap-3 rounded-3xl border border-[#EDE0D0] bg-[#FAF6F0] px-4 py-3">
+                    <div class="flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-[#D4A017] to-[#E07A5F] text-lg font-bold text-white shadow-inner">2</div>
+                    <span class="font-medium text-[#3F2B1B]">Detail Pemesanan</span>
                 </div>
-                <div class="flex-1 max-w-[80px] h-px bg-[#EDE0D0]"></div>
-                <div class="flex items-center opacity-40">
-                    <div class="w-9 h-9 rounded-2xl border-2 border-[#EDE0D0] text-[#8B7359] flex items-center justify-center font-bold text-lg">3</div>
-                    <span class="ml-3 text-sm text-[#8B7359]">Selesai</span>
+                <div class="flex items-center gap-3 rounded-3xl border border-[#EDE0D0] bg-white/70 px-4 py-3 opacity-60">
+                    <div class="flex h-9 w-9 items-center justify-center rounded-2xl border-2 border-[#EDE0D0] text-lg font-bold text-[#8B7359]">3</div>
+                    <span class="text-sm text-[#8B7359]">Selesai</span>
                 </div>
             </div>
 
@@ -73,9 +71,9 @@
                     @csrf
                     <input type="hidden" name="package_id" value="{{ $selectedPackage->id }}">
 
-                    <div class="rounded-3xl border border-[#EDE0D0] bg-white p-8">
+                    <div class="rounded-3xl border border-[#EDE0D0] bg-white p-6 sm:p-8">
                         <p class="uppercase tracking-widest text-xs text-[#8B7359] mb-3">Paket Terpilih</p>
-                        <div class="flex flex-col md:flex-row gap-6 items-start">
+                        <div class="flex flex-col gap-6 md:flex-row md:items-start">
                             @if($selectedPackage->overview_image)
                                 <img src="{{ Storage::url($selectedPackage->overview_image) }}"
                                      class="w-full md:w-40 h-40 rounded-2xl object-cover border border-[#EDE0D0] shadow-sm"
@@ -106,8 +104,8 @@
                                         $oldQuantities = old('addon_quantities', []);
                                         $quantity = max(1, (int) (is_array($oldQuantities) ? ($oldQuantities[$addonKey] ?? 1) : 1));
                                     @endphp
-                                    <div class="addon-card p-6 border border-[#EDE0D0] rounded-3xl bg-white hover:border-[#D4A017] transition-all">
-                                        <div class="flex items-start justify-between">
+                                    <div class="addon-card rounded-3xl border border-[#EDE0D0] bg-white p-6 transition-all hover:border-[#D4A017]">
+                                        <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                                             <label class="flex items-start gap-4 cursor-pointer flex-1">
                                                 <input type="checkbox"
                                                        name="selected_addons[]"
@@ -124,14 +122,14 @@
                                                     </p>
                                                 </div>
                                             </label>
-                                            <div class="w-28">
-                                                <label class="block text-xs text-[#8B7359] mb-1 text-right">Jumlah</label>
+                                            <div class="w-full lg:w-28">
+                                                <label class="mb-1 block text-xs text-[#8B7359] lg:text-right">Jumlah</label>
                                                 <input id="addon-qty-{{ $loop->index }}"
                                                        type="number"
                                                        name="addon_quantities[{{ $addonKey }}]"
                                                        min="1"
                                                        value="{{ $quantity }}"
-                                                       class="addon-quantity-input w-full px-4 py-3 rounded-2xl border border-[#E1D3C5] bg-[#FAF6F0] text-center focus:border-[#D4A017]"
+                                                       class="addon-quantity-input w-full rounded-2xl border border-[#E1D3C5] bg-[#FAF6F0] px-4 py-3 text-center focus:border-[#D4A017]"
                                                        @disabled(!$isChecked)>
                                             </div>
                                         </div>
@@ -210,18 +208,18 @@
                                   placeholder="Permintaan khusus, tema foto, atau catatan lain...">{{ old('notes') }}</textarea>
                     </div>
 
-                    <div class="rounded-3xl border border-[#EDE0D0] bg-[#FAF6F0] p-8 space-y-4">
-                        <div class="flex justify-between text-[#5C432C]">
+                    <div class="space-y-4 rounded-3xl border border-[#EDE0D0] bg-[#FAF6F0] p-6 sm:p-8">
+                        <div class="flex flex-col gap-1 text-[#5C432C] sm:flex-row sm:items-center sm:justify-between">
                             <span>Harga Paket Dasar</span>
                             <span class="font-medium">Rp <span id="base-price">{{ number_format($basePrice) }}</span></span>
                         </div>
-                        <div class="flex justify-between text-[#5C432C]">
+                        <div class="flex flex-col gap-1 text-[#5C432C] sm:flex-row sm:items-center sm:justify-between">
                             <span>Total Add-on</span>
                             <span class="font-medium">Rp <span id="addon-total">0</span></span>
                         </div>
-                        <div class="flex justify-between text-lg pt-4 border-t border-[#EDE0D0]">
+                        <div class="flex flex-col gap-2 border-t border-[#EDE0D0] pt-4 text-lg sm:flex-row sm:items-center sm:justify-between">
                             <span class="font-semibold text-[#3F2B1B]">Total Keseluruhan</span>
-                            <span class="font-bold text-2xl text-[#D4A017]">Rp <span id="grand-total">{{ number_format($basePrice) }}</span></span>
+                            <span class="text-2xl font-bold text-[#D4A017]">Rp <span id="grand-total">{{ number_format($basePrice) }}</span></span>
                         </div>
                         <div class="pt-4 border-t border-[#EDE0D0] text-sm text-[#7A5B3A]">
                             Setelah formulir dikirim, pemesanan akan masuk ke admin untuk ditinjau. Pembayaran baru dibuka setelah admin mengonfirmasi pemesanan.

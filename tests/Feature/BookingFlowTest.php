@@ -257,7 +257,7 @@ class BookingFlowTest extends TestCase
         $this->assertEquals(Payment::STATUS_EXPIRED, $settlement->fresh()->status);
     }
 
-    public function test_admin_can_cancel_paid_booking_manually(): void
+    public function test_paid_booking_status_cannot_be_changed_manually(): void
     {
         $admin = User::factory()->create(['role' => Role::ADMIN]);
         $package = ServicePackage::factory()->create(['price' => 450000]);
@@ -295,7 +295,7 @@ class BookingFlowTest extends TestCase
             ])
             ->assertRedirect();
 
-        $this->assertEquals(Booking::STATUS_CANCELLED, $booking->fresh()->status);
+        $this->assertEquals(Booking::STATUS_PAID, $booking->fresh()->status);
         $this->assertEquals(Payment::STATUS_PAID, $booking->payments()->first()->status);
     }
 

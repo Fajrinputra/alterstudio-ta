@@ -296,7 +296,6 @@ class BookingController extends Controller
             $booking->isSubmitted() => [Booking::STATUS_WAITING_PAYMENT, Booking::STATUS_CANCELLED],
             $booking->isConfirmedAwaitingPayment() => [Booking::STATUS_CANCELLED],
             $booking->status === Booking::STATUS_DP_PAID => [Booking::STATUS_PAID, Booking::STATUS_CANCELLED],
-            $booking->status === Booking::STATUS_PAID => [Booking::STATUS_CANCELLED],
             default => [],
         };
 

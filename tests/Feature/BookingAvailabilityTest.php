@@ -8,6 +8,7 @@ use App\Models\ServicePackage;
 use App\Models\StudioHoliday;
 use App\Models\StudioLocation;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -19,6 +20,7 @@ class BookingAvailabilityTest extends TestCase
     {
         config()->set('studio.closed_weekdays', []);
         config()->set('studio.holidays', []);
+        $bookingDate = Carbon::now()->addDays(2)->toDateString();
 
         $client = User::factory()->create(['role' => Role::CLIENT]);
         $package = ServicePackage::factory()->create(['duration_minutes' => 60]);
@@ -32,7 +34,7 @@ class BookingAvailabilityTest extends TestCase
         Booking::factory()->create([
             'package_id' => $package->id,
             'studio_location_id' => $location->id,
-            'booking_date' => '2026-04-15',
+            'booking_date' => $bookingDate,
             'booking_time' => '14:00',
             'status' => Booking::STATUS_WAITING_PAYMENT,
         ]);
@@ -41,7 +43,7 @@ class BookingAvailabilityTest extends TestCase
             ->getJson(route('bookings.availability', [
                 'package_id' => $package->id,
                 'studio_location_id' => $location->id,
-                'booking_date' => '2026-04-15',
+                'booking_date' => $bookingDate,
             ]))
             ->assertOk();
 
@@ -56,6 +58,7 @@ class BookingAvailabilityTest extends TestCase
     {
         config()->set('studio.closed_weekdays', [0, 6]);
         config()->set('studio.holidays', []);
+        $weekendDate = Carbon::now()->next(Carbon::SATURDAY)->toDateString();
 
         $client = User::factory()->create(['role' => Role::CLIENT]);
         $package = ServicePackage::factory()->create();
@@ -70,7 +73,7 @@ class BookingAvailabilityTest extends TestCase
             ->getJson(route('bookings.availability', [
                 'package_id' => $package->id,
                 'studio_location_id' => $location->id,
-                'booking_date' => '2026-04-18',
+                'booking_date' => $weekendDate,
             ]))
             ->assertOk()
             ->assertJsonPath('is_closed', true);

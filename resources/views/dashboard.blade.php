@@ -4,7 +4,7 @@
 
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center justify-between">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
                 <p class="text-sm text-[#8B7359] flex items-center gap-2">
                     <i class="fa-solid fa-calendar text-[#D4A017]"></i>
@@ -74,32 +74,61 @@
                         <p class="text-[#7A5B3A]">5 pemesanan terakhir Anda</p>
                     </div>
                     
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full text-sm">
+                    <div class="space-y-4 p-4 lg:hidden">
+                        @forelse($data['latest'] ?? [] as $booking)
+                            <article class="rounded-3xl border border-[#EDE0D0] bg-[#FAF6F0] px-4 py-4">
+                                <div class="flex items-start justify-between gap-3">
+                                    <div>
+                                        <p class="text-[11px] uppercase tracking-wide text-[#8B7359]">Pemesanan {{ $loop->iteration }}</p>
+                                        <h4 class="mt-1 text-sm font-semibold text-[#3F2B1B]">{{ $booking->package->name ?? '-' }}</h4>
+                                    </div>
+                                    <x-status-badge :status="$booking->status" :confirmed-at="$booking->confirmed_at" />
+                                </div>
+                                <dl class="mt-4 grid grid-cols-2 gap-3 text-sm">
+                                    <div class="rounded-2xl bg-white px-3 py-2.5">
+                                        <dt class="text-[11px] uppercase tracking-wide text-[#8B7359]">Tanggal</dt>
+                                        <dd class="mt-1 font-medium text-[#3F2B1B]">{{ $booking->booking_date->translatedFormat('d M Y') }}</dd>
+                                    </div>
+                                    <div class="rounded-2xl bg-white px-3 py-2.5">
+                                        <dt class="text-[11px] uppercase tracking-wide text-[#8B7359]">Project</dt>
+                                        <dd class="mt-1 font-medium text-[#3F2B1B]">{{ $booking->project?->status ?? '-' }}</dd>
+                                    </div>
+                                </dl>
+                            </article>
+                        @empty
+                            <div class="px-4 py-12 text-center text-[#7A5B3A]">
+                                <i class="fa-solid fa-folder-open mb-3 block text-5xl opacity-40"></i>
+                                Belum ada pemesanan
+                            </div>
+                        @endforelse
+                    </div>
+
+                    <div class="hidden overflow-x-auto lg:block">
+                        <table class="min-w-full table-fixed text-sm">
                             <thead>
-                                <tr class="text-[#8B7359] bg-[#FAF6F0]">
-                                    <th class="px-8 py-5 text-center font-medium">No</th>
-                                    <th class="px-8 py-5 text-center font-medium">Tanggal</th>
-                                    <th class="px-8 py-5 text-center font-medium">Paket</th>
-                                    <th class="px-8 py-5 text-center font-medium">Status</th>
-                                    <th class="px-8 py-5 text-center font-medium">Project</th>
+                                <tr class="bg-[#FAF6F0] text-[#8B7359]">
+                                    <th class="px-4 py-4 text-left font-medium">No</th>
+                                    <th class="px-4 py-4 text-left font-medium">Tanggal</th>
+                                    <th class="px-4 py-4 text-left font-medium">Paket</th>
+                                    <th class="px-4 py-4 text-left font-medium">Status</th>
+                                    <th class="px-4 py-4 text-left font-medium">Project</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-[#EDE0D0]">
                                 @forelse($data['latest'] ?? [] as $booking)
                                     <tr class="text-[#3F2B1B] hover:bg-[#FAF6F0] transition-all">
-                                        <td class="px-8 py-5 text-center font-medium">{{ $loop->iteration }}</td>
-                                        <td class="px-8 py-5 text-center">{{ $booking->booking_date->translatedFormat('d M Y') }}</td>
-                                        <td class="px-8 py-5 text-center">{{ $booking->package->name ?? '-' }}</td>
-                                        <td class="px-8 py-5 text-center">
+                                        <td class="px-4 py-4 font-medium">{{ $loop->iteration }}</td>
+                                        <td class="px-4 py-4">{{ $booking->booking_date->translatedFormat('d M Y') }}</td>
+                                        <td class="px-4 py-4">{{ $booking->package->name ?? '-' }}</td>
+                                        <td class="px-4 py-4">
                                             <x-status-badge :status="$booking->status" :confirmed-at="$booking->confirmed_at" />
                                         </td>
-                                        <td class="px-8 py-5 text-center">{{ $booking->project?->status ?? '-' }}</td>
+                                        <td class="px-4 py-4">{{ $booking->project?->status ?? '-' }}</td>
                                     </tr>
                                 @empty
                                     <tr>
                                         <td colspan="5" class="px-8 py-16 text-center text-[#7A5B3A]">
-                                            <i class="fa-solid fa-folder-open text-5xl mb-3 block opacity-40"></i>
+                                            <i class="fa-solid fa-folder-open mb-3 block text-5xl opacity-40"></i>
                                             Belum ada pemesanan
                                         </td>
                                     </tr>

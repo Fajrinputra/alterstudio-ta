@@ -21,7 +21,7 @@
     $badge = $map[$statusKey] ?? ['bg' => 'bg-slate-50 text-slate-700 border-slate-200', 'dot' => 'bg-slate-500', 'label' => $statusKey, 'icon' => 'fa-solid fa-tag'];
 @endphp
 
-<span {{ $attributes->class("inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border shadow-sm {$badge['bg']}") }}>
+<span {{ $attributes->class("inline-flex min-h-[34px] items-center gap-2 rounded-3xl border px-3 py-1.5 text-[11px] font-semibold shadow-sm {$badge['bg']}") }}>
     <span class="h-2 w-2 rounded-full {{ $badge['dot'] }}"></span>
     <i class="{{ $badge['icon'] }} text-[10px] opacity-80"></i>
     {{ $badge['label'] }}

@@ -167,7 +167,7 @@
                                                 <i class="fa-solid fa-location-dot"></i>
                                                 {{ $project->booking->studioLocation->name ?? 'Cabang belum dipilih' }}
                                                 @if($project->booking->studioRoom)
-                                                    — {{ $project->booking->studioRoom->name }}
+                                                    - {{ $project->booking->studioRoom->name }}
                                                 @endif
                                             </span>
                                         </div>
@@ -191,7 +191,7 @@
                                             <span class="px-5 py-2 rounded-3xl text-sm font-medium bg-orange-100 text-orange-700 flex items-center gap-2">
                                                 <i class="fa-solid fa-pen-ruler"></i> Editor
                                             </span>
-                                        @endif>
+                                        @endif
                                         @if(!(isset($readOnly) && $readOnly))
                                             <span class="px-5 py-2 rounded-3xl text-sm font-medium {{ $scheduleManageBadge['color'] }}">
                                                 {{ $scheduleManageBadge['label'] }}
@@ -207,7 +207,7 @@
                                     <p class="text-xs tracking-widest text-[#8B7359] mb-2">JADWAL PEMESANAN</p>
                                     <p class="text-[#3F2B1B] font-medium flex items-center gap-3">
                                         <i class="fa-solid fa-calendar text-[#D4A017]"></i>
-                                        {{ $startText }} — {{ $endText }}
+                                        {{ $startText }} - {{ $endText }}
                                     </p>
                                     <p class="text-sm text-[#7A5B3A] mt-1">Durasi: {{ $duration }} menit</p>
                                 </div>
@@ -380,7 +380,7 @@
                                             </select>
                                         </div>
                                         <div>
-                                            <button class="w-full h-14 rounded-3xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] text-white font-semibold shadow-xl hover:shadow-2xl hover:-translate-y-0.5 transition-all flex items-center justify-center gap-3 text-base"
+                                            <button class="flex h-14 w-full items-center justify-center gap-3 rounded-3xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] text-base font-semibold text-white shadow-xl transition-all hover:-translate-y-0.5 hover:shadow-2xl disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 disabled:hover:shadow-xl"
                                                     @if(!$canSchedule) disabled @endif>
                                                 <i class="fa-solid fa-calendar-check"></i>
                                                 {{ $canSchedule ? 'Simpan Jadwal' : 'Belum Bisa Dijadwalkan' }}
@@ -451,7 +451,7 @@
                             @if($project->schedule)
                                 <div class="mt-8 pt-6 border-t border-[#EDE0D0] text-sm text-[#7A5B3A]">
                                     <i class="fa-solid fa-clock text-[#D4A017]"></i>
-                                    Terjadwal: {{ $project->schedule->start_at }} — {{ $project->schedule->end_at }}
+                                    Terjadwal: {{ $project->schedule->start_at }} - {{ $project->schedule->end_at }}
                                 </div>
                             @endif
                         </div>

@@ -39,13 +39,13 @@
 
             <div class="p-8">
                 <div class="bg-[#FAF6F0] rounded-3xl p-8 space-y-6">
-                    <div class="flex justify-between items-center pb-4 border-b border-[#EDE0D0]">
+                    <div class="flex flex-col gap-2 border-b border-[#EDE0D0] pb-4 sm:flex-row sm:items-center sm:justify-between">
                         <span class="text-[#5C432C]">Paket</span>
                         <span class="font-semibold text-[#3F2B1B] text-right">{{ $booking->package->name ?? '-' }}</span>
                     </div>
 
                     @if(!empty($booking->selected_addons))
-                        <div class="flex justify-between items-start pb-4 border-b border-[#EDE0D0]">
+                        <div class="flex flex-col gap-2 border-b border-[#EDE0D0] pb-4 sm:flex-row sm:items-start sm:justify-between">
                             <span class="text-[#5C432C]">Add-on</span>
                             <div class="text-right space-y-1">
                                 @foreach($booking->selected_addons as $addon)
@@ -68,33 +68,33 @@
                         </div>
                     @endif
 
-                    <div class="flex justify-between items-center pb-4 border-b border-[#EDE0D0]">
+                    <div class="flex flex-col gap-2 border-b border-[#EDE0D0] pb-4 sm:flex-row sm:items-center sm:justify-between">
                         <span class="text-[#5C432C]">Tanggal Pemesanan</span>
                         <span class="font-semibold text-[#3F2B1B]">{{ \Carbon\Carbon::parse($booking->booking_date)->format('d M Y') }}</span>
                     </div>
 
-                    <div class="flex justify-between items-center pb-4 border-b border-[#EDE0D0]">
+                    <div class="flex flex-col gap-2 border-b border-[#EDE0D0] pb-4 sm:flex-row sm:items-center sm:justify-between">
                         <span class="text-[#5C432C]">Lokasi</span>
                         <span class="font-semibold text-[#3F2B1B]">{{ $booking->location }}</span>
                     </div>
 
-                    <div class="flex justify-between items-center pb-4 border-b border-[#EDE0D0]">
+                    <div class="flex flex-col gap-2 border-b border-[#EDE0D0] pb-4 sm:flex-row sm:items-center sm:justify-between">
                         <span class="text-[#5C432C]">Jenis Pembayaran</span>
-                        <span class="px-5 py-2 rounded-3xl text-sm font-semibold bg-blue-100 text-blue-700 border border-blue-200">
+                        <span class="inline-flex min-h-[34px] items-center rounded-3xl border border-blue-200 bg-blue-100 px-5 py-2 text-sm font-semibold text-blue-700">
                             {{ $isSettlement ? 'Pelunasan Sisa Pembayaran' : ($requestedType === 'DP' ? 'DP (Minimal Rp 100.000)' : 'Pembayaran Lunas') }}
                         </span>
                     </div>
 
                     @if($paidAmount > 0)
-                        <div class="flex justify-between items-center pb-4 border-b border-[#EDE0D0]">
+                        <div class="flex flex-col gap-2 border-b border-[#EDE0D0] pb-4 sm:flex-row sm:items-center sm:justify-between">
                             <span class="text-[#5C432C]">Sudah Dibayar</span>
                             <span class="font-semibold text-emerald-700">Rp {{ number_format($paidAmount) }}</span>
                         </div>
                     @endif
 
-                    <div class="flex justify-between items-center pt-4">
+                    <div class="flex flex-col gap-3 pt-4 sm:flex-row sm:items-center sm:justify-between">
                         <span class="text-lg font-semibold text-[#3F2B1B]">{{ $isSettlement ? 'Sisa yang harus dibayar' : 'Total yang harus dibayar' }}</span>
-                        <span class="text-4xl font-bold text-[#D4A017]">Rp {{ number_format($payableAmount) }}</span>
+                        <span class="text-3xl font-bold text-[#D4A017] sm:text-4xl">Rp {{ number_format($payableAmount) }}</span>
                     </div>
                 </div>
 

@@ -74,18 +74,6 @@
                     $remainingAmount = $booking->remainingAmount();
                     
                     $bookingStatus = $booking->statusLabel();
-                    
-                    $statusColors = [
-                        'SUBMITTED' => 'bg-amber-100 text-amber-700 border-amber-200',
-                        'WAITING_PAYMENT' => 'bg-sky-100 text-sky-700 border-sky-200',
-                        'DP_PAID' => 'bg-blue-100 text-blue-700 border-blue-200',
-                        'PAID' => 'bg-emerald-100 text-emerald-700 border-emerald-200',
-                        'CANCELLED' => 'bg-red-100 text-red-700 border-red-200',
-                    ];
-                    $statusKey = $booking->isSubmitted()
-                        ? 'SUBMITTED'
-                        : ($booking->isConfirmedAwaitingPayment() ? 'WAITING_PAYMENT' : $booking->status);
-                    $statusColor = $statusColors[$statusKey] ?? 'bg-[#FAF6F0] text-[#5C432C] border-[#EDE0D0]';
                 @endphp
 
                 <div class="bg-white rounded-3xl border border-[#EDE0D0] shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden">
@@ -130,10 +118,8 @@
                                 </div>
                             </div>
 
-                            <div class="text-right">
-                                <span class="inline-block px-5 py-2 rounded-3xl text-sm font-semibold border {{ $statusColor }}">
-                                    {{ $bookingStatus }}
-                                </span>
+                            <div class="w-full sm:w-auto sm:text-right">
+                                <x-status-badge :status="$booking->status" :confirmed-at="$booking->confirmed_at" />
                                 @if($project)
                                     <p class="text-xs text-[#8B7359] mt-3">{{ $statusText }}</p>
                                 @endif
@@ -174,7 +160,7 @@
                                         </div>
                                     </div>
                                     <a href="{{ route('bookings.pay', $booking) }}" 
-                                       class="sm:ml-auto px-8 py-4 rounded-3xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] text-white font-semibold hover:brightness-110 transition-all">
+                                       class="inline-flex items-center justify-center rounded-3xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] px-8 py-4 font-semibold text-white transition-all hover:brightness-110 sm:ml-auto">
                                         Lanjutkan Pembayaran
                                     </a>
                                 </div>
@@ -194,7 +180,7 @@
                                         </div>
                                     </div>
                                     <a href="{{ route('bookings.pay', $booking) }}"
-                                       class="sm:ml-auto px-8 py-4 rounded-3xl bg-gradient-to-r from-[#3B82F6] to-[#2563EB] text-white font-semibold hover:brightness-110 transition-all">
+                                       class="inline-flex items-center justify-center rounded-3xl bg-gradient-to-r from-[#3B82F6] to-[#2563EB] px-8 py-4 font-semibold text-white transition-all hover:brightness-110 sm:ml-auto">
                                         Lunasi Sekarang
                                     </a>
                                 </div>

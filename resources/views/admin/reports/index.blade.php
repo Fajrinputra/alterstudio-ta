@@ -161,52 +161,110 @@
                         Pemesanan dalam Periode
                     </h3>
                     
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full">
+                    <div class="space-y-4 lg:hidden">
+                        @foreach($bookings as $b)
+                            @php
+                                $reportStatusKey = $b->isSubmitted()
+                                    ? 'SUBMITTED'
+                                    : ($b->isConfirmedAwaitingPayment() ? 'WAITING_PAYMENT' : $b->status);
+                                $statusLabels = [
+                                    'SUBMITTED' => 'Diajukan',
+                                    'WAITING_PAYMENT' => 'Dikonfirmasi',
+                                    'DP_PAID' => 'DP Dibayar',
+                                    'PAID' => 'Lunas',
+                                    'CANCELLED' => 'Dibatalkan',
+                                    'EXPIRED' => 'Kedaluwarsa',
+                                    'FAILED' => 'Gagal',
+                                ];
+                                $statusColors = [
+                                    'SUBMITTED' => 'bg-amber-100 text-amber-700',
+                                    'WAITING_PAYMENT' => 'bg-sky-100 text-sky-700',
+                                    'DP_PAID' => 'bg-blue-100 text-blue-700',
+                                    'PAID' => 'bg-emerald-100 text-emerald-700',
+                                    'CANCELLED' => 'bg-red-100 text-red-700',
+                                ];
+                            @endphp
+                            <article class="rounded-3xl border border-[#EDE0D0] bg-white px-4 py-4 shadow-sm">
+                                <div class="flex items-start justify-between gap-3">
+                                    <div>
+                                        <p class="font-mono text-sm font-semibold text-[#D4A017]">#{{ $b->id }}</p>
+                                        <h4 class="mt-1 text-sm font-semibold text-[#3F2B1B]">{{ $b->package->name ?? '-' }}</h4>
+                                        <p class="text-sm text-[#7A5B3A]">{{ $b->client->name ?? '-' }}</p>
+                                    </div>
+                                    <span class="inline-flex rounded-3xl px-3 py-1.5 text-[11px] font-medium {{ $statusColors[$reportStatusKey] ?? 'bg-gray-100 text-gray-700' }}">
+                                        {{ $statusLabels[$reportStatusKey] ?? $reportStatusKey }}
+                                    </span>
+                                </div>
+                                <dl class="mt-4 grid grid-cols-2 gap-3 text-sm">
+                                    <div class="rounded-2xl bg-[#FAF6F0] px-3 py-2.5">
+                                        <dt class="text-[11px] uppercase tracking-wide text-[#8B7359]">Tanggal</dt>
+                                        <dd class="mt-1 font-medium text-[#3F2B1B]">{{ optional($b->booking_date)->format('d M Y') }}</dd>
+                                    </div>
+                                    <div class="rounded-2xl bg-[#FAF6F0] px-3 py-2.5">
+                                        <dt class="text-[11px] uppercase tracking-wide text-[#8B7359]">Nilai</dt>
+                                        <dd class="mt-1 font-medium text-[#3F2B1B]">Rp {{ number_format($b->total_price ?? 0, 0, ',', '.') }}</dd>
+                                    </div>
+                                </dl>
+                            </article>
+                        @endforeach
+                    </div>
+
+                    <div class="hidden overflow-x-auto lg:block">
+                        <table class="min-w-full table-fixed text-sm">
+                            <colgroup>
+                                <col class="w-[8%]">
+                                <col class="w-[24%]">
+                                <col class="w-[20%]">
+                                <col class="w-[14%]">
+                                <col class="w-[16%]">
+                                <col class="w-[18%]">
+                            </colgroup>
                             <thead>
                                 <tr class="border-b border-[#EDE0D0]">
-                                    <th class="px-6 py-5 text-center text-xs font-semibold tracking-widest text-[#3F2B1B] uppercase">ID</th>
-                                    <th class="px-6 py-5 text-center text-xs font-semibold tracking-widest text-[#3F2B1B] uppercase">Paket</th>
-                                    <th class="px-6 py-5 text-center text-xs font-semibold tracking-widest text-[#3F2B1B] uppercase">Klien</th>
-                                    <th class="px-6 py-5 text-center text-xs font-semibold tracking-widest text-[#3F2B1B] uppercase">Tanggal</th>
-                                    <th class="px-6 py-5 text-center text-xs font-semibold tracking-widest text-[#3F2B1B] uppercase">Status</th>
-                                    <th class="px-6 py-5 text-center text-xs font-semibold tracking-widest text-[#3F2B1B] uppercase">Nilai</th>
+                                    <th class="px-3 py-4 text-center text-xs font-semibold tracking-widest text-[#3F2B1B] uppercase">ID</th>
+                                    <th class="px-3 py-4 text-center text-xs font-semibold tracking-widest text-[#3F2B1B] uppercase">Paket</th>
+                                    <th class="px-3 py-4 text-center text-xs font-semibold tracking-widest text-[#3F2B1B] uppercase">Klien</th>
+                                    <th class="px-3 py-4 text-center text-xs font-semibold tracking-widest text-[#3F2B1B] uppercase">Tanggal</th>
+                                    <th class="px-3 py-4 text-center text-xs font-semibold tracking-widest text-[#3F2B1B] uppercase">Status</th>
+                                    <th class="px-3 py-4 text-center text-xs font-semibold tracking-widest text-[#3F2B1B] uppercase">Nilai</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-[#EDE0D0]">
                                 @foreach($bookings as $b)
+                                    @php
+                                        $reportStatusKey = $b->isSubmitted()
+                                            ? 'SUBMITTED'
+                                            : ($b->isConfirmedAwaitingPayment() ? 'WAITING_PAYMENT' : $b->status);
+                                        $statusLabels = [
+                                            'SUBMITTED' => 'Diajukan',
+                                            'WAITING_PAYMENT' => 'Dikonfirmasi',
+                                            'DP_PAID' => 'DP Dibayar',
+                                            'PAID' => 'Lunas',
+                                            'CANCELLED' => 'Dibatalkan',
+                                            'EXPIRED' => 'Kedaluwarsa',
+                                            'FAILED' => 'Gagal',
+                                        ];
+                                        $statusColors = [
+                                            'SUBMITTED' => 'bg-amber-100 text-amber-700',
+                                            'WAITING_PAYMENT' => 'bg-sky-100 text-sky-700',
+                                            'DP_PAID' => 'bg-blue-100 text-blue-700',
+                                            'PAID' => 'bg-emerald-100 text-emerald-700',
+                                            'CANCELLED' => 'bg-red-100 text-red-700',
+                                        ];
+                                    @endphp
                                     <tr class="hover:bg-[#FAF6F0] transition-all">
-                                        <td class="px-6 py-5 font-mono text-[#D4A017]">#{{ $b->id }}</td>
-                                        <td class="px-6 py-5">{{ $b->package->name ?? '-' }}</td>
-                                        <td class="px-6 py-5">{{ $b->client->name ?? '-' }}</td>
-                                        <td class="px-6 py-5 text-center">{{ optional($b->booking_date)->format('d M Y') }}</td>
-                                        @php
-                                            $reportStatusKey = $b->isSubmitted()
-                                                ? 'SUBMITTED'
-                                                : ($b->isConfirmedAwaitingPayment() ? 'WAITING_PAYMENT' : $b->status);
-                                            $statusLabels = [
-                                                'SUBMITTED' => 'Diajukan',
-                                                'WAITING_PAYMENT' => 'Dikonfirmasi',
-                                                'DP_PAID' => 'DP Dibayar',
-                                                'PAID' => 'Lunas',
-                                                'CANCELLED' => 'Dibatalkan',
-                                                'EXPIRED' => 'Kedaluwarsa',
-                                                'FAILED' => 'Gagal',
-                                            ];
-                                            $statusColors = [
-                                                'SUBMITTED' => 'bg-amber-100 text-amber-700',
-                                                'WAITING_PAYMENT' => 'bg-sky-100 text-sky-700',
-                                                'DP_PAID' => 'bg-blue-100 text-blue-700',
-                                                'PAID' => 'bg-emerald-100 text-emerald-700',
-                                                'CANCELLED' => 'bg-red-100 text-red-700',
-                                            ];
-                                        @endphp
-                                        <td class="px-6 py-5 text-center">
-                                            <span class="inline-block px-5 py-2 rounded-3xl text-xs font-medium {{ $statusColors[$reportStatusKey] ?? 'bg-gray-100 text-gray-700' }}">
+                                        <td class="px-3 py-4 text-center font-mono text-[#D4A017]">#{{ $b->id }}</td>
+                                        <td class="px-3 py-4">{{ $b->package->name ?? '-' }}</td>
+                                        <td class="px-3 py-4">{{ $b->client->name ?? '-' }}</td>
+                                        <td class="px-3 py-4 text-center">
+                                            <span class="whitespace-nowrap text-sm font-medium text-[#7A5B3A]">{{ optional($b->booking_date)->format('d M Y') }}</span>
+                                        </td>
+                                        <td class="px-3 py-4 text-center">
+                                            <span class="inline-flex min-h-[34px] items-center rounded-3xl px-3 py-1.5 text-[11px] font-medium {{ $statusColors[$reportStatusKey] ?? 'bg-gray-100 text-gray-700' }}">
                                                 {{ $statusLabels[$reportStatusKey] ?? $reportStatusKey }}
                                             </span>
                                         </td>
-                                        <td class="px-6 py-5 font-medium text-[#3F2B1B]">
+                                        <td class="px-3 py-4 text-center font-medium text-[#3F2B1B]">
                                             Rp {{ number_format($b->total_price ?? 0, 0, ',', '.') }}
                                         </td>
                                     </tr>
@@ -238,21 +296,46 @@
                             Kinerja Fotografer
                         </h3>
                         
-                        <div class="overflow-x-auto mb-8">
-                            <table class="min-w-full text-sm">
+                        <div class="space-y-3 lg:hidden mb-8">
+                            @foreach($photographerPerf as $p)
+                                <article class="rounded-3xl border border-[#EDE0D0] bg-[#FAF6F0] px-4 py-4">
+                                    <div class="flex items-start justify-between gap-3">
+                                        <div>
+                                            <h4 class="text-sm font-semibold text-[#3F2B1B]">{{ $p['name'] }}</h4>
+                                            <p class="text-xs text-[#8B7359]">Total proyek: {{ $p['total'] }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="mt-3 flex flex-wrap gap-2">
+                                        @foreach($p['packages'] as $pkgName => $count)
+                                            <span class="rounded-3xl border border-[#EDE0D0] bg-white px-3 py-1 text-[11px] text-[#7A5B3A]">
+                                                {{ $pkgName }} ({{ $count }})
+                                            </span>
+                                        @endforeach
+                                    </div>
+                                </article>
+                            @endforeach
+                        </div>
+
+                        <div class="hidden overflow-x-auto mb-8 lg:block">
+                            <table class="min-w-full table-fixed text-sm">
+                                <colgroup>
+                                    <col class="w-[28%]">
+                                    <col class="w-[14%]">
+                                    <col class="w-[58%]">
+                                </colgroup>
                                 <thead>
                                     <tr class="border-b border-[#EDE0D0]">
-                                        <th class="px-6 py-4 text-center text-xs font-semibold tracking-widest text-[#3F2B1B]">Nama</th>
-                                        <th class="px-6 py-4 text-center text-xs font-semibold tracking-widest text-[#3F2B1B]">Total Proyek</th>
-                                        <th class="px-6 py-4 text-center text-xs font-semibold tracking-widest text-[#3F2B1B]">Paket yang Ditangani</th>
+                                        <th class="px-3 py-4 text-center text-xs font-semibold tracking-widest text-[#3F2B1B]">Nama</th>
+                                        <th class="px-3 py-4 text-center text-xs font-semibold tracking-widest text-[#3F2B1B]">Total Proyek</th>
+                                        <th class="px-3 py-4 text-center text-xs font-semibold tracking-widest text-[#3F2B1B]">Paket yang Ditangani</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-[#EDE0D0]">
                                     @foreach($photographerPerf as $p)
                                         <tr class="hover:bg-[#FAF6F0]">
-                                            <td class="px-6 py-5 font-medium">{{ $p['name'] }}</td>
-                                            <td class="px-6 py-5 text-center">{{ $p['total'] }}</td>
-                                            <td class="px-6 py-5">
+                                            <td class="px-3 py-4 text-center font-medium">{{ $p['name'] }}</td>
+                                            <td class="px-3 py-4 text-center">{{ $p['total'] }}</td>
+                                            <td class="px-3 py-4">
                                                 <div class="flex flex-wrap gap-2">
                                                     @foreach($p['packages'] as $pkgName => $count)
                                                         <span class="px-4 py-1 rounded-3xl bg-white border border-[#EDE0D0] text-xs">
@@ -295,21 +378,46 @@
                             Kinerja Editor
                         </h3>
                         
-                        <div class="overflow-x-auto mb-8">
-                            <table class="min-w-full text-sm">
+                        <div class="space-y-3 lg:hidden mb-8">
+                            @foreach($editorPerf as $e)
+                                <article class="rounded-3xl border border-[#EDE0D0] bg-[#FAF6F0] px-4 py-4">
+                                    <div class="flex items-start justify-between gap-3">
+                                        <div>
+                                            <h4 class="text-sm font-semibold text-[#3F2B1B]">{{ $e['name'] }}</h4>
+                                            <p class="text-xs text-[#8B7359]">Total proyek: {{ $e['total'] }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="mt-3 flex flex-wrap gap-2">
+                                        @foreach($e['packages'] as $pkgName => $count)
+                                            <span class="rounded-3xl border border-[#EDE0D0] bg-white px-3 py-1 text-[11px] text-[#7A5B3A]">
+                                                {{ $pkgName }} ({{ $count }})
+                                            </span>
+                                        @endforeach
+                                    </div>
+                                </article>
+                            @endforeach
+                        </div>
+
+                        <div class="hidden overflow-x-auto mb-8 lg:block">
+                            <table class="min-w-full table-fixed text-sm">
+                                <colgroup>
+                                    <col class="w-[28%]">
+                                    <col class="w-[14%]">
+                                    <col class="w-[58%]">
+                                </colgroup>
                                 <thead>
                                     <tr class="border-b border-[#EDE0D0]">
-                                        <th class="px-6 py-4 text-center text-xs font-semibold tracking-widest text-[#3F2B1B]">Nama</th>
-                                        <th class="px-6 py-4 text-center text-xs font-semibold tracking-widest text-[#3F2B1B]">Total Proyek</th>
-                                        <th class="px-6 py-4 text-center text-xs font-semibold tracking-widest text-[#3F2B1B]">Paket yang Ditangani</th>
+                                        <th class="px-3 py-4 text-center text-xs font-semibold tracking-widest text-[#3F2B1B]">Nama</th>
+                                        <th class="px-3 py-4 text-center text-xs font-semibold tracking-widest text-[#3F2B1B]">Total Proyek</th>
+                                        <th class="px-3 py-4 text-center text-xs font-semibold tracking-widest text-[#3F2B1B]">Paket yang Ditangani</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-[#EDE0D0]">
                                     @foreach($editorPerf as $e)
                                         <tr class="hover:bg-[#FAF6F0]">
-                                            <td class="px-6 py-5 font-medium">{{ $e['name'] }}</td>
-                                            <td class="px-6 py-5 text-center">{{ $e['total'] }}</td>
-                                            <td class="px-6 py-5">
+                                            <td class="px-3 py-4 text-center font-medium">{{ $e['name'] }}</td>
+                                            <td class="px-3 py-4 text-center">{{ $e['total'] }}</td>
+                                            <td class="px-3 py-4">
                                                 <div class="flex flex-wrap gap-2">
                                                     @foreach($e['packages'] as $pkgName => $count)
                                                         <span class="px-4 py-1 rounded-3xl bg-white border border-[#EDE0D0] text-xs">
