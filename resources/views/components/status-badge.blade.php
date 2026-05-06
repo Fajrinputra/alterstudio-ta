@@ -1,4 +1,4 @@
-@props(['status' => '', 'confirmedAt' => null])
+@props(['status' => '', 'confirmedAt' => null, 'label' => null])
 
 @php
     $map = [
@@ -12,9 +12,9 @@
         'FAILED' => ['bg' => 'bg-rose-50 text-rose-700 border-rose-200', 'dot' => 'bg-rose-500', 'label' => 'Gagal', 'icon' => 'fa-solid fa-circle-exclamation'],
         'EXPIRED' => ['bg' => 'bg-slate-50 text-slate-700 border-slate-200', 'dot' => 'bg-slate-500', 'label' => 'Kedaluwarsa', 'icon' => 'fa-solid fa-calendar-xmark'],
         'SCHEDULED' => ['bg' => 'bg-violet-50 text-violet-700 border-violet-200', 'dot' => 'bg-violet-500', 'label' => 'Terjadwal', 'icon' => 'fa-solid fa-calendar-check'],
-        'SHOOT_DONE' => ['bg' => 'bg-indigo-50 text-indigo-700 border-indigo-200', 'dot' => 'bg-indigo-500', 'label' => 'Sesi Foto Selesai', 'icon' => 'fa-solid fa-camera'],
-        'EDITING' => ['bg' => 'bg-orange-50 text-orange-700 border-orange-200', 'dot' => 'bg-orange-500', 'label' => 'Sedang Diedit', 'icon' => 'fa-solid fa-pen-ruler'],
-        'FINAL' => ['bg' => 'bg-emerald-50 text-emerald-700 border-emerald-200', 'dot' => 'bg-emerald-500', 'label' => 'Final', 'icon' => 'fa-solid fa-circle-check'],
+        'SHOOT_DONE' => ['bg' => 'bg-indigo-50 text-indigo-700 border-indigo-200', 'dot' => 'bg-indigo-500', 'label' => 'Link Foto Mentah', 'icon' => 'fa-brands fa-google-drive'],
+        'EDITING' => ['bg' => 'bg-orange-50 text-orange-700 border-orange-200', 'dot' => 'bg-orange-500', 'label' => 'Permintaan Edit', 'icon' => 'fa-solid fa-pen-ruler'],
+        'FINAL' => ['bg' => 'bg-emerald-50 text-emerald-700 border-emerald-200', 'dot' => 'bg-emerald-500', 'label' => 'Final Tersedia', 'icon' => 'fa-solid fa-circle-check'],
     ];
 
     $statusKey = $status === 'WAITING_PAYMENT' && blank($confirmedAt) ? 'SUBMITTED' : $status;
@@ -24,5 +24,5 @@
 <span {{ $attributes->class("inline-flex min-h-[34px] items-center gap-2 rounded-3xl border px-3 py-1.5 text-[11px] font-semibold shadow-sm {$badge['bg']}") }}>
     <span class="h-2 w-2 rounded-full {{ $badge['dot'] }}"></span>
     <i class="{{ $badge['icon'] }} text-[10px] opacity-80"></i>
-    {{ $badge['label'] }}
+    {{ $label ?? $badge['label'] }}
 </span>

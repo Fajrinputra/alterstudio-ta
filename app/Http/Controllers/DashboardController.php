@@ -91,6 +91,7 @@ class DashboardController extends Controller
         $upcoming = Project::with(['booking'])
             ->where('photographer_id', $userId)
             ->where('status', Project::STATUS_SCHEDULED)
+            ->whereHas('booking', fn ($booking) => $booking->whereIn('status', [Booking::STATUS_DP_PAID, Booking::STATUS_PAID]))
             ->whereNotNull('start_at')
             ->orderBy('start_at')
             ->get();
@@ -107,11 +108,12 @@ class DashboardController extends Controller
 
     protected function editorData(int $userId): array
     {
-        // Antrian editor hanya project yang sudah dikunci client.
+        // Antrian editor hanya project yang sudah memiliki permintaan edit.
         $queue = Project::with(['booking'])
             ->where('editor_id', $userId)
             ->where('status', Project::STATUS_EDITING)
-            ->where('selections_locked', true)
+            ->whereHas('booking', fn ($booking) => $booking->whereIn('status', [Booking::STATUS_DP_PAID, Booking::STATUS_PAID]))
+            ->whereNotNull('edit_requested_at')
             ->whereNotNull('start_at')
             ->orderBy('start_at')
             ->get();

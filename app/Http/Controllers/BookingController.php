@@ -30,8 +30,6 @@ class BookingController extends Controller
         $query = Booking::with([
             'package',
             'payments',
-            'project.mediaAssets',
-            'project.selections.mediaAsset',
             'project.photographer',
             'project.editor',
             'client',
@@ -134,21 +132,35 @@ class BookingController extends Controller
             'package_id' => ['required', Rule::exists(ServicePackage::class, 'id')],
             'studio_location_id' => ['required', 'exists:studio_locations,id'],
             'booking_date' => ['required', 'date', 'after_or_equal:today'],
+            'selected_addons' => ['nullable', 'array'],
+            'selected_addons.*' => ['string'],
+            'addon_quantities' => ['nullable', 'array'],
+            'addon_quantities.*' => ['nullable', 'integer', 'min:1'],
         ]);
 
         $package = ServicePackage::findOrFail($validated['package_id']);
         $date = Carbon::parse($validated['booking_date']);
+        $chosenAddons = $this->chosenAddonsFromRequest($package, $validated);
+        $extraDuration = Booking::extraDurationMinutesFromAddons($chosenAddons);
+        $effectiveDuration = max(1, (int) ($package->duration_minutes ?? 60)) + $extraDuration;
 
         $slots = $this->availability->availableSlots(
             $package,
             (int) $validated['studio_location_id'],
-            $date
+            $date,
+            $extraDuration
         );
 
         return response()->json([
             'date' => $date->toDateString(),
             'is_closed' => $this->availability->isClosedDate($date, (int) $validated['studio_location_id']),
             'reason' => $this->availability->closedReason($date, (int) $validated['studio_location_id']),
+            'is_today' => $date->isToday(),
+            'current_time' => Carbon::now()->format('H:i'),
+            'duration_minutes' => $effectiveDuration,
+            'base_duration_minutes' => max(1, (int) ($package->duration_minutes ?? 60)),
+            'extra_duration_minutes' => $extraDuration,
+            'buffer_minutes' => $this->availability->bufferMinutes(),
             'available_times' => $slots,
         ]);
     }
@@ -173,6 +185,8 @@ class BookingController extends Controller
 
         $package = ServicePackage::findOrFail($validated['package_id']);
         $bookingDate = Carbon::parse($validated['booking_date']);
+        $chosenAddons = $this->chosenAddonsFromRequest($package, $validated);
+        $extraDuration = Booking::extraDurationMinutesFromAddons($chosenAddons);
 
         if ($this->availability->isClosedDate($bookingDate, (int) $validated['studio_location_id'])) {
             return back()
@@ -180,36 +194,20 @@ class BookingController extends Controller
                 ->withErrors(['booking_date' => $this->availability->closedReason($bookingDate, (int) $validated['studio_location_id'])]);
         }
 
-        if (! $this->availability->isSlotAvailable(
+        $availableRoom = $this->availability->availableRoomForSlot(
             $package,
             (int) $validated['studio_location_id'],
             $bookingDate,
-            $validated['booking_time']
-        )) {
+            $validated['booking_time'],
+            $extraDuration
+        );
+
+        if (! $availableRoom) {
             return back()
                 ->withInput()
                 ->withErrors(['booking_time' => 'Jam yang dipilih sudah tidak tersedia. Silakan pilih slot lain yang masih kosong.']);
         }
 
-        $addonMap = $this->normalizePackageAddons($package);
-        $selectedAddonKeys = collect($validated['selected_addons'] ?? []);
-        $addonQuantities = collect($validated['addon_quantities'] ?? []);
-        $chosenAddons = $selectedAddonKeys
-            ->filter(fn ($key) => isset($addonMap[$key]))
-            ->map(function ($key) use ($addonMap, $addonQuantities) {
-                $addon = $addonMap[$key];
-                $quantity = max(1, (int) $addonQuantities->get($key, 1));
-                $price = (int) ($addon['price'] ?? 0);
-
-                return [
-                    'label' => $addon['label'],
-                    'price' => $price,
-                    'quantity' => $quantity,
-                    'subtotal' => $price * $quantity,
-                ];
-            })
-            ->values()
-            ->all();
         $addonTotal = (int) collect($chosenAddons)->sum('subtotal');
         $totalPrice = (int) $package->price + $addonTotal;
 
@@ -217,7 +215,7 @@ class BookingController extends Controller
             'client_id' => $user->id,
             'package_id' => $package->id,
             'studio_location_id' => $validated['studio_location_id'],
-            'studio_room_id' => null,
+            'studio_room_id' => $availableRoom->id,
             'booking_date' => $validated['booking_date'],
             'booking_time' => $validated['booking_time'],
             'notes' => $validated['notes'] ?? null,
@@ -292,10 +290,12 @@ class BookingController extends Controller
         ]);
 
         $targetStatus = $request->string('status')->toString();
+        $previousStatus = $booking->status;
+        $remainingAmount = $booking->remainingAmount();
         $allowedTransitions = match (true) {
             $booking->isSubmitted() => [Booking::STATUS_WAITING_PAYMENT, Booking::STATUS_CANCELLED],
             $booking->isConfirmedAwaitingPayment() => [Booking::STATUS_CANCELLED],
-            $booking->status === Booking::STATUS_DP_PAID => [Booking::STATUS_PAID, Booking::STATUS_CANCELLED],
+            $booking->status === Booking::STATUS_DP_PAID => [Booking::STATUS_PAID],
             default => [],
         };
 
@@ -315,6 +315,10 @@ class BookingController extends Controller
 
         $pendingPayment = $booking->payments()
             ->where('status', Payment::STATUS_PENDING)
+            ->when(
+                $targetStatus === Booking::STATUS_PAID && $previousStatus === Booking::STATUS_DP_PAID,
+                fn ($query) => $query->where('type', Payment::TYPE_FULL)
+            )
             ->latest()
             ->first();
 
@@ -327,6 +331,16 @@ class BookingController extends Controller
                 'status' => Payment::STATUS_PAID,
                 'paid_at' => Carbon::now(),
                 'transaction_status' => $pendingPayment->transaction_status ?: 'manual',
+            ]);
+        } elseif ($targetStatus === Booking::STATUS_PAID && $previousStatus === Booking::STATUS_DP_PAID && $remainingAmount > 0) {
+            Payment::create([
+                'booking_id' => $booking->id,
+                'type' => Payment::TYPE_FULL,
+                'amount' => $remainingAmount,
+                'status' => Payment::STATUS_PAID,
+                'reference' => 'manual_onsite_settlement',
+                'transaction_status' => 'manual',
+                'paid_at' => Carbon::now(),
             ]);
         }
 
@@ -430,6 +444,31 @@ class BookingController extends Controller
         }
 
         return $normalized;
+    }
+
+    protected function chosenAddonsFromRequest(ServicePackage $package, array $validated): array
+    {
+        $addonMap = $this->normalizePackageAddons($package);
+        $selectedAddonKeys = collect($validated['selected_addons'] ?? []);
+        $addonQuantities = collect($validated['addon_quantities'] ?? []);
+
+        return $selectedAddonKeys
+            ->filter(fn ($key) => isset($addonMap[$key]))
+            ->map(function ($key) use ($addonMap, $addonQuantities) {
+                $addon = $addonMap[$key];
+                $quantity = max(1, (int) $addonQuantities->get($key, 1));
+                $price = (int) ($addon['price'] ?? 0);
+
+                return [
+                    'label' => $addon['label'],
+                    'price' => $price,
+                    'unit' => $addon['unit'] ?? '',
+                    'quantity' => $quantity,
+                    'subtotal' => $price * $quantity,
+                ];
+            })
+            ->values()
+            ->all();
     }
 
     /**

@@ -160,7 +160,9 @@
                                     class="w-full px-5 py-4 rounded-3xl border border-[#E1D3C5] bg-white focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20 transition-all disabled:bg-[#F3ECE3] disabled:text-[#8B7359]">
                                 <option value="">Pilih tanggal dan cabang terlebih dahulu</option>
                             </select>
-                            <p class="text-xs text-[#8B7359]">Hanya slot yang masih tersedia yang ditampilkan.</p>
+                            <p class="text-xs text-[#8B7359]">
+                                Slot mengikuti durasi paket {{ (int) ($selectedPackage->duration_minutes ?? 60) }} menit, add-on tambah waktu, dan jeda {{ (int) config('studio.booking_buffer_minutes', 15) }} menit antar sesi.
+                            </p>
                         </div>
                     </div>
 
@@ -188,7 +190,7 @@
                                 <input type="radio" name="payment_type" value="DP" checked class="w-5 h-5 text-[#D4A017]">
                                 <div>
                                     <span class="font-semibold text-[#3F2B1B]">Bayar DP</span>
-                                    <p class="text-xs text-[#7A5B3A]">Minimal Rp 100.000 (sisanya saat sesi foto)</p>
+                                    <p class="text-xs text-[#7A5B3A]">DP 10% dari total harga pemesanan. Estimasi: Rp <span id="dp-estimate">{{ number_format((int) ceil($basePrice * 0.1)) }}</span></p>
                                 </div>
                             </label>
                             <label class="payment-option flex items-center gap-4 p-6 border border-[#EDE0D0] rounded-3xl cursor-pointer hover:border-[#D4A017] transition-all">
@@ -253,6 +255,7 @@
             const addonQuantityInputs = form.querySelectorAll('.addon-quantity-input');
             const addonTotalEl = document.getElementById('addon-total');
             const grandTotalEl = document.getElementById('grand-total');
+            const dpEstimateEl = document.getElementById('dp-estimate');
             const format = new Intl.NumberFormat('id-ID');
             const locationInput = document.getElementById('studio-location-id');
             const dateInput = document.getElementById('booking-date');
@@ -275,8 +278,12 @@
                     }
                 });
                 const grandTotal = basePrice + addonTotal;
+                const downPayment = Math.ceil(grandTotal * 0.1);
                 addonTotalEl.textContent = format.format(addonTotal);
                 grandTotalEl.textContent = format.format(grandTotal);
+                if (dpEstimateEl) {
+                    dpEstimateEl.textContent = format.format(downPayment);
+                }
             };
 
             const showAlert = (message, variant = 'info') => {
@@ -310,10 +317,22 @@
                 showAlert(message, message ? 'warning' : 'info');
             };
 
+            const appendSelectedAddons = (url) => {
+                addonInputs.forEach((input) => {
+                    if (!input.checked) return;
+
+                    const quantityInput = document.getElementById(input.dataset.addonTarget);
+                    const quantity = Math.max(1, Number(quantityInput?.value || 1));
+                    url.searchParams.append('selected_addons[]', input.value);
+                    url.searchParams.append(`addon_quantities[${input.value}]`, String(quantity));
+                });
+            };
+
             const loadAvailability = async () => {
                 const bookingDate = dateInput.value;
                 const locationId = locationInput.value;
                 const packageId = form.dataset.packageId;
+                const selectedTime = timeInput.value || oldTime;
 
                 if (!bookingDate || !locationId || !packageId) {
                     resetSlots('');
@@ -330,6 +349,7 @@
                     url.searchParams.set('package_id', packageId);
                     url.searchParams.set('studio_location_id', locationId);
                     url.searchParams.set('booking_date', bookingDate);
+                    appendSelectedAddons(url);
 
                     const response = await fetch(url.toString(), {
                         headers: {
@@ -354,7 +374,10 @@
                     if (!slots.length) {
                         timeInput.innerHTML = '<option value="">Tidak ada slot tersedia</option>';
                         setSubmitState(false);
-                        showAlert('Semua slot pada tanggal ini sudah terisi. Silakan pilih tanggal lain.', 'warning');
+                        const message = data.is_today
+                            ? `Tidak ada slot tersisa untuk hari ini. Jam yang sudah lewat sampai ${data.current_time || 'saat ini'} tidak dapat dipilih.`
+                            : 'Semua slot pada tanggal ini sudah terisi. Silakan pilih tanggal lain.';
+                        showAlert(message, 'warning');
                         return;
                     }
 
@@ -364,14 +387,20 @@
                         const option = document.createElement('option');
                         option.value = slot.value;
                         option.textContent = slot.label;
-                        if (oldTime && oldTime === slot.value) {
+                        if (selectedTime && selectedTime === slot.value) {
                             option.selected = true;
                         }
                         timeInput.appendChild(option);
                     });
 
                     setSubmitState(Boolean(timeInput.value));
-                    showAlert('Slot yang tersedia sudah diperbarui. Pilih jam sesi foto untuk melanjutkan.', 'success');
+                    const extraDuration = Number(data.extra_duration_minutes || 0);
+                    const extraText = extraDuration > 0 ? ` termasuk tambahan waktu ${extraDuration} menit` : '';
+                    const slotRule = `Durasi sesi ${data.duration_minutes || '-'} menit${extraText}, dengan jeda ${data.buffer_minutes ?? 15} menit antar sesi.`;
+                    const successMessage = data.is_today
+                        ? `Slot hari ini sudah diperbarui. Jam yang sudah lewat sampai ${data.current_time || 'saat ini'} tidak ditampilkan. ${slotRule}`
+                        : `Slot yang tersedia sudah diperbarui. ${slotRule}`;
+                    showAlert(successMessage, 'success');
                 } catch (error) {
                     timeInput.innerHTML = '<option value="">Gagal memuat slot</option>';
                     setSubmitState(false);
@@ -379,8 +408,14 @@
                 }
             };
 
-            addonInputs.forEach(input => input.addEventListener('change', updateTotal));
-            addonQuantityInputs.forEach(input => input.addEventListener('input', updateTotal));
+            addonInputs.forEach(input => input.addEventListener('change', () => {
+                updateTotal();
+                loadAvailability();
+            }));
+            addonQuantityInputs.forEach(input => input.addEventListener('input', () => {
+                updateTotal();
+                loadAvailability();
+            }));
             locationInput.addEventListener('change', loadAvailability);
             dateInput.addEventListener('change', loadAvailability);
             timeInput.addEventListener('change', () => setSubmitState(Boolean(timeInput.value)));

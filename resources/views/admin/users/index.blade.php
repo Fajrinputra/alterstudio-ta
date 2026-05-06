@@ -74,7 +74,7 @@
                 <div class="relative bg-white/80 backdrop-blur-2xl border border-[#EDE0D0] rounded-3xl shadow-2xl overflow-hidden">
                     
                     <div class="px-8 py-6 border-b border-[#EDE0D0] bg-gradient-to-r from-[#FAF6F0] to-white">
-                        <h3 class="font-display text-2xl text-[#3F2B1B] flex items-center gap-3">
+                        <h3 class="font-display text-2xl font-bold text-[#3F2B1B] flex items-center gap-3">
                             <i class="fa-solid fa-list text-[#D4A017]"></i>
                             Daftar Pengguna
                         </h3>
@@ -156,11 +156,12 @@
                     <div class="hidden overflow-x-auto lg:block">
                         <table class="min-w-full table-fixed">
                             <colgroup>
-                                <col class="w-[28%]">
+                                <col class="w-[27%]">
+                                <col class="w-[13%]">
+                                <col class="w-[13%]">
+                                <col class="w-[21%]">
+                                <col class="w-[12%]">
                                 <col class="w-[14%]">
-                                <col class="w-[14%]">
-                                <col class="w-[22%]">
-                                <col class="w-[22%]">
                             </colgroup>
                             <thead>
                                 <tr class="bg-gradient-to-r from-[#FAF6F0] to-white border-b border-[#EDE0D0]">
@@ -168,7 +169,8 @@
                                     <th class="px-3 py-4 text-center text-xs font-semibold tracking-widest text-[#3F2B1B] uppercase">Kontak</th>
                                     <th class="px-3 py-4 text-center text-xs font-semibold tracking-widest text-[#3F2B1B] uppercase">Role Utama</th>
                                     <th class="px-3 py-4 text-center text-xs font-semibold tracking-widest text-[#3F2B1B] uppercase">Akses Tambahan</th>
-                                    <th class="px-3 py-4 text-center text-xs font-semibold tracking-widest text-[#3F2B1B] uppercase">Status &amp; Aksi</th>
+                                    <th class="px-3 py-4 text-center text-xs font-semibold tracking-widest text-[#3F2B1B] uppercase">Status</th>
+                                    <th class="px-3 py-4 text-center text-xs font-semibold tracking-widest text-[#3F2B1B] uppercase">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-[#EDE0D0]">
@@ -179,8 +181,8 @@
                                         $isManager = $user->role === \App\Enums\Role::MANAGER;
                                     @endphp
                                     <tr class="hover:bg-[#FAF6F0] transition-all duration-300">
-                                        <td class="px-3 py-4 align-middle">
-                                            <div class="flex items-center justify-center gap-3">
+                                        <td class="px-3 py-4 align-middle text-left">
+                                            <div class="flex items-center justify-start gap-3">
                                                 <div class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#D4A017]/10 to-[#E07A5F]/10">
                                                     <span class="text-sm font-semibold text-[#3F2B1B]">{{ substr($user->name, 0, 1) }}</span>
                                                 </div>
@@ -208,31 +210,30 @@
                                             </div>
                                         </td>
                                         <td class="px-3 py-4 align-middle text-center">
-                                            <div class="space-y-2">
-                                                <form method="POST" action="{{ route('admin.users.toggle', $user) }}" class="mx-auto w-fit">
-                                                    @csrf
-                                                    <select name="is_active" onchange="this.form.submit()"
-                                                            @disabled($isManager)
-                                                            class="rounded-3xl border px-4 py-2 text-[11px] font-medium transition-all {{ $user->is_active ? 'border-emerald-200 bg-emerald-100 text-emerald-700' : 'border-red-200 bg-red-100 text-red-700' }}">
-                                                        <option value="1" @selected($user->is_active)>Aktif</option>
-                                                        <option value="0" @selected(!$user->is_active)>Nonaktif</option>
-                                                    </select>
-                                                </form>
-
-                                                <div class="flex flex-wrap items-center justify-center gap-2">
-                                                    <a href="{{ route('admin.users.edit', $user) }}"
-                                                       class="inline-flex items-center gap-2 rounded-3xl border border-[#E1D3C5] px-3 py-2 text-[11px] font-medium text-[#5C432C] transition hover:border-[#D4A017] hover:bg-white">
-                                                        <i class="fa-solid fa-pen-to-square"></i>
-                                                        Edit
-                                                    </a>
-                                                    @if(!$isManager)
-                                                        <button @click="showDelete=true; deleteUrl='{{ route('admin.users.destroy',$user) }}'; deleteName='{{ addslashes($user->name) }}'"
-                                                                class="inline-flex items-center gap-2 rounded-3xl border border-red-200 px-3 py-2 text-[11px] font-medium text-red-600 transition hover:border-red-300 hover:bg-red-50">
-                                                            <i class="fa-solid fa-trash-can"></i>
-                                                            Hapus
-                                                        </button>
-                                                    @endif
-                                                </div>
+                                            <form method="POST" action="{{ route('admin.users.toggle', $user) }}" class="mx-auto w-fit">
+                                                @csrf
+                                                <select name="is_active" onchange="this.form.submit()"
+                                                        @disabled($isManager)
+                                                        class="rounded-3xl border px-4 py-2 text-[11px] font-medium transition-all {{ $user->is_active ? 'border-emerald-200 bg-emerald-100 text-emerald-700' : 'border-red-200 bg-red-100 text-red-700' }}">
+                                                    <option value="1" @selected($user->is_active)>Aktif</option>
+                                                    <option value="0" @selected(!$user->is_active)>Nonaktif</option>
+                                                </select>
+                                            </form>
+                                        </td>
+                                        <td class="px-3 py-4 align-middle text-center">
+                                            <div class="flex flex-wrap items-center justify-center gap-2">
+                                                <a href="{{ route('admin.users.edit', $user) }}"
+                                                   class="inline-flex items-center gap-2 rounded-3xl border border-[#E1D3C5] px-3 py-2 text-[11px] font-medium text-[#5C432C] transition hover:border-[#D4A017] hover:bg-white">
+                                                    <i class="fa-solid fa-pen-to-square"></i>
+                                                    Edit
+                                                </a>
+                                                @if(!$isManager)
+                                                    <button @click="showDelete=true; deleteUrl='{{ route('admin.users.destroy',$user) }}'; deleteName='{{ addslashes($user->name) }}'"
+                                                            class="inline-flex items-center gap-2 rounded-3xl border border-red-200 px-3 py-2 text-[11px] font-medium text-red-600 transition hover:border-red-300 hover:bg-red-50">
+                                                        <i class="fa-solid fa-trash-can"></i>
+                                                        Hapus
+                                                    </button>
+                                                @endif
                                             </div>
                                         </td>
                                     </tr>

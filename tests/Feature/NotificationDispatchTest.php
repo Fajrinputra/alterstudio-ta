@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Enums\Role;
 use App\Models\Booking;
 use App\Models\MediaAsset;
-use App\Models\PhotoSelection;
 use App\Models\Project;
 use App\Models\ServicePackage;
 use App\Models\StudioLocation;
@@ -17,9 +16,7 @@ use App\Notifications\FinalPhotosReadyNotification;
 use App\Notifications\RawPhotosUploadedNotification;
 use App\Notifications\ScheduleAssignedNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Notification;
-use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class NotificationDispatchTest extends TestCase
@@ -29,12 +26,18 @@ class NotificationDispatchTest extends TestCase
     public function test_booking_creation_dispatches_notification_to_client_and_ops(): void
     {
         Notification::fake();
+        config()->set('studio.closed_weekdays', []);
 
         $package = ServicePackage::factory()->create();
         $location = StudioLocation::create([
             'name' => 'Cabang Notif',
             'slug' => 'cabang-notif',
             'address' => 'Jl. Notif No. 1',
+            'is_active' => true,
+        ]);
+        StudioRoom::create([
+            'studio_location_id' => $location->id,
+            'name' => 'Studio A',
             'is_active' => true,
         ]);
         $client = User::factory()->create(['role' => Role::CLIENT]);
@@ -97,53 +100,56 @@ class NotificationDispatchTest extends TestCase
         Notification::assertSentTo($editor, ScheduleAssignedNotification::class);
     }
 
-    public function test_finalize_selection_dispatches_edit_request_notification_to_editor(): void
+    public function test_edit_request_dispatches_notification_to_editor(): void
     {
         Notification::fake();
 
         [$project, $client, , $editor] = $this->makeScheduledProject();
-
-        $rawAsset = MediaAsset::factory()->create([
-            'project_id' => $project->id,
-            'uploaded_by' => $editor->id,
-        ]);
-
-        PhotoSelection::create([
-            'project_id' => $project->id,
-            'client_id' => $client->id,
-            'media_asset_id' => $rawAsset->id,
+        $project->update([
+            'raw_drive_url' => 'https://drive.google.com/drive/folders/raw-notif',
+            'raw_drive_uploaded_at' => now(),
+            'status' => Project::STATUS_SHOOT_DONE,
         ]);
 
         $this->actingAs($client)
-            ->post(route('projects.selections.finalize', $project))
+            ->post(route('projects.edit-request.store', $project), [
+                'edit_photo_codes' => 'D001, D014',
+                'edit_request_note' => 'Retouch natural.',
+            ])
             ->assertRedirect()
             ->assertSessionHas('success');
 
         Notification::assertSentTo($editor, EditRequestSubmittedNotification::class);
     }
 
-    public function test_media_uploads_dispatch_client_notifications(): void
+    public function test_drive_workflow_dispatches_client_notifications(): void
     {
         Notification::fake();
-        Storage::fake('public');
 
         [$project, $client, $photographer, $editor] = $this->makeScheduledProject();
 
         $this->actingAs($photographer)
             ->post("/projects/{$project->id}/assets", [
                 'type' => MediaAsset::TYPE_RAW,
-                'files' => [UploadedFile::fake()->image('raw-notif.jpg')],
+                'raw_drive_url' => 'https://drive.google.com/drive/folders/raw-notif',
             ])
             ->assertRedirect();
 
         Notification::assertSentTo($client, RawPhotosUploadedNotification::class);
 
-        $project->update(['status' => Project::STATUS_EDITING]);
+        $project->update([
+            'status' => Project::STATUS_EDITING,
+            'selections_locked' => true,
+            'edit_photo_codes' => 'D001',
+            'edit_request_note' => 'Retouch natural.',
+            'edit_requested_at' => now(),
+        ]);
 
         $this->actingAs($editor)
             ->post("/projects/{$project->id}/assets", [
                 'type' => MediaAsset::TYPE_FINAL,
-                'files' => [UploadedFile::fake()->image('final-notif.jpg')],
+                'final_drive_url' => 'https://drive.google.com/drive/folders/final-notif',
+                'final_message' => 'Final tersedia.',
             ])
             ->assertRedirect();
 

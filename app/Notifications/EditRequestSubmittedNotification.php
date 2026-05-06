@@ -9,7 +9,7 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 /**
- * Email ke editor saat client finalize pilihan foto.
+ * Email ke editor saat client mengirim kode foto dan deskripsi edit.
  */
 class EditRequestSubmittedNotification extends Notification implements ShouldQueue
 {
@@ -35,7 +35,7 @@ class EditRequestSubmittedNotification extends Notification implements ShouldQue
         return (new MailMessage)
             ->subject('[Alter Studio] Permintaan edit baru dari klien')
             ->greeting('Halo '.$notifiable->name.',')
-            ->line('Ada permintaan edit baru dari klien.')
+            ->line('Ada permintaan edit baru dari klien berupa kode foto dan deskripsi kebutuhan edit.')
             ->line('Klien: '.$clientName)
             ->line('Paket: '.$packageName)
             ->action('Buka Detail Project', route('projects.show', $this->projectId))

@@ -107,7 +107,7 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(Booking::class, 'client_id');
     }
 
-    /** Asset media yang diunggah user (editor/fotografer). */
+    /** Metadata file lama yang pernah diunggah user. */
     public function uploadedMediaAssets(): HasMany
     {
         return $this->hasMany(MediaAsset::class, 'uploaded_by');

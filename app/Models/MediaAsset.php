@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * File media project (mis. RAW dari fotografer / FINAL dari editor).
+ * Metadata file lama; workflow baru menyimpan link Drive langsung di project.
  */
 class MediaAsset extends Model
 {

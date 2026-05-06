@@ -38,8 +38,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/bookings/{booking}/pay', [\App\Http\Controllers\PaymentController::class, 'createSnap'])->name('bookings.pay.snap');
         Route::post('/bookings/{booking}/pay/confirm', [\App\Http\Controllers\PaymentController::class, 'confirm'])->name('bookings.pay.confirm');
 
-        Route::post('/projects/{project}/selections', [\App\Http\Controllers\PhotoSelectionController::class, 'store']);
-        Route::post('/projects/{project}/selections/finalize', [\App\Http\Controllers\PhotoSelectionController::class, 'finalize'])->name('projects.selections.finalize');
+        Route::post('/projects/{project}/edit-request', [\App\Http\Controllers\PhotoSelectionController::class, 'store'])->name('projects.edit-request.store');
         Route::get('/projects/{project}/raw-download', [\App\Http\Controllers\MediaAssetController::class, 'downloadRaw'])->name('projects.raw.download');
     });
 
@@ -119,9 +118,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/admin/schedules', [\App\Http\Controllers\ScheduleController::class, 'index'])->name('admin.schedules');
     });
 
-    // Upload aset hanya untuk editor/fotografer/admin
+    // Link Drive dan tanda final hanya untuk editor/fotografer/admin
     Route::middleware('role:EDITOR,PHOTOGRAPHER,ADMIN')->group(function () {
-        Route::post('/projects/{project}/assets', [\App\Http\Controllers\MediaAssetController::class, 'store']);
+        Route::post('/projects/{project}/assets', [\App\Http\Controllers\MediaAssetController::class, 'store'])->name('projects.drive-assets.store');
     });
 
     // Detail project boleh dilihat manager (read-only dari sisi route method GET)

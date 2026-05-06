@@ -57,6 +57,8 @@ class Booking extends Model
 
     public const PAYMENT_TYPE_DP = 'DP';
     public const PAYMENT_TYPE_FULL = 'FULL';
+    public const DOWN_PAYMENT_PERCENTAGE = 10;
+    public const EXTRA_TIME_ADDON_MINUTES = 10;
 
     /** Client pemilik pemesanan. */
     public function client(): BelongsTo
@@ -195,11 +197,45 @@ class Booking extends Model
         return max(0, (int) $this->total_price - $this->paidAmount());
     }
 
+    public function baseDurationMinutes(): int
+    {
+        return max(1, (int) ($this->package?->duration_minutes ?? 60));
+    }
+
+    public function extraDurationMinutes(): int
+    {
+        return self::extraDurationMinutesFromAddons($this->selected_addons);
+    }
+
+    public static function extraDurationMinutesFromAddons(array $addons): int
+    {
+        return collect($addons)
+            ->filter(fn ($addon) => is_array($addon) && self::isExtraTimeAddon((string) ($addon['label'] ?? '')))
+            ->sum(fn ($addon) => max(1, (int) ($addon['quantity'] ?? 1)) * self::EXTRA_TIME_ADDON_MINUTES);
+    }
+
+    public static function isExtraTimeAddon(string $label): bool
+    {
+        return str_contains(strtolower($label), 'tambah waktu');
+    }
+
+    public function effectiveDurationMinutes(): int
+    {
+        return $this->baseDurationMinutes() + $this->extraDurationMinutes();
+    }
+
     public function nextPaymentType(): string
     {
         return $this->status === self::STATUS_DP_PAID
             ? self::PAYMENT_TYPE_FULL
             : $this->payment_type;
+    }
+
+    public function downPaymentAmount(): int
+    {
+        $totalPrice = max(0, (int) $this->total_price);
+
+        return intdiv(($totalPrice * self::DOWN_PAYMENT_PERCENTAGE) + 99, 100);
     }
 
     public function nextPayableAmount(): int
@@ -209,7 +245,7 @@ class Booking extends Model
         }
 
         return $this->payment_type === self::PAYMENT_TYPE_DP
-            ? (int) min($this->total_price, 100000)
+            ? $this->downPaymentAmount()
             : (int) $this->total_price;
     }
 

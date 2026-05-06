@@ -7,11 +7,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 /**
- * Detail project produksi: galeri, seleksi, dan jadwal.
+ * Detail project produksi: jadwal, link Drive, permintaan edit, final.
  */
 class ProjectController extends Controller
 {
-    /** Menampilkan detail project, galeri media, dan pilihan foto klien. */
+    /** Menampilkan detail project dan progres pasca-produksi berbasis Drive. */
     public function show(Project $project)
     {
         $user = Auth::user();
@@ -25,8 +25,6 @@ class ProjectController extends Controller
             'booking.package',
             'booking.studioLocation',
             'booking.studioRoom',
-            'mediaAssets',
-            'selections',
             'photographer',
             'editor',
         ]);

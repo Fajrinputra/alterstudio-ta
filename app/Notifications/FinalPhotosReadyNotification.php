@@ -9,7 +9,7 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 /**
- * Email ke client saat editor mengunggah hasil final.
+ * Email ke client saat editor menandai hasil final sudah tersedia di Drive.
  */
 class FinalPhotosReadyNotification extends Notification implements ShouldQueue
 {
@@ -33,9 +33,9 @@ class FinalPhotosReadyNotification extends Notification implements ShouldQueue
         return (new MailMessage)
             ->subject('[Alter Studio] Foto final Anda sudah siap')
             ->greeting('Halo '.$notifiable->name.',')
-            ->line('Hasil edit final Anda sudah tersedia.')
+            ->line('Editor sudah menandai hasil edit final tersedia di folder Drive project.')
             ->line('Paket: '.$packageName)
-            ->action('Unduh Foto Final', route('bookings.index'))
+            ->action('Lihat Pemesanan', route('bookings.index'))
             ->line('Terima kasih sudah menggunakan layanan Alter Studio.');
     }
 }

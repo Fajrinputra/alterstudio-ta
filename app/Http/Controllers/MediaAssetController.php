@@ -8,123 +8,100 @@ use App\Models\Project;
 use App\Notifications\FinalPhotosReadyNotification;
 use App\Notifications\RawPhotosUploadedNotification;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
 /**
- * Upload/download aset media project dan sinkron status workflow.
+ * Mengelola workflow pasca-produksi berbasis Google Drive.
  */
 class MediaAssetController extends Controller
 {
-    /** Upload aset media per project dengan versioning per tipe file. */
+    /**
+     * Menyimpan link Drive foto mentah dari fotografer dan tanda hasil final dari editor.
+     */
     public function store(Request $request, Project $project)
     {
-        $rules = [
+        $validated = $request->validate([
             'type' => ['required', 'in:' . implode(',', MediaAsset::TYPES)],
-        ];
-        $maxKb = 40960;
-        if (in_array($request->type, MediaAsset::TYPES, true)) {
-            $rules['files'] = ['required', 'array', 'max:50'];
-            $rules['files.*'] = ['file', "max:{$maxKb}"];
-        } else {
-            $rules['file'] = ['required', 'file', "max:{$maxKb}"];
-        }
-        $request->validate($rules);
+        ]);
 
-        $user = $request->user();
-        $schedule = $project->schedule;
-
-        $isCrewOnly = $user->isRole(Role::PHOTOGRAPHER, Role::EDITOR)
-            && ! $user->isRole(Role::ADMIN, Role::MANAGER, Role::CLIENT);
-        $canUploadRaw = $user->isRole(Role::PHOTOGRAPHER)
-            && $schedule
-            && $schedule->photographer_id === $user->id;
-        $canUploadFinal = $user->isRole(Role::EDITOR)
-            && $schedule
-            && $schedule->editor_id === $user->id;
-
-        if ($isCrewOnly) {
-            if ($request->type === MediaAsset::TYPE_RAW && ! $canUploadRaw) {
-                abort(403, 'Anda tidak ditugaskan sebagai fotografer pada project ini.');
-            }
-
-            if ($request->type === MediaAsset::TYPE_FINAL && ! $canUploadFinal) {
-                abort(403, 'Anda tidak ditugaskan sebagai editor pada project ini.');
-            }
-        }
-
-        $files = in_array($request->type, MediaAsset::TYPES, true)
-            ? $request->file('files')
-            : [$request->file('file')];
-
-        if ($request->type === MediaAsset::TYPE_FINAL && $project->mediaAssets()->where('type', MediaAsset::TYPE_FINAL)->exists()) {
-            return back()->with('error', 'Foto final sudah diunggah, tidak dapat diunggah ulang.');
-        }
-        if ($request->type === MediaAsset::TYPE_RAW && $project->mediaAssets()->where('type', MediaAsset::TYPE_RAW)->exists()) {
-            return back()->with('error', 'RAW sudah diunggah, tidak dapat diunggah ulang.');
-        }
-
-        $created = [];
-        foreach ($files as $file) {
-            $nextVersion = MediaAsset::where('project_id', $project->id)
-                ->where('type', $request->type)
-                ->max('version') + 1;
-
-            $path = $file->storePublicly(
-                "projects/{$project->id}/{$request->type}",
-                'public'
-            );
-
-            $created[] = MediaAsset::create([
-                'project_id' => $project->id,
-                'type' => $request->type,
-                'path' => $path,
-                'uploaded_by' => $user->id,
-                'version' => $nextVersion ?: 1,
-                'expires_at' => now()->addDays(5),
-            ]);
-        }
-
-        $this->updateProjectStatus($project, $request->type);
-        $this->sendUploadNotification($project, $request->type);
-
-        if ($request->wantsJson()) {
-            return response()->json($created, 201);
-        }
-
-        return back()->with('success', 'Upload berhasil disimpan.');
+        return $validated['type'] === MediaAsset::TYPE_RAW
+            ? $this->storeRawDriveLink($request, $project)
+            : $this->storeFinalDelivery($request, $project);
     }
 
-    /** Update status project berdasar tipe upload (raw->shoot_done, final->final). */
-    protected function updateProjectStatus(Project $project, string $type): void
+    protected function storeRawDriveLink(Request $request, Project $project)
     {
-        $statusMap = [
-            MediaAsset::TYPE_RAW => Project::STATUS_SHOOT_DONE,
-            MediaAsset::TYPE_FINAL => Project::STATUS_FINAL,
-        ];
+        $this->authorizeRawSubmission($request, $project);
 
-        if (isset($statusMap[$type])) {
-            $project->update(['status' => $statusMap[$type]]);
+        if ($response = $this->ensurePostProductionAllowed($request, $project)) {
+            return $response;
         }
+
+        if ($project->hasRawDriveLink()) {
+            return $this->respondBack($request, 'Link Drive foto mentah sudah tersimpan dan tidak dapat diunggah ulang.', 422);
+        }
+
+        if (! $project->canStartPostProduction()) {
+            return $this->respondBack($request, 'Link Drive foto mentah hanya dapat dikirim saat project berstatus Terjadwal.', 422);
+        }
+
+        $data = $request->validate([
+            'raw_drive_url' => ['required', 'url', 'max:2048'],
+        ]);
+
+        $project->update([
+            'raw_drive_url' => $data['raw_drive_url'],
+            'raw_drive_uploaded_by' => $request->user()->id,
+            'raw_drive_uploaded_at' => now(),
+            'status' => Project::STATUS_SHOOT_DONE,
+        ]);
+
+        $project->booking?->client?->notify(new RawPhotosUploadedNotification($project->id));
+
+        return $this->respondSuccess($request, $project->fresh(), 'Link Drive foto mentah berhasil disimpan. Klien telah diberi notifikasi.');
     }
 
-    protected function sendUploadNotification(Project $project, string $type): void
+    protected function storeFinalDelivery(Request $request, Project $project)
     {
-        $client = $project->booking->client;
-        if (! $client) {
-            return;
+        $this->authorizeFinalSubmission($request, $project);
+
+        if ($response = $this->ensurePostProductionAllowed($request, $project)) {
+            return $response;
         }
 
-        if ($type === MediaAsset::TYPE_RAW) {
-            $client->notify(new RawPhotosUploadedNotification($project->id));
-            return;
+        if (! $project->hasEditRequest()) {
+            return $this->respondBack($request, 'Permintaan edit dari klien belum tersedia.', 422);
         }
 
-        if ($type === MediaAsset::TYPE_FINAL) {
-            $client->notify(new FinalPhotosReadyNotification($project->id));
+        if ($project->hasFinalDelivery()) {
+            return $this->respondBack($request, 'Hasil final sudah ditandai tersedia.', 422);
         }
+
+        $data = $request->validate([
+            'final_drive_url' => ['nullable', 'url', 'max:2048'],
+            'final_message' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $driveUrl = $data['final_drive_url'] ?? $project->final_drive_url ?? $project->raw_drive_url;
+        if (! $driveUrl) {
+            return $this->respondBack($request, 'Link Drive hasil final belum tersedia.', 422);
+        }
+
+        $project->update([
+            'final_drive_url' => $driveUrl,
+            'final_message' => $data['final_message'] ?? null,
+            'final_drive_uploaded_by' => $request->user()->id,
+            'final_drive_uploaded_at' => now(),
+            'status' => Project::STATUS_FINAL,
+        ]);
+
+        $project->booking?->client?->notify(new FinalPhotosReadyNotification($project->id));
+
+        return $this->respondSuccess($request, $project->fresh(), 'Hasil final berhasil ditandai tersedia. Klien telah diberi notifikasi.');
     }
 
-    /** Unduh semua RAW milik project dalam bentuk zip (hanya untuk pemilik atau admin/manager). */
+    /**
+     * Endpoint lama diarahkan ke Drive agar link bookmark lama tetap berguna.
+     */
     public function downloadRaw(Project $project)
     {
         $user = request()->user();
@@ -132,27 +109,65 @@ class MediaAssetController extends Controller
             abort(403);
         }
 
-        $raws = $project->mediaAssets()->where('type', MediaAsset::TYPE_RAW)->orderBy('version')->get();
-        if ($raws->isEmpty()) {
-            return back()->with('error', 'Tidak ada file RAW untuk diunduh.');
+        if ($response = $this->ensurePostProductionAllowed(request(), $project)) {
+            return $response;
         }
 
-        $zip = new \ZipArchive();
-        $tmpPath = storage_path('app/temp_raw_'.$project->id.'_'.time().'.zip');
-        if ($zip->open($tmpPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
-            return back()->with('error', 'Gagal membuat arsip unduhan.');
+        if (! $project->raw_drive_url) {
+            return back()->with('error', 'Link Drive foto mentah belum tersedia.');
         }
 
-        foreach ($raws as $raw) {
-            $fullPath = storage_path('app/public/'.$raw->path);
-            if (! file_exists($fullPath)) {
-                continue;
-            }
-            $ext = pathinfo($raw->path, PATHINFO_EXTENSION);
-            $zip->addFile($fullPath, 'RAW/D'.$raw->version.'.'.$ext);
-        }
-        $zip->close();
+        return redirect()->away($project->raw_drive_url);
+    }
 
-        return response()->download($tmpPath, 'raw-booking-'.$project->booking_id.'.zip')->deleteFileAfterSend(true);
+    protected function ensurePostProductionAllowed(Request $request, Project $project)
+    {
+        if ($message = $project->productionBlockMessage()) {
+            return $this->respondBack($request, $message, 422);
+        }
+
+        return null;
+    }
+
+    protected function authorizeRawSubmission(Request $request, Project $project): void
+    {
+        $user = $request->user();
+        $isCrewOnly = $user->isRole(Role::PHOTOGRAPHER, Role::EDITOR)
+            && ! $user->isRole(Role::ADMIN, Role::MANAGER, Role::CLIENT);
+
+        if ($isCrewOnly && (! $user->isRole(Role::PHOTOGRAPHER) || $project->photographer_id !== $user->id)) {
+            abort(403, 'Anda tidak ditugaskan sebagai fotografer pada project ini.');
+        }
+    }
+
+    protected function authorizeFinalSubmission(Request $request, Project $project): void
+    {
+        $user = $request->user();
+        $isCrewOnly = $user->isRole(Role::PHOTOGRAPHER, Role::EDITOR)
+            && ! $user->isRole(Role::ADMIN, Role::MANAGER, Role::CLIENT);
+
+        if ($isCrewOnly && (! $user->isRole(Role::EDITOR) || $project->editor_id !== $user->id)) {
+            abort(403, 'Anda tidak ditugaskan sebagai editor pada project ini.');
+        }
+    }
+
+    protected function respondBack(Request $request, string $message, int $status = 200)
+    {
+        return $request->wantsJson()
+            ? response()->json(['message' => $message], $status)
+            : back()->with('error', $message);
+    }
+
+    protected function respondSuccess(Request $request, Project $project, string $message)
+    {
+        return $request->wantsJson()
+            ? response()->json([
+                'id' => $project->id,
+                'status' => $project->status,
+                'raw_drive_url' => $project->raw_drive_url,
+                'final_drive_url' => $project->final_drive_url,
+                'message' => $message,
+            ])
+            : back()->with('success', $message);
     }
 }

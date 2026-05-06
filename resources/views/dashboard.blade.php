@@ -43,7 +43,7 @@
                                 Siap abadikan momen berikutnya?
                             </h3>
                             <p class="text-white/90 text-xl max-w-md">
-                                Kelola pemesanan, lihat progress foto, dan unduh hasil akhir dengan mudah.
+                                Kelola pemesanan, lihat progress foto, dan akses hasil akhir di Drive dengan mudah.
                             </p>
                         </div>
                         <div>
@@ -63,7 +63,7 @@
                         <x-stat-card label="Total Pemesanan" :value="$metrics['bookings'] ?? 0" />
                         <x-stat-card label="Menunggu Tinjauan / Pembayaran" :value="$metrics['waiting_payment'] ?? 0" color="amber" />
                         <x-stat-card label="Sedang Berjalan" :value="$metrics['in_progress'] ?? 0" color="blue" />
-                        <x-stat-card label="Final Siap Unduh" :value="$metrics['final_ready'] ?? 0" color="emerald" />
+                        <x-stat-card label="Final Tersedia" :value="$metrics['final_ready'] ?? 0" color="emerald" />
                     </div>
                 </section>
 
@@ -107,23 +107,23 @@
                         <table class="min-w-full table-fixed text-sm">
                             <thead>
                                 <tr class="bg-[#FAF6F0] text-[#8B7359]">
-                                    <th class="px-4 py-4 text-left font-medium">No</th>
-                                    <th class="px-4 py-4 text-left font-medium">Tanggal</th>
-                                    <th class="px-4 py-4 text-left font-medium">Paket</th>
-                                    <th class="px-4 py-4 text-left font-medium">Status</th>
-                                    <th class="px-4 py-4 text-left font-medium">Project</th>
+                                    <th class="px-4 py-4 text-center font-bold">No</th>
+                                    <th class="px-4 py-4 text-center font-bold">Tanggal</th>
+                                    <th class="px-4 py-4 text-center font-bold">Paket</th>
+                                    <th class="px-4 py-4 text-center font-bold">Status</th>
+                                    <th class="px-4 py-4 text-center font-bold">Project</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-[#EDE0D0]">
                                 @forelse($data['latest'] ?? [] as $booking)
                                     <tr class="text-[#3F2B1B] hover:bg-[#FAF6F0] transition-all">
-                                        <td class="px-4 py-4 font-medium">{{ $loop->iteration }}</td>
-                                        <td class="px-4 py-4">{{ $booking->booking_date->translatedFormat('d M Y') }}</td>
-                                        <td class="px-4 py-4">{{ $booking->package->name ?? '-' }}</td>
-                                        <td class="px-4 py-4">
+                                        <td class="px-4 py-4 text-center font-medium">{{ $loop->iteration }}</td>
+                                        <td class="px-4 py-4 text-center">{{ $booking->booking_date->translatedFormat('d M Y') }}</td>
+                                        <td class="px-4 py-4 text-center">{{ $booking->package->name ?? '-' }}</td>
+                                        <td class="px-4 py-4 text-center">
                                             <x-status-badge :status="$booking->status" :confirmed-at="$booking->confirmed_at" />
                                         </td>
-                                        <td class="px-4 py-4">{{ $booking->project?->status ?? '-' }}</td>
+                                        <td class="px-4 py-4 text-center">{{ $booking->project?->status ?? '-' }}</td>
                                     </tr>
                                 @empty
                                     <tr>
@@ -216,7 +216,7 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
                         <x-stat-card label="Project Foto Final" :value="$data['completed'] ?? 0" color="emerald" />
                         <x-stat-card label="Jadwal Foto Mendatang" :value="$data['upcoming']->count() ?? 0" color="blue" />
-                        <x-stat-card label="Final Edit Selesai" :value="$data['finalized'] ?? 0" color="emerald" />
+                        <x-stat-card label="Final Ditandai di Drive" :value="$data['finalized'] ?? 0" color="emerald" />
                         <x-stat-card label="Antrian Edit" :value="$data['queue']->count() ?? 0" color="amber" />
                     </div>
 
@@ -318,7 +318,7 @@
             @elseif($role === Role::EDITOR)
                 <section>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
-                        <x-stat-card label="Selesai Final" :value="$data['finalized'] ?? 0" color="emerald" />
+                        <x-stat-card label="Final Ditandai" :value="$data['finalized'] ?? 0" color="emerald" />
                         <x-stat-card label="Antrian Edit" :value="$data['queue']->count() ?? 0" color="amber" />
                     </div>
                     <div class="bg-white rounded-3xl border border-[#EDE0D0] shadow-xl overflow-hidden">

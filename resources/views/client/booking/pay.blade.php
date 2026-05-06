@@ -4,6 +4,7 @@
         $payableAmount = $booking->nextPayableAmount();
         $paidAmount = $booking->paidAmount();
         $isSettlement = $booking->isAwaitingSettlement();
+        $isDownPayment = ! $isSettlement && $requestedType === \App\Models\Booking::PAYMENT_TYPE_DP;
     @endphp
 
     <x-slot name="header">
@@ -81,9 +82,18 @@
                     <div class="flex flex-col gap-2 border-b border-[#EDE0D0] pb-4 sm:flex-row sm:items-center sm:justify-between">
                         <span class="text-[#5C432C]">Jenis Pembayaran</span>
                         <span class="inline-flex min-h-[34px] items-center rounded-3xl border border-blue-200 bg-blue-100 px-5 py-2 text-sm font-semibold text-blue-700">
-                            {{ $isSettlement ? 'Pelunasan Sisa Pembayaran' : ($requestedType === 'DP' ? 'DP (Minimal Rp 100.000)' : 'Pembayaran Lunas') }}
+                            {{ $isSettlement ? 'Pelunasan Sisa Pembayaran' : ($isDownPayment ? 'DP 10% dari Total Pemesanan' : 'Pembayaran Lunas') }}
                         </span>
                     </div>
+
+                    @if($isDownPayment)
+                        <div class="rounded-3xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-700">
+                            <div class="flex items-start gap-3">
+                                <i class="fa-solid fa-circle-info mt-0.5"></i>
+                                <p>Nominal DP dihitung otomatis sebesar 10% dari total harga pemesanan. Sisa pembayaran dilunasi setelah DP terkonfirmasi.</p>
+                            </div>
+                        </div>
+                    @endif
 
                     @if($paidAmount > 0)
                         <div class="flex flex-col gap-2 border-b border-[#EDE0D0] pb-4 sm:flex-row sm:items-center sm:justify-between">

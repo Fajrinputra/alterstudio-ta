@@ -1,4 +1,4 @@
-﻿<x-app-layout>
+<x-app-layout>
     <x-slot name="header">
         <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
@@ -64,14 +64,14 @@
                     $project = $booking->project;
                     $statusText = $project?->statusLabel() ?? 'Belum Dijadwalkan';
                     
-                    $rawAssets = $project?->mediaAssets->where('type','RAW')->sortBy('version') ?? collect();
-                    $finalAssets = $project?->mediaAssets->where('type','FINAL')->sortBy('version') ?? collect();
-                    $selections = $project?->selections ?? collect();
-                    $selectedIds = $selections->pluck('media_asset_id')->all();
-                    $remaining = 10 - $selections->count();
-                    $locked = $project?->selections_locked;
                     $paidAmount = $booking->paidAmount();
                     $remainingAmount = $booking->remainingAmount();
+                    $rawDriveUrl = $project?->raw_drive_url;
+                    $finalDriveUrl = $project?->final_drive_url ?: $rawDriveUrl;
+                    $rawDriveExpiresAt = $project?->raw_drive_uploaded_at?->copy()->addDays(7);
+                    $finalDriveExpiresAt = $project?->final_drive_uploaded_at?->copy()->addDays(7);
+                    $productionBlockMessage = $project?->productionBlockMessage();
+                    $canContinueProduction = $project && $productionBlockMessage === null;
                     
                     $bookingStatus = $booking->statusLabel();
                 @endphp
@@ -121,7 +121,9 @@
                             <div class="w-full sm:w-auto sm:text-right">
                                 <x-status-badge :status="$booking->status" :confirmed-at="$booking->confirmed_at" />
                                 @if($project)
-                                    <p class="text-xs text-[#8B7359] mt-3">{{ $statusText }}</p>
+                                    <div class="mt-3">
+                                        <x-status-badge :status="$project->status" :label="$statusText" />
+                                    </div>
                                 @endif
                             </div>
                         </div>
@@ -157,12 +159,36 @@
                                         <div>
                                             <p class="font-semibold text-amber-800">Pemesanan Sudah Dikonfirmasi</p>
                                             <p class="text-sm text-amber-600">Lanjutkan pembayaran dalam waktu 30 menit sejak konfirmasi admin agar sesi foto dapat diproses.</p>
+                                            <div class="mt-3 flex flex-wrap gap-2 text-xs font-medium">
+                                                <span class="inline-flex items-center gap-2 rounded-3xl bg-white/80 px-3 py-1.5 text-amber-700 ring-1 ring-amber-200">
+                                                    <i class="fa-solid fa-calendar-day"></i>
+                                                    Link Drive berlaku 7 hari
+                                                </span>
+                                                <span class="inline-flex items-center gap-2 rounded-3xl bg-white/80 px-3 py-1.5 text-amber-700 ring-1 ring-amber-200">
+                                                    <i class="fa-solid fa-images"></i>
+                                                    Maksimal 10 foto untuk diedit
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
                                     <a href="{{ route('bookings.pay', $booking) }}" 
                                        class="inline-flex items-center justify-center rounded-3xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] px-8 py-4 font-semibold text-white transition-all hover:brightness-110 sm:ml-auto">
                                         Lanjutkan Pembayaran
                                     </a>
+                                </div>
+                            </div>
+                        @endif
+
+                        @if($booking->status === 'CANCELLED')
+                            <div class="bg-rose-50 border border-rose-200 rounded-3xl p-6">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-12 h-12 rounded-2xl bg-rose-100 flex items-center justify-center">
+                                        <i class="fa-solid fa-circle-xmark text-rose-600 text-2xl"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-semibold text-rose-800">Pemesanan Dibatalkan</p>
+                                        <p class="text-sm text-rose-600">{{ $productionBlockMessage ?? 'Proses bisnis untuk pemesanan ini sudah dihentikan.' }}</p>
+                                    </div>
                                 </div>
                             </div>
                         @endif
@@ -187,87 +213,118 @@
                             </div>
                         @endif
 
-                        {{-- RAW Assets Selection --}}
-                        @if($rawAssets->isNotEmpty())
+                        {{-- Drive Link & Edit Request --}}
+                        @if($rawDriveUrl && $canContinueProduction)
                             <div class="border border-[#EDE0D0] rounded-3xl bg-[#FAF6F0] p-7">
                                 <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
                                     <div class="flex items-center gap-4">
                                         <div class="w-10 h-10 rounded-2xl bg-[#D4A017]/10 flex items-center justify-center">
-                                            <i class="fa-solid fa-image text-[#D4A017] text-2xl"></i>
+                                            <i class="fa-brands fa-google-drive text-[#D4A017] text-2xl"></i>
                                         </div>
                                         <div>
-                                            <h4 class="font-semibold text-[#3F2B1B]">Foto RAW dari Fotografer</h4>
-                                            <p class="text-sm text-[#7A5B3A]">Pilih hingga 10 foto terbaik untuk diedit</p>
+                                            <h4 class="font-semibold text-[#3F2B1B]">Link Drive Foto Mentah</h4>
+                                            <p class="text-sm text-[#7A5B3A]">Buka Drive, catat kode foto, lalu kirim deskripsi permintaan edit.</p>
+                                            <div class="mt-3 flex flex-wrap gap-2 text-xs font-medium">
+                                                <span class="inline-flex items-center gap-2 rounded-3xl bg-white px-3 py-1.5 text-[#7A5B3A] ring-1 ring-[#EDE0D0]">
+                                                    <i class="fa-solid fa-calendar-day text-[#D4A017]"></i>
+                                                    Link Drive berlaku 7 hari
+                                                    @if($rawDriveExpiresAt)
+                                                        sampai {{ $rawDriveExpiresAt->translatedFormat('d M Y') }}
+                                                    @endif
+                                                </span>
+                                                <span class="inline-flex items-center gap-2 rounded-3xl bg-white px-3 py-1.5 text-[#7A5B3A] ring-1 ring-[#EDE0D0]">
+                                                    <i class="fa-solid fa-images text-[#D4A017]"></i>
+                                                    Maksimal 10 foto dapat diajukan untuk edit
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
-                                    <a href="{{ route('projects.raw.download', $project) }}" 
+                                    <a href="{{ $rawDriveUrl }}" target="_blank" rel="noopener"
                                        class="inline-flex items-center gap-2 px-6 py-3 rounded-3xl border border-[#EDE0D0] hover:border-[#D4A017] hover:bg-white transition-all">
-                                        <i class="fa-solid fa-download"></i>
-                                        Unduh Semua RAW
+                                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                                        Buka Drive
                                     </a>
                                 </div>
 
-                                <div class="flex flex-wrap gap-3 mb-8">
-                                    @foreach($rawAssets as $asset)
-                                        @php $code = 'D'.$asset->version; @endphp
-                                        <form method="POST" action="/projects/{{ $project->id }}/selections" class="inline">
-                                            @csrf
-                                            <input type="hidden" name="media_asset_id" value="{{ $asset->id }}">
-                                            <button type="submit"
-                                                class="px-6 py-3 rounded-2xl border text-sm font-medium transition-all
-                                                    {{ in_array($asset->id, $selectedIds)
-                                                        ? 'bg-gradient-to-r from-[#D4A017] to-[#E07A5F] text-white border-transparent shadow-md'
-                                                        : 'bg-white border-[#EDE0D0] text-[#3F2B1B] hover:border-[#D4A017] hover:bg-white' }}
-                                                    {{ ($locked || ($remaining <= 0 && !in_array($asset->id, $selectedIds))) ? 'opacity-50 cursor-not-allowed' : '' }}"
-                                                @if($locked || ($remaining <= 0 && !in_array($asset->id, $selectedIds))) disabled @endif>
-                                                {{ $code }}
-                                                @if(in_array($asset->id, $selectedIds))
-                                                    <i class="fa-solid fa-check ml-2"></i>
-                                                @endif
-                                            </button>
-                                        </form>
-                                    @endforeach
-                                </div>
-
-                                <div class="flex items-center justify-between pt-6 border-t border-[#EDE0D0]">
-                                    <p class="text-sm text-[#7A5B3A]">
-                                        <i class="fa-solid fa-lock mr-1"></i>
-                                        Pilihan akan terkunci setelah dikirim ke editor
-                                    </p>
-                                    <form method="POST" action="{{ route('projects.selections.finalize', $project) }}">
+                                @if(!$project->hasEditRequest())
+                                    <form method="POST" action="{{ route('projects.edit-request.store', $project) }}" class="space-y-5">
                                         @csrf
-                                        <button type="submit"
-                                            class="px-8 py-4 rounded-3xl text-sm font-semibold transition-all
-                                                {{ $locked || $selections->count() === 0 
-                                                    ? 'bg-gray-200 text-gray-500 cursor-not-allowed' 
-                                                    : 'bg-gradient-to-r from-[#D4A017] to-[#E07A5F] text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5' }}"
-                                            @if($locked || $selections->count() === 0) disabled @endif>
-                                            <i class="fa-solid fa-paper-plane mr-2"></i>
-                                            {{ $locked ? 'Sudah Dikirim ke Editor' : 'Kirim ke Editor' }}
-                                        </button>
+                                        <div>
+                                            <label class="block text-sm font-medium text-[#5C432C] mb-2">Kode Foto yang Dipilih</label>
+                                            <textarea name="edit_photo_codes" rows="3" required
+                                                      class="w-full rounded-3xl border border-[#E1D3C5] bg-white px-5 py-4 focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20"
+                                                      placeholder="Contoh: D001, D014, D027. Maksimal 10 kode foto.">{{ old('edit_photo_codes') }}</textarea>
+                                            <p class="mt-2 text-xs text-[#8B7359]">Pisahkan kode dengan koma, spasi, atau baris baru. Maksimal 10 foto untuk diedit.</p>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-[#5C432C] mb-2">Deskripsi Permintaan Edit</label>
+                                            <textarea name="edit_request_note" rows="5" required
+                                                      class="w-full rounded-3xl border border-[#E1D3C5] bg-white px-5 py-4 focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20"
+                                                      placeholder="Tuliskan arahan edit, tone warna, retouch, atau catatan khusus...">{{ old('edit_request_note') }}</textarea>
+                                        </div>
+                                        <div class="flex items-center justify-between gap-4 pt-2">
+                                            <p class="text-sm text-[#7A5B3A]">
+                                                <i class="fa-solid fa-lock mr-1"></i>
+                                                Permintaan akan terkunci setelah dikirim ke editor.
+                                            </p>
+                                            <button class="px-8 py-4 rounded-3xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] text-sm font-semibold text-white shadow-lg transition-all hover:shadow-xl">
+                                                <i class="fa-solid fa-paper-plane mr-2"></i>
+                                                Kirim ke Editor
+                                            </button>
+                                        </div>
                                     </form>
-                                </div>
+                                @else
+                                    <div class="space-y-4 rounded-3xl border border-emerald-200 bg-emerald-50 p-6">
+                                        <p class="font-semibold text-emerald-800">
+                                            <i class="fa-solid fa-circle-check mr-2"></i>
+                                            Permintaan edit sudah dikirim ke editor.
+                                        </p>
+                                        <div class="grid gap-4 md:grid-cols-2">
+                                            <div class="rounded-2xl bg-white px-4 py-3">
+                                                <p class="text-xs uppercase tracking-wide text-[#8B7359]">Kode Foto</p>
+                                                <p class="mt-1 whitespace-pre-line text-sm text-[#3F2B1B]">{{ $project->edit_photo_codes }}</p>
+                                            </div>
+                                            <div class="rounded-2xl bg-white px-4 py-3">
+                                                <p class="text-xs uppercase tracking-wide text-[#8B7359]">Deskripsi Edit</p>
+                                                <p class="mt-1 whitespace-pre-line text-sm text-[#3F2B1B]">{{ $project->edit_request_note }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endif
                             </div>
                         @endif
 
-                        {{-- Final Assets --}}
-                        @if($finalAssets->isNotEmpty())
+                        {{-- Final Drive --}}
+                        @if($project?->hasFinalDelivery() && $canContinueProduction)
                             <div class="border border-emerald-200 bg-emerald-50 rounded-3xl p-7">
-                                <div class="flex items-center gap-4 mb-6">
-                                    <div class="w-10 h-10 rounded-2xl bg-emerald-100 flex items-center justify-center">
-                                        <i class="fa-solid fa-circle-check text-emerald-700 text-2xl"></i>
+                                <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+                                    <div class="flex items-center gap-4">
+                                        <div class="w-10 h-10 rounded-2xl bg-emerald-100 flex items-center justify-center">
+                                            <i class="fa-solid fa-circle-check text-emerald-700 text-2xl"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-semibold text-emerald-800 text-lg">Hasil Edit Tersedia di Drive</h4>
+                                            @if($project->final_message)
+                                                <p class="text-sm text-emerald-700">{{ $project->final_message }}</p>
+                                            @endif
+                                            <p class="mt-2 text-xs font-medium text-emerald-700">
+                                                <i class="fa-solid fa-calendar-day mr-1"></i>
+                                                Link Drive hasil berlaku 7 hari
+                                                @if($finalDriveExpiresAt)
+                                                    sampai {{ $finalDriveExpiresAt->translatedFormat('d M Y') }}
+                                                @endif
+                                            </p>
+                                        </div>
                                     </div>
-                                    <h4 class="font-semibold text-emerald-800 text-lg">Hasil Edit Siap Diunduh</h4>
-                                </div>
-                                <div class="flex flex-wrap gap-4">
-                                    @foreach($finalAssets as $asset)
-                                        <a href="{{ Storage::url($asset->path) }}" download
+                                    @if($finalDriveUrl)
+                                        <a href="{{ $finalDriveUrl }}" target="_blank" rel="noopener"
                                            class="inline-flex items-center gap-3 px-6 py-4 rounded-3xl bg-white border border-emerald-300 text-emerald-700 hover:border-emerald-500 hover:bg-emerald-50 transition-all">
-                                            <i class="fa-solid fa-download"></i>
-                                            Unduh File {{ $loop->iteration }}
+                                            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                                            Buka Drive Hasil
                                         </a>
-                                    @endforeach
+                                    @endif
                                 </div>
+
                             </div>
                         @endif
                     </div>

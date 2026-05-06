@@ -2,6 +2,7 @@
 
 namespace Tests\Unit;
 
+use App\Models\Booking;
 use App\Models\Project;
 use App\Models\User;
 use Carbon\Carbon;
@@ -48,7 +49,7 @@ class ProjectModelTest extends TestCase
         $labels = [
             Project::STATUS_DRAFT => 'Belum Dijadwalkan',
             Project::STATUS_SCHEDULED => 'Terjadwal',
-            Project::STATUS_SHOOT_DONE => 'Sesi Foto Selesai',
+            Project::STATUS_SHOOT_DONE => 'Link Foto Mentah Tersedia',
             Project::STATUS_EDITING => 'Permintaan Edit Dikirim',
             Project::STATUS_FINAL => 'Hasil Final Siap',
         ];
@@ -57,5 +58,23 @@ class ProjectModelTest extends TestCase
             $project = new Project(['status' => $status]);
             $this->assertSame($label, $project->statusLabel());
         }
+    }
+
+    public function test_production_requires_full_payment_while_scheduling_allows_dp(): void
+    {
+        $project = new Project(['status' => Project::STATUS_SCHEDULED]);
+        $project->setRelation('booking', new Booking(['status' => Booking::STATUS_DP_PAID]));
+
+        $this->assertTrue($project->bookingAllowsScheduling());
+        $this->assertFalse($project->bookingAllowsProduction());
+        $this->assertSame(
+            'Proses pasca-produksi hanya dapat dilanjutkan setelah pembayaran lunas.',
+            $project->productionBlockMessage()
+        );
+
+        $project->setRelation('booking', new Booking(['status' => Booking::STATUS_PAID]));
+
+        $this->assertTrue($project->bookingAllowsScheduling());
+        $this->assertTrue($project->bookingAllowsProduction());
     }
 }

@@ -8,6 +8,7 @@ use App\Models\Payment;
 use App\Models\Project;
 use App\Models\ServicePackage;
 use App\Models\StudioLocation;
+use App\Models\StudioRoom;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -28,6 +29,11 @@ class BookingFlowTest extends TestCase
             'name' => 'Cabang Utama',
             'slug' => 'cabang-utama',
             'address' => 'Jl. Contoh No. 1',
+            'is_active' => true,
+        ]);
+        $room = StudioRoom::create([
+            'studio_location_id' => $location->id,
+            'name' => 'Studio 1',
             'is_active' => true,
         ]);
         $client = User::factory()->create(['role' => Role::CLIENT]);
@@ -52,6 +58,7 @@ class BookingFlowTest extends TestCase
         $this->assertEquals('WAITING_PAYMENT', $booking->status);
         $this->assertNull($booking->confirmed_at);
         $this->assertEquals($package->price, $booking->total_price);
+        $this->assertEquals($room->id, $booking->studio_room_id);
 
         $project = Project::first();
         $this->assertNotNull($project);
@@ -185,7 +192,7 @@ class BookingFlowTest extends TestCase
         Payment::create([
             'booking_id' => $booking->id,
             'type' => Payment::TYPE_DP,
-            'amount' => 100000,
+            'amount' => 35000,
             'status' => Payment::STATUS_PAID,
             'order_id' => 'ORDER-DP-1',
             'transaction_status' => 'settlement',
@@ -198,11 +205,11 @@ class BookingFlowTest extends TestCase
             ])
             ->assertOk();
 
-        $response->assertJsonPath('amount', 250000);
+        $response->assertJsonPath('amount', 315000);
         $this->assertDatabaseHas('payments', [
             'booking_id' => $booking->id,
             'type' => Payment::TYPE_FULL,
-            'amount' => 250000,
+            'amount' => 315000,
             'status' => Payment::STATUS_PENDING,
             'snap_token' => 'snap-token-settlement',
         ]);
@@ -232,7 +239,7 @@ class BookingFlowTest extends TestCase
         Payment::create([
             'booking_id' => $booking->id,
             'type' => Payment::TYPE_DP,
-            'amount' => 100000,
+            'amount' => 35000,
             'status' => Payment::STATUS_PAID,
             'order_id' => 'ORDER-DP-2',
             'transaction_status' => 'settlement',
@@ -242,7 +249,7 @@ class BookingFlowTest extends TestCase
         $settlement = Payment::create([
             'booking_id' => $booking->id,
             'type' => Payment::TYPE_FULL,
-            'amount' => 250000,
+            'amount' => 315000,
             'status' => Payment::STATUS_PENDING,
             'order_id' => 'ORDER-FULL-FAIL',
             'snap_token' => 'snap-fail',
@@ -255,6 +262,102 @@ class BookingFlowTest extends TestCase
 
         $this->assertEquals(Booking::STATUS_DP_PAID, $booking->fresh()->status);
         $this->assertEquals(Payment::STATUS_EXPIRED, $settlement->fresh()->status);
+    }
+
+    public function test_admin_can_mark_dp_paid_booking_as_paid_for_onsite_settlement(): void
+    {
+        $admin = User::factory()->create(['role' => Role::ADMIN]);
+        $package = ServicePackage::factory()->create(['price' => 1000000]);
+        $location = StudioLocation::create([
+            'name' => 'Cabang Pelunasan',
+            'slug' => 'cabang-pelunasan',
+            'address' => 'Jl. Pelunasan No. 1',
+            'is_active' => true,
+        ]);
+        $client = User::factory()->create(['role' => Role::CLIENT]);
+
+        $booking = Booking::factory()->create([
+            'client_id' => $client->id,
+            'package_id' => $package->id,
+            'studio_location_id' => $location->id,
+            'status' => Booking::STATUS_DP_PAID,
+            'confirmed_at' => now()->subHour(),
+            'payment_type' => Booking::PAYMENT_TYPE_DP,
+            'total_price' => 1000000,
+        ]);
+
+        Payment::create([
+            'booking_id' => $booking->id,
+            'type' => Payment::TYPE_DP,
+            'amount' => 100000,
+            'status' => Payment::STATUS_PAID,
+            'order_id' => 'ORDER-DP-ONSITE',
+            'transaction_status' => 'settlement',
+            'paid_at' => now(),
+        ]);
+
+        $this->actingAs($admin)
+            ->post(route('admin.bookings.status', $booking), [
+                'status' => Booking::STATUS_PAID,
+            ])
+            ->assertRedirect()
+            ->assertSessionHas('success', 'Status pemesanan diperbarui.');
+
+        $this->assertEquals(Booking::STATUS_PAID, $booking->fresh()->status);
+        $this->assertDatabaseHas('payments', [
+            'booking_id' => $booking->id,
+            'type' => Payment::TYPE_FULL,
+            'amount' => 900000,
+            'status' => Payment::STATUS_PAID,
+            'reference' => 'manual_onsite_settlement',
+            'transaction_status' => 'manual',
+        ]);
+    }
+
+    public function test_dp_paid_booking_cannot_be_cancelled_manually(): void
+    {
+        $admin = User::factory()->create(['role' => Role::ADMIN]);
+        $package = ServicePackage::factory()->create(['price' => 1000000]);
+        $location = StudioLocation::create([
+            'name' => 'Cabang DP Aman',
+            'slug' => 'cabang-dp-aman',
+            'address' => 'Jl. DP No. 1',
+            'is_active' => true,
+        ]);
+        $client = User::factory()->create(['role' => Role::CLIENT]);
+
+        $booking = Booking::factory()->create([
+            'client_id' => $client->id,
+            'package_id' => $package->id,
+            'studio_location_id' => $location->id,
+            'status' => Booking::STATUS_DP_PAID,
+            'confirmed_at' => now()->subHour(),
+            'payment_type' => Booking::PAYMENT_TYPE_DP,
+            'total_price' => 1000000,
+        ]);
+
+        Payment::create([
+            'booking_id' => $booking->id,
+            'type' => Payment::TYPE_DP,
+            'amount' => 100000,
+            'status' => Payment::STATUS_PAID,
+            'order_id' => 'ORDER-DP-NO-CANCEL',
+            'transaction_status' => 'settlement',
+            'paid_at' => now(),
+        ]);
+
+        $this->actingAs($admin)
+            ->post(route('admin.bookings.status', $booking), [
+                'status' => Booking::STATUS_CANCELLED,
+            ])
+            ->assertRedirect()
+            ->assertSessionHas('error', 'Perubahan status tidak valid untuk kondisi pemesanan saat ini.');
+
+        $this->assertEquals(Booking::STATUS_DP_PAID, $booking->fresh()->status);
+        $this->assertDatabaseMissing('payments', [
+            'booking_id' => $booking->id,
+            'status' => Payment::STATUS_FAILED,
+        ]);
     }
 
     public function test_paid_booking_status_cannot_be_changed_manually(): void

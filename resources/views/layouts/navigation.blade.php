@@ -33,7 +33,7 @@
             <!-- Desktop User Menu -->
             @if($user)
                 <div class="hidden sm:flex items-center gap-5">
-                    <div class="text-right bg-white border border-[#EDE0D0] px-5 py-2.5 rounded-3xl">
+                    <div class="text-right px-2 py-1">
                         <div class="text-sm font-semibold text-[#3F2B1B]">{{ $user->name }}</div>
                         <div class="text-xs text-[#8B7359]">{{ $user->email }}</div>
                     </div>

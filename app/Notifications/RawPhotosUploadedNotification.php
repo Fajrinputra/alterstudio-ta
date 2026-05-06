@@ -9,7 +9,7 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 /**
- * Email ke client saat fotografer mengunggah foto RAW.
+ * Email ke client saat fotografer membagikan link Drive foto mentah.
  */
 class RawPhotosUploadedNotification extends Notification implements ShouldQueue
 {
@@ -31,11 +31,11 @@ class RawPhotosUploadedNotification extends Notification implements ShouldQueue
         $packageName = $booking?->package?->name ?? 'Paket';
 
         return (new MailMessage)
-            ->subject('[Alter Studio] Foto RAW telah diunggah')
+            ->subject('[Alter Studio] Link foto mentah telah tersedia')
             ->greeting('Halo '.$notifiable->name.',')
-            ->line('Foto untuk sesi Anda sudah diunggah ke sistem.')
+            ->line('Link Google Drive untuk foto mentah sesi Anda sudah tersedia.')
             ->line('Paket: '.$packageName)
-            ->line('Silakan buka halaman pemesanan untuk melihat foto dan memilih maksimal 10 foto yang ingin diedit.')
+            ->line('Silakan buka halaman pemesanan, akses link Drive, lalu kirim kode foto dan deskripsi permintaan edit melalui sistem.')
             ->action('Lihat Pemesanan', route('bookings.index'))
             ->line('Terima kasih telah menggunakan layanan Alter Studio.');
     }

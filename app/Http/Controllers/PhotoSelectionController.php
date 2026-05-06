@@ -2,99 +2,81 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\MediaAsset;
-use App\Models\PhotoSelection;
 use App\Models\Project;
 use App\Notifications\EditRequestSubmittedNotification;
 use Illuminate\Http\Request;
 
 /**
- * Kelola seleksi foto client sebelum masuk proses editing.
+ * Mengelola permintaan edit klien berbasis kode foto.
  */
 class PhotoSelectionController extends Controller
 {
-    /** Client memilih foto (max 10) hanya untuk project miliknya. */
+    /**
+     * Klien mengirim kode foto dan deskripsi edit setelah link Drive RAW tersedia.
+     */
     public function store(Request $request, Project $project)
     {
-        $user = $request->user();
-        if ($user->id !== $project->booking->client_id) {
-            abort(403);
+        $this->authorizeClient($request, $project);
+
+        if ($message = $project->productionBlockMessage()) {
+            return $this->respondBack($request, $message, 422);
         }
 
-        if ($project->selections_locked) {
-            return back()->with('error', 'Pilihan sudah dikirim ke editor dan tidak dapat diubah.');
+        if (! $project->hasRawDriveLink()) {
+            return $this->respondBack($request, 'Link Drive foto mentah belum tersedia.', 422);
         }
 
-        $validated = $request->validate([
-            'media_asset_id' => ['required', 'exists:media_assets,id'],
+        if ($project->hasEditRequest()) {
+            return $this->respondBack($request, 'Permintaan edit sudah dikirim dan tidak dapat diubah.', 422);
+        }
+
+        $data = $request->validate([
+            'edit_photo_codes' => ['required', 'string', 'max:2000'],
+            'edit_request_note' => ['required', 'string', 'max:5000'],
         ]);
 
-        $asset = MediaAsset::where('id', $validated['media_asset_id'])
-            ->where('project_id', $project->id)
-            ->firstOrFail();
-
-        if ($asset->type !== MediaAsset::TYPE_RAW) {
-            return back()->with('error', 'Hanya foto RAW yang dapat dipilih untuk diedit.');
-        }
-
-        // Toggle: jika sudah dipilih, hapus. Jika belum, tambahkan (maks 10).
-        $existing = PhotoSelection::where('project_id', $project->id)
-            ->where('client_id', $user->id)
-            ->where('media_asset_id', $asset->id)
-            ->first();
-
-        if ($existing) {
-            $existing->delete();
-            $message = 'Pilihan dibatalkan.';
-        } else {
-            $currentCount = PhotoSelection::where('project_id', $project->id)->count();
-            if ($currentCount >= 10) {
-                return back()->with('error', 'Maksimum 10 foto dapat dipilih.');
-            }
-
-            $selection = PhotoSelection::create([
-                'project_id' => $project->id,
-                'client_id' => $user->id,
-                'media_asset_id' => $asset->id,
-            ]);
-            $message = 'Foto ditandai untuk diedit. Tekan Kirim ke Editor jika sudah selesai memilih.';
-        }
-
-        if ($request->wantsJson()) {
-            return response()->json(['message' => $message], 200);
-        }
-
-        return back()->with('success', $message);
-    }
-
-    /** Kunci pilihan dan tandai permintaan edit dikirim. */
-    public function finalize(Project $project)
-    {
-        $user = request()->user();
-        if ($user->id !== $project->booking->client_id) {
-            abort(403);
-        }
-
-        if ($project->selections_locked) {
-            return back()->with('success', 'Permintaan edit sudah dikirim.');
-        }
-
-        $count = $project->selections()->count();
-        if ($count === 0) {
-            return back()->with('error', 'Pilih minimal 1 foto sebelum mengirim.');
+        if ($this->countPhotoCodes($data['edit_photo_codes']) > 10) {
+            return $this->respondBack($request, 'Maksimal 10 foto dapat diajukan untuk diedit.', 422);
         }
 
         $project->update([
+            'edit_photo_codes' => $data['edit_photo_codes'],
+            'edit_request_note' => $data['edit_request_note'],
+            'edit_requested_at' => now(),
             'selections_locked' => true,
             'status' => Project::STATUS_EDITING,
         ]);
 
-        // Saat finalize, editor terkait diberi notifikasi job baru.
-        $editor = $project->editor;
-        if ($editor) {
-            $editor->notify(new EditRequestSubmittedNotification($project->id));
-        }
+        $project->editor?->notify(new EditRequestSubmittedNotification($project->id));
 
-        return back()->with('success', 'Permintaan edit dikirim ke editor. Pilihan terkunci.');
+        return $this->respondSuccess($request, 'Permintaan edit berhasil dikirim ke editor.');
+    }
+
+    protected function authorizeClient(Request $request, Project $project): void
+    {
+        if ($request->user()->id !== $project->booking->client_id) {
+            abort(403);
+        }
+    }
+
+    protected function countPhotoCodes(string $codes): int
+    {
+        $items = preg_split('/[\s,;]+/', trim($codes)) ?: [];
+
+        return count(array_filter($items, fn (string $item) => $item !== ''));
+    }
+
+    protected function respondBack(Request $request, string $message, int $status = 200)
+    {
+        return $request->wantsJson()
+            ? response()->json(['message' => $message], $status)
+            : back()->with('error', $message);
+    }
+
+    protected function respondSuccess(Request $request, string $message)
+    {
+        return $request->wantsJson()
+            ? response()->json(['message' => $message])
+            : back()->with('success', $message);
     }
 }

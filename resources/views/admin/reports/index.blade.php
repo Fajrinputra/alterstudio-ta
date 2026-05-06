@@ -255,7 +255,7 @@
                                     <tr class="hover:bg-[#FAF6F0] transition-all">
                                         <td class="px-3 py-4 text-center font-mono text-[#D4A017]">#{{ $b->id }}</td>
                                         <td class="px-3 py-4">{{ $b->package->name ?? '-' }}</td>
-                                        <td class="px-3 py-4">{{ $b->client->name ?? '-' }}</td>
+                                        <td class="px-3 py-4 text-left">{{ $b->client->name ?? '-' }}</td>
                                         <td class="px-3 py-4 text-center">
                                             <span class="whitespace-nowrap text-sm font-medium text-[#7A5B3A]">{{ optional($b->booking_date)->format('d M Y') }}</span>
                                         </td>
@@ -333,7 +333,7 @@
                                 <tbody class="divide-y divide-[#EDE0D0]">
                                     @foreach($photographerPerf as $p)
                                         <tr class="hover:bg-[#FAF6F0]">
-                                            <td class="px-3 py-4 text-center font-medium">{{ $p['name'] }}</td>
+                                            <td class="px-3 py-4 text-left font-medium">{{ $p['name'] }}</td>
                                             <td class="px-3 py-4 text-center">{{ $p['total'] }}</td>
                                             <td class="px-3 py-4">
                                                 <div class="flex flex-wrap gap-2">
@@ -415,7 +415,7 @@
                                 <tbody class="divide-y divide-[#EDE0D0]">
                                     @foreach($editorPerf as $e)
                                         <tr class="hover:bg-[#FAF6F0]">
-                                            <td class="px-3 py-4 text-center font-medium">{{ $e['name'] }}</td>
+                                            <td class="px-3 py-4 text-left font-medium">{{ $e['name'] }}</td>
                                             <td class="px-3 py-4 text-center">{{ $e['total'] }}</td>
                                             <td class="px-3 py-4">
                                                 <div class="flex flex-wrap gap-2">

@@ -33,8 +33,6 @@ class ScheduleController extends Controller
             'booking.package',
             'booking.studioLocation.rooms',
             'booking.studioRoom',
-            'mediaAssets',
-            'selections.mediaAsset',
             'photographer',
             'editor',
         ]);
@@ -132,6 +130,12 @@ class ScheduleController extends Controller
     public function store(Request $request, Project $project)
     {
         $booking = $project->booking;
+        if ($booking->status === Booking::STATUS_CANCELLED) {
+            return $request->wantsJson()
+                ? response()->json(['message' => 'Pemesanan sudah dibatalkan dan tidak dapat dijadwalkan.'], 422)
+                : back()->with('error', 'Pemesanan sudah dibatalkan dan tidak dapat dijadwalkan.');
+        }
+
         if (! in_array($booking->status, [Booking::STATUS_PAID, Booking::STATUS_DP_PAID], true)) {
             return $request->wantsJson()
                 ? response()->json(['message' => 'Pemesanan harus sudah dibayar minimal DP sebelum dijadwalkan.'], 422)
@@ -164,6 +168,12 @@ class ScheduleController extends Controller
         }
 
         [$start, $end] = $this->buildScheduleWindow($project);
+        if ($this->hasRoomOverlap($booking, $room->id, $start, $end)) {
+            return $request->wantsJson()
+                ? response()->json(['message' => 'Ruangan yang dipilih sudah terisi pada jam tersebut.'], 422)
+                : back()->with('error', 'Ruangan yang dipilih sudah terisi pada jam tersebut.');
+        }
+
         if ($this->hasOverlap($start, $end, $validated['photographer_id'], $validated['editor_id'], $project->id)) {
             return $request->wantsJson()
                 ? response()->json(['message' => 'Bentrok jadwal terdeteksi untuk kru yang dipilih.'], 422)
@@ -234,6 +244,12 @@ class ScheduleController extends Controller
         }
 
         [$start, $end] = $this->buildScheduleWindow($project);
+        if ($this->hasRoomOverlap($project->booking, $room->id, $start, $end)) {
+            return $request->wantsJson()
+                ? response()->json(['message' => 'Ruangan yang dipilih sudah terisi pada jam tersebut.'], 422)
+                : back()->with('error', 'Ruangan yang dipilih sudah terisi pada jam tersebut.');
+        }
+
         if ($this->hasOverlap($start, $end, $validated['photographer_id'], $validated['editor_id'], $project->id)) {
             return $request->wantsJson()
                 ? response()->json(['message' => 'Bentrok jadwal terdeteksi untuk kru yang dipilih.'], 422)
@@ -330,6 +346,30 @@ class ScheduleController extends Controller
             ->all();
     }
 
+    protected function hasRoomOverlap(Booking $booking, int $roomId, DateTimeInterface $start, DateTimeInterface $end): bool
+    {
+        $buffer = max(0, (int) config('studio.booking_buffer_minutes', 15));
+        $candidateStart = Carbon::parse($start->format('Y-m-d H:i:s'));
+        $candidateBlockedEnd = Carbon::parse($end->format('Y-m-d H:i:s'))->addMinutes($buffer);
+
+        return Booking::query()
+            ->with('package:id,duration_minutes')
+            ->whereKeyNot($booking->id)
+            ->where('studio_room_id', $roomId)
+            ->where('status', '!=', Booking::STATUS_CANCELLED)
+            ->whereDate('booking_date', $candidateStart->toDateString())
+            ->get()
+            ->contains(function (Booking $otherBooking) use ($candidateStart, $candidateBlockedEnd, $buffer) {
+                $duration = $otherBooking->effectiveDurationMinutes();
+                $otherStart = Carbon::parse(
+                    Carbon::parse($otherBooking->booking_date)->toDateString().' '.($otherBooking->booking_time ?? '00:00')
+                );
+                $otherBlockedEnd = $otherStart->copy()->addMinutes($duration + $buffer);
+
+                return $candidateStart->lt($otherBlockedEnd) && $candidateBlockedEnd->gt($otherStart);
+            });
+    }
+
     protected function validateAssignees(int $photographerId, int $editorId): ?string
     {
         if ($photographerId === $editorId) {
@@ -355,6 +395,10 @@ class ScheduleController extends Controller
 
     protected function canModifySchedule(Project $project): bool
     {
+        if (! $project->bookingAllowsScheduling()) {
+            return false;
+        }
+
         if (! in_array($project->status, [Project::STATUS_SCHEDULED, Project::STATUS_DRAFT], true)) {
             return false;
         }
@@ -363,7 +407,7 @@ class ScheduleController extends Controller
             return false;
         }
 
-        if ($project->mediaAssets()->exists()) {
+        if ($project->hasPostProductionActivity()) {
             return false;
         }
 
@@ -379,7 +423,7 @@ class ScheduleController extends Controller
         $dateString = $booking->booking_date ? Carbon::parse($booking->booking_date)->toDateString() : now()->toDateString();
         $timeString = $booking->booking_time ?? '00:00';
         $start = Carbon::parse($dateString.' '.$timeString);
-        $duration = $booking->package->duration_minutes ?? 60;
+        $duration = $booking->effectiveDurationMinutes();
         $end = $start->clone()->addMinutes($duration);
 
         return [$start, $end];

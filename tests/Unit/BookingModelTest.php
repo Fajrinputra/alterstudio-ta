@@ -119,6 +119,12 @@ class BookingModelTest extends TestCase
             'total_price' => 450000,
         ]);
 
+        $millionDpBooking = new Booking([
+            'status' => Booking::STATUS_WAITING_PAYMENT,
+            'payment_type' => Booking::PAYMENT_TYPE_DP,
+            'total_price' => 1000000,
+        ]);
+
         $settlementBooking = Booking::factory()->create([
             'status' => Booking::STATUS_DP_PAID,
             'payment_type' => Booking::PAYMENT_TYPE_DP,
@@ -128,14 +134,40 @@ class BookingModelTest extends TestCase
         Payment::query()->create([
             'booking_id' => $settlementBooking->id,
             'type' => Payment::TYPE_DP,
-            'amount' => 100000,
+            'amount' => 45000,
             'status' => Payment::STATUS_PAID,
         ]);
 
         $this->assertSame(450000, $fullBooking->nextPayableAmount());
-        $this->assertSame(100000, $dpBooking->nextPayableAmount());
-        $this->assertSame(350000, $settlementBooking->nextPayableAmount());
+        $this->assertSame(45000, $dpBooking->nextPayableAmount());
+        $this->assertSame(100000, $millionDpBooking->downPaymentAmount());
+        $this->assertSame(405000, $settlementBooking->nextPayableAmount());
         $this->assertSame(Booking::PAYMENT_TYPE_FULL, $settlementBooking->nextPaymentType());
         $this->assertTrue($settlementBooking->isAwaitingSettlement());
+    }
+
+    public function test_extra_time_addon_extends_effective_duration_by_ten_minutes_each(): void
+    {
+        $booking = Booking::factory()->create([
+            'selected_addons' => [
+                [
+                    'label' => 'Tambah waktu',
+                    'price' => 100000,
+                    'quantity' => 2,
+                    'subtotal' => 200000,
+                ],
+                [
+                    'label' => 'Ganti kostum',
+                    'price' => 50000,
+                    'quantity' => 1,
+                    'subtotal' => 50000,
+                ],
+            ],
+        ]);
+        $booking->package->update(['duration_minutes' => 30]);
+        $booking->refresh()->load('package');
+
+        $this->assertSame(20, $booking->extraDurationMinutes());
+        $this->assertSame(50, $booking->effectiveDurationMinutes());
     }
 }

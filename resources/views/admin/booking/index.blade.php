@@ -133,7 +133,7 @@
                                         'WAITING_PAYMENT' => $b->confirmed_at
                                             ? ['CANCELLED' => 'Batalkan Pemesanan']
                                             : ['WAITING_PAYMENT' => 'Konfirmasi Pemesanan', 'CANCELLED' => 'Tolak Pemesanan'],
-                                        'DP_PAID' => ['PAID' => 'Lunas', 'CANCELLED' => 'Batalkan Pemesanan'],
+                                        'DP_PAID' => ['PAID' => 'Lunas'],
                                         default => [],
                                     };
                                     $canUpdatePayment = $isAdmin && !empty($availableStatusTransitions);
@@ -142,17 +142,24 @@
                                     $remainingAddonCount = max(0, $addonCollection->count() - $addonPreview->count());
                                 @endphp
 
-                                <article class="rounded-3xl border border-[#EDE0D0] bg-white px-4 py-4 shadow-sm">
+                                <article x-data="{ statusActionOpen: false }" class="rounded-3xl border border-[#EDE0D0] bg-white px-4 py-4 shadow-sm">
                                     <div class="flex items-start justify-between gap-3">
                                         <div>
                                             <p class="font-mono text-sm font-semibold text-[#D4A017]">#{{ $b->id }}</p>
                                             <h3 class="mt-1 text-base font-semibold text-[#3F2B1B]">{{ $b->client->name ?? '-' }}</h3>
                                             <p class="text-sm text-[#8B7359]">{{ $b->package->name ?? '-' }}</p>
                                         </div>
-                                        <span class="inline-flex items-center gap-2 rounded-3xl px-3 py-1.5 text-[11px] font-semibold {{ $badge['bg'] }} {{ $badge['text'] }}">
-                                            <span class="h-2 w-2 rounded-full bg-current"></span>
-                                            {{ $badge['label'] }}
-                                        </span>
+                                        @if($canUpdatePayment)
+                                            <button type="button" @click="statusActionOpen = true" class="inline-flex items-center gap-2 rounded-3xl px-3 py-1.5 text-[11px] font-semibold transition-all hover:-translate-y-0.5 hover:ring-2 hover:ring-[#D4A017]/30 {{ $badge['bg'] }} {{ $badge['text'] }}">
+                                                <span class="h-2 w-2 rounded-full bg-current"></span>
+                                                {{ $badge['label'] }}
+                                            </button>
+                                        @else
+                                            <span class="inline-flex items-center gap-2 rounded-3xl px-3 py-1.5 text-[11px] font-semibold {{ $badge['bg'] }} {{ $badge['text'] }}">
+                                                <span class="h-2 w-2 rounded-full bg-current"></span>
+                                                {{ $badge['label'] }}
+                                            </span>
+                                        @endif
                                     </div>
 
                                     @if($addonCollection->isNotEmpty())
@@ -209,20 +216,56 @@
                                     </div>
 
                                     @if($canUpdatePayment)
-                                        <details class="mt-4 rounded-2xl border border-[#EDE0D0] bg-[#FAF6F0] p-3">
-                                            <summary class="cursor-pointer list-none text-sm font-semibold text-[#3F2B1B]">Ubah status</summary>
-                                            <form method="POST" action="{{ route('admin.bookings.status', $b) }}" class="mt-3 flex items-center gap-2">
-                                                @csrf
-                                                <select name="status" class="min-w-0 flex-1 rounded-2xl border border-[#E1D3C5] bg-white px-3 py-2 text-sm text-[#3F2B1B] focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20">
-                                                    @foreach($availableStatusTransitions as $statusValue => $statusLabel)
-                                                        <option value="{{ $statusValue }}">{{ $statusLabel }}</option>
-                                                    @endforeach
-                                                </select>
-                                                <button class="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] text-white transition hover:brightness-110">
-                                                    <i class="fa-solid fa-check"></i>
+                                        <div x-cloak x-show="statusActionOpen" x-transition.opacity class="fixed inset-0 z-50 flex items-center justify-center px-4 py-6">
+                                            <button type="button" class="absolute inset-0 bg-[#3F2B1B]/40 backdrop-blur-sm" @click="statusActionOpen = false" aria-label="Tutup modal aksi status"></button>
+                                            <div x-show="statusActionOpen" x-transition class="relative w-full max-w-sm rounded-3xl border border-[#EDE0D0] bg-white p-6 shadow-2xl shadow-[#3F2B1B]/20">
+                                                <button type="button" @click="statusActionOpen = false" class="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-2xl text-[#8B7359] transition hover:bg-[#FAF6F0] hover:text-[#3F2B1B]">
+                                                    <i class="fa-solid fa-xmark"></i>
                                                 </button>
-                                            </form>
-                                        </details>
+                                                <div class="pr-10">
+                                                    <p class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#8B7359]">
+                                                        <i class="fa-solid fa-clipboard-check text-[#D4A017]"></i>
+                                                        Aksi Admin
+                                                    </p>
+                                                    <h3 class="mt-2 text-xl font-semibold text-[#3F2B1B]">Pemesanan #{{ $b->id }}</h3>
+                                                    <p class="mt-1 text-sm text-[#7A5B3A]">{{ $b->client->name ?? '-' }} - {{ $b->package->name ?? '-' }}</p>
+                                                </div>
+                                                <div class="mt-6 grid gap-3">
+                                                @foreach($availableStatusTransitions as $statusValue => $statusLabel)
+                                                    @php
+                                                        $isDestructiveAction = $statusValue === 'CANCELLED';
+                                                        $buttonText = match ($statusValue) {
+                                                            'WAITING_PAYMENT' => 'Konfirmasi',
+                                                            'PAID' => 'Tandai Lunas',
+                                                            'CANCELLED' => str_starts_with($statusLabel, 'Tolak') ? 'Tolak' : 'Batalkan',
+                                                            default => $statusLabel,
+                                                        };
+                                                        $buttonIcon = match ($statusValue) {
+                                                            'WAITING_PAYMENT', 'PAID' => 'fa-solid fa-check',
+                                                            'CANCELLED' => 'fa-solid fa-xmark',
+                                                            default => 'fa-solid fa-arrow-right',
+                                                        };
+                                                    @endphp
+                                                    <form method="POST" action="{{ route('admin.bookings.status', $b) }}">
+                                                        @csrf
+                                                        <input type="hidden" name="status" value="{{ $statusValue }}">
+                                                        <button class="inline-flex min-h-[48px] w-full items-center justify-center gap-3 rounded-2xl px-5 py-3 text-sm font-semibold transition-all hover:-translate-y-0.5 active:scale-[0.98]
+                                                            {{ $isDestructiveAction
+                                                                ? 'border border-red-200 bg-red-50 text-red-600 hover:bg-red-100'
+                                                                : 'bg-gradient-to-r from-[#D4A017] to-[#E07A5F] text-white shadow-lg shadow-[#D4A017]/25 hover:shadow-xl' }}">
+                                                            <i class="{{ $buttonIcon }}"></i>
+                                                            <span>{{ $buttonText }}</span>
+                                                        </button>
+                                                    </form>
+                                                @endforeach
+                                                    <button type="button" @click="statusActionOpen = false"
+                                                            class="inline-flex min-h-[48px] w-full items-center justify-center gap-3 rounded-2xl border border-[#EDE0D0] bg-white px-5 py-3 text-sm font-semibold text-[#7A5B3A] transition-all hover:-translate-y-0.5 hover:border-[#D4A017] hover:text-[#3F2B1B] active:scale-[0.98]">
+                                                        <i class="fa-solid fa-arrow-left"></i>
+                                                        <span>Kembali</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
                                     @endif
                                 </article>
                             @endforeach
@@ -231,14 +274,14 @@
                         <div class="hidden overflow-x-auto lg:block">
                             <table class="min-w-full table-fixed">
                                 <colgroup>
-                                    <col class="w-[7%]">
+                                    <col class="w-[6%]">
                                     <col class="w-[18%]">
-                                    <col class="w-[24%]">
+                                    <col class="w-[22%]">
+                                    <col class="w-[10%]">
+                                    <col class="w-[13%]">
                                     <col class="w-[11%]">
-                                    <col class="w-[14%]">
-                                    <col class="w-[11%]">
-                                    <col class="w-[11%]">
-                                    <col class="w-[8%]">
+                                    <col class="w-[13%]">
+                                    <col class="w-[7%]">
                                 </colgroup>
                                 <thead>
                                     <tr class="border-b border-[#EDE0D0] bg-gradient-to-r from-[#FAF6F0] via-white to-[#FAF6F0]">
@@ -273,7 +316,7 @@
                                                 'WAITING_PAYMENT' => $b->confirmed_at
                                                     ? ['CANCELLED' => 'Batalkan Pemesanan']
                                                     : ['WAITING_PAYMENT' => 'Konfirmasi Pemesanan', 'CANCELLED' => 'Tolak Pemesanan'],
-                                                'DP_PAID' => ['PAID' => 'Lunas', 'CANCELLED' => 'Batalkan Pemesanan'],
+                                                'DP_PAID' => ['PAID' => 'Lunas'],
                                                 default => [],
                                             };
                                             $canUpdatePayment = $isAdmin && !empty($availableStatusTransitions);
@@ -281,12 +324,12 @@
                                             $addonPreview = $addonCollection->take(2);
                                             $remainingAddonCount = max(0, $addonCollection->count() - $addonPreview->count());
                                         @endphp
-                                        <tr class="transition-all duration-200 hover:bg-[#FAF6F0]">
+                                        <tr x-data="{ statusActionOpen: false }" class="transition-all duration-200 hover:bg-[#FAF6F0]">
                                             <td class="px-3 py-4 align-middle text-center">
                                                 <span class="font-mono text-sm font-semibold text-[#D4A017]">#{{ $b->id }}</span>
                                             </td>
-                                            <td class="px-3 py-4 align-middle text-center">
-                                                <div class="flex items-center justify-center gap-3">
+                                            <td class="px-3 py-4 align-middle text-left">
+                                                <div class="flex items-center justify-start gap-3">
                                                     <div class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#D4A017]/10 to-[#E07A5F]/10 text-sm font-semibold text-[#3F2B1B]">
                                                         {{ substr($b->client->name ?? 'U', 0, 1) }}
                                                     </div>
@@ -342,26 +385,66 @@
                                             </td>
                                             <td class="px-3 py-4 align-middle text-center">
                                                 <div class="space-y-2">
-                                                    <span class="inline-flex min-h-[34px] items-center gap-2 rounded-3xl px-3 py-1.5 text-[11px] font-semibold {{ $badge['bg'] }} {{ $badge['text'] }}">
-                                                        <span class="h-2 w-2 rounded-full bg-current"></span>
-                                                        {{ $badge['label'] }}
-                                                    </span>
-
                                                     @if($canUpdatePayment)
-                                                        <details class="mx-auto w-fit rounded-2xl border border-[#EDE0D0] bg-white p-2 shadow-sm">
-                                                            <summary class="cursor-pointer list-none text-[11px] font-semibold text-[#3F2B1B]">Aksi</summary>
-                                                            <form method="POST" action="{{ route('admin.bookings.status', $b) }}" class="mt-2 flex items-center gap-2">
-                                                                @csrf
-                                                                <select name="status" class="max-w-[180px] rounded-2xl border border-[#E1D3C5] bg-[#FAF6F0] px-3 py-2 text-[11px] text-[#3F2B1B] focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20">
-                                                                    @foreach($availableStatusTransitions as $statusValue => $statusLabel)
-                                                                        <option value="{{ $statusValue }}">{{ $statusLabel }}</option>
-                                                                    @endforeach
-                                                                </select>
-                                                                <button class="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] text-white transition hover:brightness-110">
-                                                                    <i class="fa-solid fa-check text-[11px]"></i>
+                                                        <button type="button" @click="statusActionOpen = true" class="inline-flex min-h-[34px] items-center gap-2 rounded-3xl px-3 py-1.5 text-[11px] font-semibold transition-all hover:-translate-y-0.5 hover:ring-2 hover:ring-[#D4A017]/30 {{ $badge['bg'] }} {{ $badge['text'] }}">
+                                                            <span class="h-2 w-2 rounded-full bg-current"></span>
+                                                            {{ $badge['label'] }}
+                                                        </button>
+                                                        <div x-cloak x-show="statusActionOpen" x-transition.opacity class="fixed inset-0 z-50 flex items-center justify-center px-4 py-6">
+                                                            <button type="button" class="absolute inset-0 bg-[#3F2B1B]/40 backdrop-blur-sm" @click="statusActionOpen = false" aria-label="Tutup modal aksi status"></button>
+                                                            <div x-show="statusActionOpen" x-transition class="relative w-full max-w-sm rounded-3xl border border-[#EDE0D0] bg-white p-6 text-left shadow-2xl shadow-[#3F2B1B]/20">
+                                                                <button type="button" @click="statusActionOpen = false" class="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-2xl text-[#8B7359] transition hover:bg-[#FAF6F0] hover:text-[#3F2B1B]">
+                                                                    <i class="fa-solid fa-xmark"></i>
                                                                 </button>
-                                                            </form>
-                                                        </details>
+                                                                <div class="pr-10">
+                                                                    <p class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#8B7359]">
+                                                                        <i class="fa-solid fa-clipboard-check text-[#D4A017]"></i>
+                                                                        Aksi Admin
+                                                                    </p>
+                                                                    <h3 class="mt-2 text-xl font-semibold text-[#3F2B1B]">Pemesanan #{{ $b->id }}</h3>
+                                                                    <p class="mt-1 text-sm text-[#7A5B3A]">{{ $b->client->name ?? '-' }} - {{ $b->package->name ?? '-' }}</p>
+                                                                </div>
+                                                                <div class="mt-6 grid gap-3">
+                                                                @foreach($availableStatusTransitions as $statusValue => $statusLabel)
+                                                                    @php
+                                                                        $isDestructiveAction = $statusValue === 'CANCELLED';
+                                                                        $buttonText = match ($statusValue) {
+                                                                            'WAITING_PAYMENT' => 'Konfirmasi',
+                                                                            'PAID' => 'Tandai Lunas',
+                                                                            'CANCELLED' => str_starts_with($statusLabel, 'Tolak') ? 'Tolak' : 'Batalkan',
+                                                                            default => $statusLabel,
+                                                                        };
+                                                                        $buttonIcon = match ($statusValue) {
+                                                                            'WAITING_PAYMENT', 'PAID' => 'fa-solid fa-check',
+                                                                            'CANCELLED' => 'fa-solid fa-xmark',
+                                                                            default => 'fa-solid fa-arrow-right',
+                                                                        };
+                                                                    @endphp
+                                                                    <form method="POST" action="{{ route('admin.bookings.status', $b) }}">
+                                                                        @csrf
+                                                                        <input type="hidden" name="status" value="{{ $statusValue }}">
+                                                                        <button class="inline-flex min-h-[48px] w-full items-center justify-center gap-3 rounded-2xl px-5 py-3 text-sm font-semibold transition-all hover:-translate-y-0.5 active:scale-[0.98]
+                                                                            {{ $isDestructiveAction
+                                                                                ? 'border border-red-200 bg-red-50 text-red-600 hover:bg-red-100'
+                                                                                : 'bg-gradient-to-r from-[#D4A017] to-[#E07A5F] text-white shadow-md shadow-[#D4A017]/25 hover:shadow-lg' }}">
+                                                                            <i class="{{ $buttonIcon }}"></i>
+                                                                            <span>{{ $buttonText }}</span>
+                                                                        </button>
+                                                                    </form>
+                                                                @endforeach
+                                                                    <button type="button" @click="statusActionOpen = false"
+                                                                            class="inline-flex min-h-[48px] w-full items-center justify-center gap-3 rounded-2xl border border-[#EDE0D0] bg-white px-5 py-3 text-sm font-semibold text-[#7A5B3A] transition-all hover:-translate-y-0.5 hover:border-[#D4A017] hover:text-[#3F2B1B] active:scale-[0.98]">
+                                                                        <i class="fa-solid fa-arrow-left"></i>
+                                                                        <span>Kembali</span>
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    @else
+                                                        <span class="inline-flex min-h-[34px] items-center gap-2 rounded-3xl px-3 py-1.5 text-[11px] font-semibold {{ $badge['bg'] }} {{ $badge['text'] }}">
+                                                            <span class="h-2 w-2 rounded-full bg-current"></span>
+                                                            {{ $badge['label'] }}
+                                                        </span>
                                                     @endif
                                                 </div>
                                             </td>

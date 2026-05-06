@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * Representasi workflow pasca-booking (jadwal, upload, seleksi, final).
+ * Representasi workflow pasca-booking: jadwal, link Drive, permintaan edit, final.
  */
 class Project extends Model
 {
@@ -22,6 +22,16 @@ class Project extends Model
         'editor_id',
         'start_at',
         'end_at',
+        'raw_drive_url',
+        'raw_drive_uploaded_by',
+        'raw_drive_uploaded_at',
+        'edit_photo_codes',
+        'edit_request_note',
+        'edit_requested_at',
+        'final_drive_url',
+        'final_message',
+        'final_drive_uploaded_by',
+        'final_drive_uploaded_at',
     ];
 
     /** Status workflow project. */
@@ -43,6 +53,9 @@ class Project extends Model
         'selections_locked' => 'boolean',
         'start_at' => 'datetime',
         'end_at' => 'datetime',
+        'raw_drive_uploaded_at' => 'datetime',
+        'edit_requested_at' => 'datetime',
+        'final_drive_uploaded_at' => 'datetime',
     ];
 
     public function booking(): BelongsTo
@@ -50,13 +63,13 @@ class Project extends Model
         return $this->belongsTo(Booking::class);
     }
 
-    /** Semua aset media (raw/final) di project ini. */
+    /** Metadata file lama, dipertahankan untuk kompatibilitas data historis. */
     public function mediaAssets(): HasMany
     {
         return $this->hasMany(MediaAsset::class);
     }
 
-    /** Foto yang dipilih client untuk diedit. */
+    /** Pilihan foto lama, dipertahankan untuk kompatibilitas data historis. */
     public function selections(): HasMany
     {
         return $this->hasMany(PhotoSelection::class);
@@ -70,6 +83,16 @@ class Project extends Model
     public function editor(): BelongsTo
     {
         return $this->belongsTo(User::class, 'editor_id');
+    }
+
+    public function rawDriveUploader(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'raw_drive_uploaded_by');
+    }
+
+    public function finalDriveUploader(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'final_drive_uploaded_by');
     }
 
     /**
@@ -98,15 +121,77 @@ class Project extends Model
         return $this->start_at !== null && $this->end_at !== null;
     }
 
+    public function hasRawDriveLink(): bool
+    {
+        return filled($this->raw_drive_url);
+    }
+
+    public function hasEditRequest(): bool
+    {
+        return $this->edit_requested_at !== null;
+    }
+
+    public function hasFinalDelivery(): bool
+    {
+        return $this->final_drive_uploaded_at !== null;
+    }
+
+    public function hasPostProductionActivity(): bool
+    {
+        return $this->hasRawDriveLink()
+            || $this->hasEditRequest()
+            || $this->hasFinalDelivery()
+            || $this->mediaAssets()->exists();
+    }
+
+    public function bookingAllowsProduction(): bool
+    {
+        return $this->booking?->status === Booking::STATUS_PAID;
+    }
+
+    public function bookingAllowsScheduling(): bool
+    {
+        return in_array($this->booking?->status, [Booking::STATUS_DP_PAID, Booking::STATUS_PAID], true);
+    }
+
+    public function canContinueProduction(): bool
+    {
+        return $this->productionBlockMessage() === null;
+    }
+
+    public function canStartPostProduction(): bool
+    {
+        return $this->canContinueProduction()
+            && $this->status === self::STATUS_SCHEDULED;
+    }
+
+    public function productionBlockMessage(): ?string
+    {
+        if ($this->booking?->status === Booking::STATUS_CANCELLED) {
+            return 'Pemesanan sudah dibatalkan. Proses pasca-produksi tidak dapat dilanjutkan.';
+        }
+
+        if (! $this->bookingAllowsProduction()) {
+            return 'Proses pasca-produksi hanya dapat dilanjutkan setelah pembayaran lunas.';
+        }
+
+        if (! $this->hasSchedule() || $this->status === self::STATUS_DRAFT) {
+            return 'Proses pasca-produksi hanya dapat dilanjutkan setelah admin menjadwalkan project.';
+        }
+
+        return null;
+    }
+
     public function statusLabel(): string
     {
         return match ($this->status) {
             self::STATUS_DRAFT => 'Belum Dijadwalkan',
             self::STATUS_SCHEDULED => 'Terjadwal',
-            self::STATUS_SHOOT_DONE => 'Sesi Foto Selesai',
+            self::STATUS_SHOOT_DONE => 'Link Foto Mentah Tersedia',
             self::STATUS_EDITING => 'Permintaan Edit Dikirim',
             self::STATUS_FINAL => 'Hasil Final Siap',
             default => $this->status,
         };
     }
 }
+

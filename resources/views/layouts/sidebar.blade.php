@@ -35,25 +35,25 @@
     <div class="flex flex-col w-full p-6 space-y-8 h-full overflow-y-auto">
         <!-- Logo & User Info -->
         <div class="relative">
-            <div class="absolute -top-4 -left-4 w-24 h-24 bg-[#D4A017]/10 rounded-full blur-3xl"></div>
-            <div class="relative glass rounded-3xl p-5 border border-white/60 shadow-inner">
-                <div class="flex items-center gap-4">
+            <div class="absolute -top-4 -left-4 w-28 h-28 bg-[#D4A017]/20 rounded-full blur-2xl"></div>
+            <div class="relative rounded-3xl border border-[#D4A017]/55 bg-white/60 p-4 shadow-2xl shadow-[#6B4A2D]/15 ring-1 ring-[#E07A5F]/25 backdrop-blur-xl">
+                <div class="flex items-center gap-3">
                     @php
                         $avatarUrl = $user?->avatar_path ? Storage::disk('public')->url($user->avatar_path) : null;
                         $initial = $user ? strtoupper(mb_substr($user->name, 0, 1)) : 'A';
                     @endphp
                     <div class="relative">
                         @if($avatarUrl)
-                            <img src="{{ $avatarUrl }}" alt="Avatar" class="h-14 w-14 rounded-2xl border-2 border-white object-cover shadow-lg">
+                            <img src="{{ $avatarUrl }}" alt="Avatar" class="h-16 w-16 rounded-2xl border-2 border-white object-cover shadow-xl shadow-[#6B4A2D]/20">
                         @else
-                            <div class="h-14 w-14 rounded-2xl bg-gradient-to-br from-[#D4A017] to-[#E07A5F] flex items-center justify-center text-white font-black text-2xl shadow-inner">
+                            <div class="h-16 w-16 rounded-2xl bg-gradient-to-br from-[#D4A017] to-[#E07A5F] flex items-center justify-center text-white font-black text-2xl shadow-xl shadow-[#6B4A2D]/20">
                                 {{ $initial }}
                             </div>
                         @endif
-                        <div class="absolute -bottom-0.5 -right-0.5 w-5 h-5 bg-emerald-500 border-2 border-white rounded-full ring-2 ring-white/70"></div>
+                        <div class="absolute -bottom-1 -right-1 w-6 h-6 bg-emerald-500 border-2 border-white rounded-full ring-2 ring-white shadow-md"></div>
                     </div>
                     <div class="flex-1 min-w-0">
-                        <p class="font-display text-2xl font-semibold tracking-tight text-[#3F2B1B]">Alter Studio</p>
+                        <p class="font-display text-[1.35rem] font-semibold leading-tight tracking-tight text-[#3F2B1B] whitespace-nowrap">Alter Studio</p>
                         <p class="text-xs uppercase tracking-widest text-[#8B7359] flex items-center gap-2 mt-1">
                             <span class="inline-block w-2 h-2 rounded-full bg-[#D4A017]"></span>
                             {{ $roleLabel !== '' ? $roleLabel : ucfirst(strtolower($role?->value ?? '')) }}
@@ -79,10 +79,12 @@
                           {{ $isActive 
                               ? 'bg-gradient-to-r from-[#D4A017] to-[#E07A5F] text-white shadow-lg shadow-[#D4A017]/40' 
                               : 'text-[#5C432C] hover:bg-white hover:shadow-md hover:text-[#D4A017]' }}">
-                    <i class="{{ $item['icon'] }} text-xl {{ $isActive ? 'text-white' : 'text-[#8B7359] group-hover:text-[#D4A017]' }}"></i>
-                    <span class="flex-1">{{ $item['label'] }}</span>
+                    <span class="flex h-7 w-7 shrink-0 items-center justify-center">
+                        <i class="{{ $item['icon'] }} w-7 text-center text-xl {{ $isActive ? 'text-white' : 'text-[#8B7359] group-hover:text-[#D4A017]' }}"></i>
+                    </span>
+                    <span class="flex-1 text-left">{{ $item['label'] }}</span>
                     @if($isActive)
-                        <span class="w-2 h-2 bg-white rounded-full shadow"></span>
+                        <span class="h-2 w-2 shrink-0 rounded-full bg-white shadow"></span>
                     @endif
                 </a>
             @endforeach
@@ -93,7 +95,9 @@
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <button class="w-full flex items-center gap-4 px-5 py-4 rounded-2xl border border-[#E1D3C5] text-[#5C432C] hover:bg-red-500 hover:text-white hover:border-red-500 transition-all group">
-                    <i class="fa-solid fa-arrow-right-from-bracket group-hover:rotate-180 transition-transform"></i>
+                    <span class="flex h-7 w-7 shrink-0 items-center justify-center">
+                        <i class="fa-solid fa-arrow-right-from-bracket w-7 text-center transition-transform group-hover:rotate-180"></i>
+                    </span>
                     <span class="flex-1 text-left font-medium">Keluar</span>
                 </button>
             </form>
@@ -160,8 +164,10 @@
                        @click="mobileSidebar = false"
                        class="group flex items-center gap-4 px-5 py-4 rounded-2xl text-sm font-medium transition-all
                               {{ $isActive ? 'bg-gradient-to-r from-[#D4A017] to-[#E07A5F] text-white shadow-lg' : 'text-[#5C432C] hover:bg-white hover:text-[#D4A017]' }}">
-                        <i class="{{ $item['icon'] }} text-xl {{ $isActive ? 'text-white' : 'text-[#8B7359]' }}"></i>
-                        <span>{{ $item['label'] }}</span>
+                        <span class="flex h-7 w-7 shrink-0 items-center justify-center">
+                            <i class="{{ $item['icon'] }} w-7 text-center text-xl {{ $isActive ? 'text-white' : 'text-[#8B7359]' }}"></i>
+                        </span>
+                        <span class="flex-1 text-left">{{ $item['label'] }}</span>
                     </a>
                 @endforeach
             </nav>
@@ -170,7 +176,9 @@
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <button class="w-full flex items-center gap-4 px-5 py-4 rounded-2xl border border-[#E1D3C5] text-[#5C432C] hover:bg-red-500 hover:text-white transition-all">
-                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                    <span class="flex h-7 w-7 shrink-0 items-center justify-center">
+                        <i class="fa-solid fa-arrow-right-from-bracket w-7 text-center"></i>
+                    </span>
                     <span class="flex-1 text-left font-medium">Keluar</span>
                 </button>
             </form>
