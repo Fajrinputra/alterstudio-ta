@@ -24,6 +24,7 @@ Route::middleware('auth')->group(function () {
     // Profil user
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile.edit');
     Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.form');
+    Route::get('/profile/password', [\App\Http\Controllers\Auth\PasswordController::class, 'edit'])->name('profile.password');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
@@ -46,9 +47,13 @@ Route::middleware('auth')->group(function () {
     Route::post('/profile/avatar', \App\Http\Controllers\ProfileAvatarController::class)->name('profile.avatar');
     Route::post('/profile/avatar/delete', [\App\Http\Controllers\ProfileAvatarController::class, 'destroy'])->name('profile.avatar.delete');
 
-    // Akses bersama admin/manager untuk monitoring + jadwal
+    // Akses bersama admin/manager untuk monitoring pemesanan
     Route::middleware('role:ADMIN,MANAGER')->group(function () {
         Route::get('/admin/bookings', [\App\Http\Controllers\BookingController::class, 'index']);
+    });
+
+    // Penjadwalan kru hanya dapat dilakukan oleh admin
+    Route::middleware('role:ADMIN')->group(function () {
         Route::post('/projects/{project}/schedule', [\App\Http\Controllers\ScheduleController::class, 'store']);
         Route::put('/projects/{project}/schedule', [\App\Http\Controllers\ScheduleController::class, 'update'])->name('projects.schedule.update');
     });
@@ -67,15 +72,15 @@ Route::middleware('auth')->group(function () {
         // Kelola lokasi
         Route::get('/admin/locations', [\App\Http\Controllers\Admin\StudioLocationController::class, 'index']);
         Route::get('/admin/locations/manage', [\App\Http\Controllers\Admin\StudioLocationController::class, 'manage'])->name('admin.locations.manage');
-        Route::post('/admin/locations', [\App\Http\Controllers\Admin\StudioLocationController::class, 'store']);
-        Route::put('/admin/locations/{studioLocation}', [\App\Http\Controllers\Admin\StudioLocationController::class, 'update']);
-        Route::delete('/admin/locations/{studioLocation}', [\App\Http\Controllers\Admin\StudioLocationController::class, 'destroy']);
+        Route::get('/admin/locations/create', [\App\Http\Controllers\Admin\StudioLocationController::class, 'create'])->name('admin.locations.create');
+        Route::post('/admin/locations', [\App\Http\Controllers\Admin\StudioLocationController::class, 'store'])->name('admin.locations.store');
+        Route::get('/admin/locations/{studioLocation}', [\App\Http\Controllers\Admin\StudioLocationController::class, 'show'])->name('admin.locations.show');
+        Route::get('/admin/locations/{studioLocation}/edit', [\App\Http\Controllers\Admin\StudioLocationController::class, 'edit'])->name('admin.locations.edit');
+        Route::put('/admin/locations/{studioLocation}', [\App\Http\Controllers\Admin\StudioLocationController::class, 'update'])->name('admin.locations.update');
+        Route::delete('/admin/locations/{studioLocation}', [\App\Http\Controllers\Admin\StudioLocationController::class, 'destroy'])->name('admin.locations.destroy');
         Route::post('/admin/locations/room', [\App\Http\Controllers\Admin\StudioLocationController::class, 'storeRoom'])->name('admin.locations.room.store');
         Route::put('/admin/locations/room/{studioRoom}', [\App\Http\Controllers\Admin\StudioLocationController::class, 'updateRoom'])->name('admin.locations.room.update');
         Route::delete('/admin/locations/room/{studioRoom}', [\App\Http\Controllers\Admin\StudioLocationController::class, 'destroyRoom'])->name('admin.locations.room.destroy');
-        Route::post('/admin/locations/holidays', [\App\Http\Controllers\Admin\StudioLocationController::class, 'storeHoliday'])->name('admin.locations.holidays.store');
-        Route::put('/admin/locations/holidays/{studioHoliday}', [\App\Http\Controllers\Admin\StudioLocationController::class, 'updateHoliday'])->name('admin.locations.holidays.update');
-        Route::delete('/admin/locations/holidays/{studioHoliday}', [\App\Http\Controllers\Admin\StudioLocationController::class, 'destroyHoliday'])->name('admin.locations.holidays.destroy');
     });
 
     // Kelola katalog untuk admin + manajer
@@ -113,8 +118,8 @@ Route::middleware('auth')->group(function () {
         Route::delete('/admin/landing/hero/{slide}', [\App\Http\Controllers\Admin\LandingHeroController::class, 'destroy'])->name('admin.landing.hero.destroy');
     });
 
-    // Schedules view for admin/manager/photographer/editor
-    Route::middleware('role:ADMIN,MANAGER,PHOTOGRAPHER,EDITOR')->group(function () {
+    // Jadwal dapat diakses admin dan kru terkait; manajer tidak mengakses penjadwalan kru.
+    Route::middleware('role:ADMIN,PHOTOGRAPHER,EDITOR')->group(function () {
         Route::get('/admin/schedules', [\App\Http\Controllers\ScheduleController::class, 'index'])->name('admin.schedules');
     });
 
@@ -133,3 +138,4 @@ require __DIR__.'/auth.php';
 
 // Midtrans webhook (no auth)
 Route::post('/midtrans/webhook', [\App\Http\Controllers\PaymentController::class, 'webhook']);
+

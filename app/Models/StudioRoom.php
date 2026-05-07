@@ -18,6 +18,7 @@ class StudioRoom extends Model
         'studio_location_id',
         'name',
         'description',
+        'photo_path',
         'is_active',
     ];
 

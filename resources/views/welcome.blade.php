@@ -559,10 +559,10 @@
         </footer>
     </div>
 
-    <!-- Floating FAQ -->
+    <!-- Floating Rules -->
     <button type="button"
             data-faq-open
-            aria-label="Buka FAQ dan aturan pemesanan"
+            aria-label="Buka rules pemesanan"
             class="fixed bottom-28 right-8 z-50 inline-flex h-16 w-16 items-center justify-center rounded-3xl bg-gradient-to-br from-[#D4A017] via-[#E0912F] to-[#E07A5F] text-white shadow-2xl ring-4 ring-white/50 transition-all hover:scale-110 active:scale-95">
         <i class="fa-solid fa-circle-question text-3xl"></i>
     </button>
@@ -574,26 +574,26 @@
         <span class="hidden sm:inline">WhatsApp Admin</span>
     </a>
 
-    <!-- FAQ Modal -->
+    <!-- Rules Modal -->
     <div id="faq-modal" class="fixed inset-0 z-[60] hidden px-4 py-6">
         <button type="button"
                 data-faq-close
                 class="absolute inset-0 bg-[#3F2B1B]/45 backdrop-blur-sm"
-                aria-label="Tutup FAQ"></button>
+                aria-label="Tutup rules"></button>
 
         <div class="relative z-10 flex min-h-full items-center justify-center">
             <section class="relative max-h-[88vh] w-full max-w-2xl overflow-y-auto rounded-3xl border border-[#EDE0D0] bg-white p-6 shadow-2xl shadow-[#3F2B1B]/25 sm:p-8">
                 <button type="button"
                         data-faq-close
                         class="absolute right-5 top-5 flex h-10 w-10 items-center justify-center rounded-2xl text-[#8B7359] transition hover:bg-[#FAF6F0] hover:text-[#3F2B1B]"
-                        aria-label="Tutup FAQ">
+                        aria-label="Tutup rules">
                     <i class="fa-solid fa-xmark text-lg"></i>
                 </button>
 
                 <div class="pr-12">
                     <p class="inline-flex items-center gap-2 rounded-2xl bg-[#FAF6F0] px-4 py-2 text-xs font-semibold uppercase tracking-wider text-[#8B7359]">
                         <i class="fa-solid fa-circle-info text-[#D4A017]"></i>
-                        FAQ & Rules
+                        Rules
                     </p>
                     <h2 class="mt-4 font-display text-3xl font-semibold text-[#3F2B1B]">Panduan Pemesanan Alter Studio</h2>
                     <p class="mt-3 text-sm leading-6 text-[#7A5B3A]">

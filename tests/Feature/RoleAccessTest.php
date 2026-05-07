@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\Role;
+use App\Models\Project;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -27,5 +28,24 @@ class RoleAccessTest extends TestCase
         $this->actingAs($admin)
             ->getJson('/admin/bookings')
             ->assertOk();
+    }
+
+    public function test_manager_cannot_access_schedule_management_page(): void
+    {
+        $manager = User::factory()->create(['role' => Role::MANAGER]);
+
+        $this->actingAs($manager)
+            ->get('/admin/schedules')
+            ->assertStatus(403);
+    }
+
+    public function test_manager_cannot_store_project_schedule(): void
+    {
+        $manager = User::factory()->create(['role' => Role::MANAGER]);
+        $project = Project::factory()->create();
+
+        $this->actingAs($manager)
+            ->postJson("/projects/{$project->id}/schedule", [])
+            ->assertStatus(403);
     }
 }

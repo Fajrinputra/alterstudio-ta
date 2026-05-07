@@ -22,7 +22,6 @@ class BookingFlowTest extends TestCase
     public function test_booking_creation_creates_project_and_marks_booking_as_submitted(): void
     {
         config()->set('studio.closed_weekdays', []);
-        config()->set('studio.holidays', []);
 
         $package = ServicePackage::factory()->create();
         $location = StudioLocation::create([

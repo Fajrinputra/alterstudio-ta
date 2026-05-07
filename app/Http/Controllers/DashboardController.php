@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\Role;
 use App\Models\Booking;
 use App\Models\Project;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 
@@ -23,7 +24,8 @@ class DashboardController extends Controller
 
         $data = $hasBothCrewRoles ? $this->dualCrewData($user->id) : match ($role) {
             Role::CLIENT => $this->clientData($user->id),
-            Role::ADMIN, Role::MANAGER => $this->adminData(),
+            Role::ADMIN => $this->adminData(),
+            Role::MANAGER => $this->managerData(),
             Role::PHOTOGRAPHER => $this->photographerData($user->id),
             Role::EDITOR => $this->editorData($user->id),
         };
@@ -85,6 +87,26 @@ class DashboardController extends Controller
         return compact('metrics', 'statusCounts', 'schedules');
     }
 
+    protected function managerData(): array
+    {
+        // Dashboard manager fokus ke ringkasan bisnis dan komposisi role aktif.
+        $statusCounts = Booking::selectRaw('status, COUNT(*) as total')->groupBy('status')->pluck('total', 'status');
+
+        $metrics = [
+            'bookings' => Booking::count(),
+            'waiting_payment' => Booking::where('status', Booking::STATUS_WAITING_PAYMENT)->count(),
+            'projects_final' => Project::where('status', Project::STATUS_FINAL)->count(),
+        ];
+
+        $roleCounts = User::query()
+            ->where('is_active', true)
+            ->selectRaw('role, COUNT(*) as total')
+            ->groupBy('role')
+            ->pluck('total', 'role');
+
+        return compact('metrics', 'statusCounts', 'roleCounts');
+    }
+
     protected function photographerData(int $userId): array
     {
         // Antrian fotografer hanya project yang masih SCHEDULED.
@@ -141,3 +163,6 @@ class DashboardController extends Controller
         ];
     }
 }
+
+
+

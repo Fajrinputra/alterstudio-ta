@@ -7,12 +7,19 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\View\View;
 
 /**
  * Ubah password untuk user yang sedang login.
  */
 class PasswordController extends Controller
 {
+    /** Menampilkan halaman khusus ubah password. */
+    public function edit(): View
+    {
+        return view('profile.password');
+    }
+
     /** Menyimpan password baru untuk pengguna yang sedang login. */
     public function update(Request $request): RedirectResponse
     {

@@ -172,42 +172,85 @@
                             @endforeach
                         </div>
                     </div>
+                    @if($role === Role::ADMIN)
+                        <div class="bg-white rounded-3xl border border-[#EDE0D0] shadow-xl p-8">
+                            <div class="flex items-center justify-between mb-6">
+                                <h3 class="text-2xl font-display font-semibold text-[#3F2B1B] flex items-center gap-3">
+                                    <i class="fa-solid fa-calendar-week text-[#D4A017]"></i>
+                                    Jadwal Terdekat
+                                </h3>
+                                <span class="text-xs px-6 py-2 bg-[#FAF6F0] rounded-3xl text-[#5C432C] font-medium">Top 5</span>
+                            </div>
 
-                    <!-- Jadwal Terdekat -->
-                    <div class="bg-white rounded-3xl border border-[#EDE0D0] shadow-xl p-8">
-                        <div class="flex items-center justify-between mb-6">
-                            <h3 class="text-2xl font-display font-semibold text-[#3F2B1B] flex items-center gap-3">
-                                <i class="fa-solid fa-calendar-week text-[#D4A017]"></i>
-                                Jadwal Terdekat
-                            </h3>
-                            <span class="text-xs px-6 py-2 bg-[#FAF6F0] rounded-3xl text-[#5C432C] font-medium">Top 5</span>
-                        </div>
-                        
-                        <div class="space-y-4 max-h-[420px] overflow-y-auto pr-2">
-                            @forelse($data['schedules'] ?? [] as $item)
-                                <div class="p-6 rounded-2xl border border-[#EDE0D0] hover:border-[#D4A017]/30 hover:shadow-md transition-all bg-white">
-                                    <p class="font-semibold text-[#3F2B1B]">{{ $item->booking->location ?? 'N/A' }}
-                                        <span class="text-xs text-[#8B7359] ml-3">({{ $item->start_at->translatedFormat('d M H:i') }} – {{ $item->end_at->translatedFormat('H:i') }})</span>
-                                    </p>
-                                    <div class="grid grid-cols-2 gap-4 text-sm mt-4">
-                                        <div class="flex items-center gap-2 text-[#5C432C]">
-                                            <i class="fa-solid fa-camera text-[#D4A017]"></i>
-                                            {{ $item->photographer->name ?? '-' }}
-                                        </div>
-                                        <div class="flex items-center gap-2 text-[#5C432C]">
-                                            <i class="fa-solid fa-pen-to-square text-[#D4A017]"></i>
-                                            {{ $item->editor->name ?? '-' }}
+                            <div class="space-y-4 max-h-[420px] overflow-y-auto pr-2">
+                                @forelse($data['schedules'] ?? [] as $item)
+                                    <div class="p-6 rounded-2xl border border-[#EDE0D0] hover:border-[#D4A017]/30 hover:shadow-md transition-all bg-white">
+                                        <p class="font-semibold text-[#3F2B1B]">{{ $item->booking->location ?? 'N/A' }}
+                                            <span class="text-xs text-[#8B7359] ml-3">({{ $item->start_at->translatedFormat('d M H:i') }} - {{ $item->end_at->translatedFormat('H:i') }})</span>
+                                        </p>
+                                        <div class="grid grid-cols-2 gap-4 text-sm mt-4">
+                                            <div class="flex items-center gap-2 text-[#5C432C]">
+                                                <i class="fa-solid fa-camera text-[#D4A017]"></i>
+                                                {{ $item->photographer->name ?? '-' }}
+                                            </div>
+                                            <div class="flex items-center gap-2 text-[#5C432C]">
+                                                <i class="fa-solid fa-pen-to-square text-[#D4A017]"></i>
+                                                {{ $item->editor->name ?? '-' }}
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            @empty
-                                <div class="text-center py-12 text-[#8B7359]">
-                                    <i class="fa-solid fa-calendar-xmark text-6xl mb-4 opacity-30"></i>
-                                    <p>Belum ada jadwal</p>
-                                </div>
-                            @endforelse
+                                @empty
+                                    <div class="text-center py-12 text-[#8B7359]">
+                                        <i class="fa-solid fa-calendar-xmark text-6xl mb-4 opacity-30"></i>
+                                        <p>Belum ada jadwal</p>
+                                    </div>
+                                @endforelse
+                            </div>
                         </div>
-                    </div>
+                    @else
+                        <div class="bg-white rounded-3xl border border-[#EDE0D0] shadow-xl p-8">
+                            <div class="flex items-center justify-between mb-6">
+                                <h3 class="text-2xl font-display font-semibold text-[#3F2B1B] flex items-center gap-3">
+                                    <i class="fa-solid fa-users-gear text-[#D4A017]"></i>
+                                    Total Role Aktif
+                                </h3>
+                                <span class="text-xs px-6 py-2 bg-[#FAF6F0] rounded-3xl text-[#5C432C] font-medium">Aktif</span>
+                            </div>
+
+                            @php
+                                $roleLabels = [
+                                    Role::ADMIN->value => 'Admin',
+                                    Role::MANAGER->value => 'Manajer',
+                                    Role::CLIENT->value => 'Klien',
+                                    Role::PHOTOGRAPHER->value => 'Fotografer',
+                                    Role::EDITOR->value => 'Editor',
+                                ];
+                                $roleIcons = [
+                                    Role::ADMIN->value => 'fa-user-shield',
+                                    Role::MANAGER->value => 'fa-briefcase',
+                                    Role::CLIENT->value => 'fa-user',
+                                    Role::PHOTOGRAPHER->value => 'fa-camera',
+                                    Role::EDITOR->value => 'fa-pen-ruler',
+                                ];
+                            @endphp
+
+                            <div class="space-y-4">
+                                @foreach($roleLabels as $roleValue => $roleLabel)
+                                    <div class="flex items-center justify-between rounded-2xl border border-[#EDE0D0] bg-[#FAF6F0] px-6 py-5">
+                                        <div class="flex items-center gap-3 text-[#5C432C]">
+                                            <span class="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-[#D4A017] shadow-sm">
+                                                <i class="fa-solid {{ $roleIcons[$roleValue] }}"></i>
+                                            </span>
+                                            <span class="font-medium">{{ $roleLabel }}</span>
+                                        </div>
+                                        <span class="rounded-3xl bg-white px-5 py-1.5 text-lg font-semibold text-[#3F2B1B] shadow-sm">
+                                            {{ $data['roleCounts'][$roleValue] ?? 0 }}
+                                        </span>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
                 </section>
 
             {{-- ==================== PHOTOGRAPHER + EDITOR (BOTH) ==================== --}}

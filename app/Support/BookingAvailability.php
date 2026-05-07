@@ -4,7 +4,6 @@ namespace App\Support;
 
 use App\Models\Booking;
 use App\Models\ServicePackage;
-use App\Models\StudioHoliday;
 use App\Models\StudioRoom;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
@@ -14,22 +13,14 @@ class BookingAvailability
     /** Menentukan apakah studio tutup pada tanggal tertentu. */
     public function isClosedDate(Carbon $date, ?int $locationId = null): bool
     {
-        if (in_array($date->dayOfWeek, config('studio.closed_weekdays', []), true)) {
-            return true;
-        }
-
-        return $this->holidayDates($locationId)->contains($date->toDateString());
+        return in_array($date->dayOfWeek, config('studio.closed_weekdays', []), true);
     }
 
     /** Mengembalikan alasan penutupan tanggal agar mudah ditampilkan ke UI. */
     public function closedReason(Carbon $date, ?int $locationId = null): ?string
     {
-        if (in_array($date->dayOfWeek, config('studio.closed_weekdays', []), true)) {
+        if ($this->isClosedDate($date, $locationId)) {
             return 'Studio tutup pada akhir pekan. Silakan pilih hari kerja.';
-        }
-
-        if ($this->holidayDates($locationId)->contains($date->toDateString())) {
-            return 'Tanggal yang dipilih termasuk hari libur studio. Silakan pilih tanggal lain.';
         }
 
         return null;
@@ -227,21 +218,4 @@ class BookingAvailability
         return $minutesFromOpen >= 0 && $minutesFromOpen % $this->slotIntervalMinutes() === 0;
     }
 
-    protected function holidayDates(?int $locationId = null): Collection
-    {
-        $configDates = collect(config('studio.holidays', []))
-            ->filter()
-            ->values();
-
-        $dbDates = StudioHoliday::query()
-            ->where('is_active', true)
-            ->when($locationId, fn ($query) => $query->where('studio_location_id', $locationId))
-            ->pluck('holiday_date')
-            ->map(fn ($date) => Carbon::parse($date)->toDateString());
-
-        return $configDates
-            ->merge($dbDates)
-            ->unique()
-            ->values();
-    }
 }

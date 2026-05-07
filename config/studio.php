@@ -6,8 +6,4 @@ return [
     'slot_interval_minutes' => (int) env('STUDIO_SLOT_INTERVAL_MINUTES', 15),
     'booking_buffer_minutes' => (int) env('STUDIO_BOOKING_BUFFER_MINUTES', 15),
     'closed_weekdays' => [0, 6],
-    'holidays' => [
-        // Tambahkan tanggal libur studio dengan format Y-m-d.
-        // Contoh: '2026-01-01',
-    ],
 ];

@@ -1,17 +1,19 @@
 @php
     use App\Enums\Role;
+    $effectiveRoles = old('roles', $user->effectiveRoles());
+    $primaryRole = $user->role instanceof Role ? $user->role : Role::from($user->role);
 @endphp
 
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center justify-between">
+        <div class="flex items-center justify-between gap-4">
             <div>
                 <p class="text-sm text-[#8B7359] tracking-[1.5px] uppercase font-medium flex items-center gap-2">
-                    <i class="fa-solid fa-users text-[#D4A017]"></i>
+                    <i class="fa-solid fa-user-pen text-[#D4A017]"></i>
                     Kelola Pengguna
                 </p>
                 <h2 class="font-display text-4xl md:text-5xl font-semibold tracking-[-1px] text-[#3F2B1B] mt-1">
-                    Tambah <span class="font-medium bg-gradient-to-r from-[#D4A017] via-[#E07A5F] to-[#D4A017] bg-clip-text text-transparent">Pengguna Baru</span>
+                    Edit <span class="font-medium bg-gradient-to-r from-[#D4A017] via-[#E07A5F] to-[#D4A017] bg-clip-text text-transparent">Akun Pengguna</span>
                 </h2>
             </div>
             <a href="{{ route('admin.users.index') }}"
@@ -26,72 +28,77 @@
         <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="relative group">
                 <div class="absolute inset-0 bg-gradient-to-br from-[#D4A017]/10 via-[#E07A5F]/10 rounded-3xl blur-3xl"></div>
-                <div class="relative glass border border-[#EDE0D0] rounded-3xl p-10 shadow-2xl backdrop-blur-2xl">
-                    
+                <div class="relative bg-white/85 border border-[#EDE0D0] rounded-3xl p-10 shadow-2xl backdrop-blur-2xl">
                     <div class="flex items-center gap-4 mb-8">
                         <div class="w-12 h-12 rounded-3xl bg-gradient-to-br from-[#D4A017]/10 to-[#E07A5F]/10 flex items-center justify-center">
-                            <i class="fa-solid fa-user-plus text-[#D4A017] text-3xl"></i>
+                            <i class="fa-solid fa-user-gear text-[#D4A017] text-3xl"></i>
                         </div>
                         <div>
-                            <h3 class="font-display text-3xl text-[#3F2B1B]">Form Tambah Pengguna</h3>
-                            <p class="text-[#7A5B3A]">Buat akun baru untuk tim atau klien</p>
+                            <h3 class="font-display text-3xl text-[#3F2B1B]">Form Edit Pengguna</h3>
+                            <p class="text-[#7A5B3A]">Perbarui identitas, role, akses tambahan, dan status akun.</p>
                         </div>
                     </div>
 
-                    <form method="POST" action="{{ route('admin.users.store') }}" class="space-y-8">
+                    @if($errors->any())
+                        <div class="mb-6 rounded-3xl border border-rose-200 bg-rose-50 px-5 py-4 text-sm text-rose-700">
+                            <p class="font-semibold">Data belum bisa disimpan.</p>
+                            <ul class="mt-2 list-disc pl-5">
+                                @foreach($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+
+                    <form method="POST" action="{{ route('admin.users.update', $user) }}" class="space-y-8">
                         @csrf
-                        
-                        {{-- Grid 2 Kolom --}}
+                        @method('PUT')
+
                         <div class="grid md:grid-cols-2 gap-6">
-                            {{-- Nama Lengkap --}}
                             <div class="space-y-2">
                                 <label class="block text-xs font-medium text-[#7A5B3A] tracking-widest flex items-center gap-2">
                                     <i class="fa-solid fa-user text-[#D4A017]"></i>
                                     NAMA LENGKAP
                                 </label>
-                                <input name="name" required
-                                       class="w-full px-6 py-4 rounded-3xl border border-[#E1D3C5] bg-white/70 backdrop-blur-md text-[#3F2B1B] focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20 transition-all"
+                                <input name="name" required value="{{ old('name', $user->name) }}"
+                                       class="w-full px-6 py-4 rounded-3xl border border-[#E1D3C5] bg-white/70 text-[#3F2B1B] focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20 transition-all"
                                        placeholder="Nama lengkap pengguna">
                             </div>
-                            
-                            {{-- Email --}}
+
                             <div class="space-y-2">
                                 <label class="block text-xs font-medium text-[#7A5B3A] tracking-widest flex items-center gap-2">
                                     <i class="fa-solid fa-envelope text-[#D4A017]"></i>
                                     EMAIL
                                 </label>
-                                <input name="email" type="email" required
-                                       class="w-full px-6 py-4 rounded-3xl border border-[#E1D3C5] bg-white/70 backdrop-blur-md text-[#3F2B1B] focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20 transition-all"
+                                <input name="email" type="email" required value="{{ old('email', $user->email) }}"
+                                       class="w-full px-6 py-4 rounded-3xl border border-[#E1D3C5] bg-white/70 text-[#3F2B1B] focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20 transition-all"
                                        placeholder="nama@email.com">
                             </div>
-                            
-                            {{-- No. HP --}}
+
                             <div class="space-y-2">
                                 <label class="block text-xs font-medium text-[#7A5B3A] tracking-widest flex items-center gap-2">
                                     <i class="fa-solid fa-phone text-[#D4A017]"></i>
                                     NOMOR HP
                                 </label>
-                                <input name="no_hp" type="text"
-                                       class="w-full px-6 py-4 rounded-3xl border border-[#E1D3C5] bg-white/70 backdrop-blur-md text-[#3F2B1B] focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20 transition-all"
+                                <input name="no_hp" type="text" value="{{ old('no_hp', $user->no_hp) }}"
+                                       class="w-full px-6 py-4 rounded-3xl border border-[#E1D3C5] bg-white/70 text-[#3F2B1B] focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20 transition-all"
                                        placeholder="08xxxxxxxxxx">
                             </div>
-                            
-                            {{-- Role Utama --}}
+
                             <div class="space-y-2">
                                 <label class="block text-xs font-medium text-[#7A5B3A] tracking-widest flex items-center gap-2">
                                     <i class="fa-solid fa-tag text-[#D4A017]"></i>
                                     ROLE UTAMA
                                 </label>
-                                <select name="role" 
-                                        class="w-full px-6 py-4 rounded-3xl border border-[#E1D3C5] bg-white/70 backdrop-blur-md text-[#3F2B1B] focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20 transition-all">
+                                <select name="role"
+                                        class="w-full px-6 py-4 rounded-3xl border border-[#E1D3C5] bg-white/70 text-[#3F2B1B] focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20 transition-all">
                                     @foreach(Role::cases() as $role)
-                                        <option value="{{ $role->value }}">{{ ucfirst($role->value) }}</option>
+                                        <option value="{{ $role->value }}" @selected(old('role', $primaryRole->value) === $role->value)>{{ ucfirst(strtolower($role->value)) }}</option>
                                     @endforeach
                                 </select>
                             </div>
                         </div>
 
-                        {{-- Akses Kru Tambahan --}}
                         <div class="rounded-3xl border border-[#EDE0D0] bg-[#FAF6F0] p-7">
                             <div class="mb-5">
                                 <p class="text-sm font-medium text-[#3F2B1B] flex items-center gap-2">
@@ -99,42 +106,47 @@
                                     Akses Kru Tambahan
                                 </p>
                                 <p class="text-xs text-[#7A5B3A] mt-2 leading-relaxed">
-                                    Centang jika akun ini merangkap tugas. Login tetap satu akun, tapi dashboard akan menyesuaikan role utama.
-                                </p>
-                                <p class="text-xs text-[#7A5B3A] mt-1">
-                                    Akun harus memiliki akses fotografer atau editor agar muncul di pilihan kru saat penjadwalan.
+                                    Akses tambahan hanya berlaku untuk akun fotografer atau editor yang dapat merangkap tugas.
                                 </p>
                             </div>
                             <div class="flex flex-wrap gap-6">
                                 <label class="inline-flex items-center gap-3 text-[#3F2B1B]">
-                                    <input type="checkbox" name="roles[]" value="{{ Role::PHOTOGRAPHER->value }}" 
+                                    <input type="checkbox" name="roles[]" value="{{ Role::PHOTOGRAPHER->value }}" @checked(in_array(Role::PHOTOGRAPHER->value, $effectiveRoles, true))
                                            class="w-5 h-5 rounded-xl border-[#E1D3C5] text-[#D4A017] focus:ring-[#D4A017]">
                                     <span class="font-medium">Fotografer</span>
                                 </label>
                                 <label class="inline-flex items-center gap-3 text-[#3F2B1B]">
-                                    <input type="checkbox" name="roles[]" value="{{ Role::EDITOR->value }}" 
+                                    <input type="checkbox" name="roles[]" value="{{ Role::EDITOR->value }}" @checked(in_array(Role::EDITOR->value, $effectiveRoles, true))
                                            class="w-5 h-5 rounded-xl border-[#E1D3C5] text-[#D4A017] focus:ring-[#D4A017]">
                                     <span class="font-medium">Editor</span>
                                 </label>
                             </div>
                         </div>
 
-                        {{-- Password --}}
-                        <div class="space-y-2">
-                            <label class="block text-xs font-medium text-[#7A5B3A] tracking-widest flex items-center gap-2">
-                                <i class="fa-solid fa-lock text-[#D4A017]"></i>
-                                PASSWORD
-                            </label>
-                            <input name="password" type="text"
-                                   placeholder="Kosongkan jika ingin menggunakan password default"
-                                   class="w-full px-6 py-4 rounded-3xl border border-[#E1D3C5] bg-white/70 backdrop-blur-md text-[#3F2B1B] focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20 transition-all">
-                            <p class="text-xs text-[#8B7359] flex items-center gap-2">
-                                <i class="fa-solid fa-circle-info"></i>
-                                Jika dikosongkan, password default adalah <span class="font-mono font-medium">"password"</span>
-                            </p>
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div class="space-y-2">
+                                <label class="block text-xs font-medium text-[#7A5B3A] tracking-widest flex items-center gap-2">
+                                    <i class="fa-solid fa-lock text-[#D4A017]"></i>
+                                    PASSWORD BARU
+                                </label>
+                                <input name="password" type="text"
+                                       placeholder="Kosongkan jika tidak diganti"
+                                       class="w-full px-6 py-4 rounded-3xl border border-[#E1D3C5] bg-white/70 text-[#3F2B1B] focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20 transition-all">
+                            </div>
+
+                            <div class="space-y-2 rounded-3xl border border-[#EDE0D0] bg-white/70 px-6 py-5">
+                                <label class="flex items-center gap-3 text-[#3F2B1B]">
+                                    <input type="hidden" name="is_active" value="0">
+                                    <input type="checkbox" name="is_active" value="1" @checked(old('is_active', $user->is_active)) @disabled($primaryRole === Role::MANAGER)
+                                           class="w-5 h-5 rounded-xl border-[#E1D3C5] text-[#D4A017] focus:ring-[#D4A017]">
+                                    <span class="font-medium">Akun aktif</span>
+                                </label>
+                                @if($primaryRole === Role::MANAGER)
+                                    <p class="text-xs text-[#8B7359]">Akun manajer tidak dapat dinonaktifkan.</p>
+                                @endif
+                            </div>
                         </div>
 
-                        {{-- Action Buttons --}}
                         <div class="flex items-center justify-end gap-4 pt-6 border-t border-[#EDE0D0]">
                             <a href="{{ route('admin.users.index') }}"
                                class="px-8 py-4 rounded-3xl border border-[#E1D3C5] text-[#5C432C] font-medium hover:bg-white hover:border-[#D4A017] transition-all">
@@ -143,7 +155,7 @@
                             <button type="submit"
                                     class="inline-flex items-center gap-3 px-10 py-4 rounded-3xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] text-white font-semibold shadow-xl hover:shadow-2xl hover:-translate-y-0.5 transition-all">
                                 <i class="fa-solid fa-floppy-disk"></i>
-                                Simpan Pengguna Baru
+                                Simpan Perubahan
                             </button>
                         </div>
                     </form>

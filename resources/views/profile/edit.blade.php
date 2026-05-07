@@ -15,11 +15,18 @@
                     Informasi Akun
                 </h2>
             </div>
-            <a href="{{ route('profile.form') }}" 
-               class="inline-flex items-center justify-center gap-3 px-6 py-3 rounded-3xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] text-white font-semibold shadow-xl hover:shadow-2xl hover:-translate-y-0.5 transition-all">
-                <i class="fa-solid fa-pen-to-square"></i>
-                Edit Profil
-            </a>
+            <div class="flex flex-wrap items-center gap-3">
+                <a href="{{ route('profile.password') }}"
+                   class="inline-flex items-center justify-center gap-3 px-6 py-3 rounded-3xl border border-[#E1D3C5] text-[#5C432C] hover:bg-white hover:border-[#D4A017] transition-all">
+                    <i class="fa-solid fa-key"></i>
+                    Ubah Password
+                </a>
+                <a href="{{ route('profile.form') }}" 
+                   class="inline-flex items-center justify-center gap-3 px-6 py-3 rounded-3xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] text-white font-semibold shadow-xl hover:shadow-2xl hover:-translate-y-0.5 transition-all">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                    Edit Profil
+                </a>
+            </div>
         </div>
     </x-slot>
 
@@ -32,6 +39,7 @@
                     $mapStatus = [
                         'profile-updated' => 'Profil berhasil diperbarui.',
                         'avatar-updated'  => 'Avatar berhasil diperbarui.',
+                        'password-updated' => 'Password berhasil diperbarui.',
                     ];
                     $flashText = $mapStatus[session('status')] ?? session('status');
                 @endphp
@@ -104,7 +112,7 @@
 
             {{-- Delete Account Section --}}
             @if($user->role !== \App\Enums\Role::MANAGER)
-                <div class="bg-white/80 backdrop-blur-sm border border-[#EDE0D0] rounded-3xl shadow-xl p-8">
+                <div class="bg-white/80 border border-[#EDE0D0] rounded-3xl shadow-xl p-8">
                     @include('profile.partials.delete-user-form')
                 </div>
             @endif
