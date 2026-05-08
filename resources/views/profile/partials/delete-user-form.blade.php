@@ -5,7 +5,7 @@
                 <i class="fa-solid fa-triangle-exclamation text-red-500"></i>
                 Hapus Akun
             </h4>
-            <p class="text-sm text-[#7A5B3A]">Akun hanya dapat dihapus setelah password dikonfirmasi.</p>
+            <p class="text-sm text-[#7A5B3A]">Akun dapat dihapus jika tidak memiliki proses pemesanan atau project aktif.</p>
         </div>
         <button type="button"
                 @click="open = true"
@@ -44,38 +44,23 @@
                     </div>
                     <div class="min-w-0">
                         <h3 class="font-display text-2xl font-bold text-[#3F2B1B]">Hapus Akun?</h3>
-                        <p class="mt-1 text-sm text-[#7A5B3A]">Tindakan ini tidak dapat dibatalkan.</p>
+                        <p class="mt-1 text-sm text-[#7A5B3A]">Tindakan ini akan mengeluarkan Anda dari sistem.</p>
                     </div>
                 </div>
 
                 <div class="rounded-3xl border border-red-200 bg-red-50 p-5">
                     <p class="flex items-start gap-3 text-sm text-red-700">
                         <i class="fa-solid fa-circle-exclamation mt-1"></i>
-                        <span>Akun profil Anda akan dihapus permanen. Data yang masih terkait proses aktif dapat membuat penghapusan ditolak oleh sistem.</span>
+                        <span>Data pribadi akun akan dihapus. Jika akun memiliki riwayat transaksi yang sudah selesai, sistem akan menonaktifkan dan menganonimkan akun agar riwayat laporan tetap aman.</span>
                     </p>
                 </div>
 
-                <div class="space-y-2">
-                    <label class="block text-xs font-semibold uppercase tracking-widest text-[#7A5B3A]">
-                        Password Konfirmasi
-                    </label>
-                    <div class="relative">
-                        <span class="absolute left-5 top-1/2 -translate-y-1/2 text-red-500">
-                            <i class="fa-solid fa-lock"></i>
-                        </span>
-                        <input type="password"
-                               name="password"
-                               required
-                               placeholder="Masukkan password akun"
-                               class="w-full rounded-3xl border border-red-200 bg-white py-4 pl-12 pr-6 text-[#3F2B1B] transition-all focus:border-red-500 focus:ring-red-500">
-                    </div>
-                    @if($errors->userDeletion->any())
-                        <p class="mt-1 flex items-center gap-2 text-sm text-red-600">
-                            <i class="fa-solid fa-circle-exclamation"></i>
-                            {{ $errors->userDeletion->first() }}
-                        </p>
-                    @endif
-                </div>
+                @if($errors->userDeletion->any())
+                    <p class="flex items-start gap-3 rounded-3xl border border-red-200 bg-white px-5 py-4 text-sm text-red-600">
+                        <i class="fa-solid fa-circle-exclamation mt-1"></i>
+                        <span>{{ $errors->userDeletion->first() }}</span>
+                    </p>
+                @endif
 
                 <div class="flex flex-col-reverse gap-3 border-t border-[#EDE0D0] pt-5 sm:flex-row sm:justify-end">
                     <button type="button"
@@ -86,7 +71,7 @@
                     <button type="submit"
                             class="inline-flex items-center justify-center gap-3 rounded-3xl bg-gradient-to-r from-red-600 to-red-700 px-7 py-3.5 font-semibold text-white transition-all hover:brightness-110">
                         <i class="fa-solid fa-trash-can"></i>
-                        Hapus Permanen
+                        Hapus Akun
                     </button>
                 </div>
             </form>

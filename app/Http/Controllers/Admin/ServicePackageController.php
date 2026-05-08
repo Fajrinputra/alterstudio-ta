@@ -62,6 +62,7 @@ class ServicePackageController extends Controller
         $servicePackage->update($data);
         $this->syncFeatures($servicePackage, $data['features'] ?? []);
         $this->syncAddons($servicePackage, $data['addons'] ?? []);
+        $this->removeSelectedGallery($request, $servicePackage);
         $this->handleOverviewImage($request, $servicePackage);
         $this->syncGallery($request, $servicePackage);
 
@@ -121,9 +122,12 @@ class ServicePackageController extends Controller
             'addons.*.unit' => ['nullable', 'string', 'max:50'],
             'terms' => ['nullable', 'string'],
             'overview_image' => ['nullable', 'image', 'max:20480'],
+            'remove_overview' => ['nullable', 'boolean'],
             'is_active' => ['boolean'],
             'gallery' => ['nullable', 'array', 'max:20'],
             'gallery.*' => ['image', 'max:20480'],
+            'remove_gallery' => ['nullable', 'array'],
+            'remove_gallery.*' => ['string'],
             'duration_minutes' => ['nullable','integer','min:1'],
         ]);
 
@@ -132,7 +136,7 @@ class ServicePackageController extends Controller
         $validated['is_active'] = $request->boolean('is_active');
 
         // file ditangani terpisah
-        unset($validated['gallery'], $validated['overview_image']);
+        unset($validated['gallery'], $validated['overview_image'], $validated['remove_overview'], $validated['remove_gallery']);
 
         return $validated;
     }
@@ -191,6 +195,41 @@ class ServicePackageController extends Controller
         $this->syncGalleryItems($package, $merged);
     }
 
+
+    protected function removeSelectedGallery(Request $request, ServicePackage $package): void
+    {
+        $requested = collect($request->input('remove_gallery', []))
+            ->filter(fn ($path) => is_string($path) && trim($path) !== '')
+            ->unique()
+            ->values();
+
+        if ($requested->isEmpty()) {
+            return;
+        }
+
+        $existing = collect($this->cleanedGallery($package->gallery))->values();
+        $pathsToDelete = $existing->intersect($requested)->values();
+
+        if ($pathsToDelete->isEmpty()) {
+            return;
+        }
+
+        $pathsToDelete->each(fn ($path) => Storage::disk('public')->delete($path));
+
+        $remaining = $existing
+            ->reject(fn ($path) => $pathsToDelete->contains($path))
+            ->values()
+            ->all();
+
+        $currentCover = $package->overview_image;
+        $coverPath = $currentCover && in_array($currentCover, $remaining, true)
+            ? $currentCover
+            : ($remaining[0] ?? null);
+
+        $this->syncGalleryItems($package, $remaining, $coverPath);
+        $package->refresh();
+    }
+
     protected function handleOverviewImage(Request $request, ServicePackage $package): void
     {
         // Mendukung hapus overview atau ganti overview.
@@ -202,6 +241,7 @@ class ServicePackageController extends Controller
                 Storage::disk('public')->delete($cover);
                 $gallery = $gallery->reject(fn ($path) => $path === $cover)->values();
                 $this->syncGalleryItems($package, $gallery->all());
+                $package->refresh();
             }
         }
 
@@ -219,6 +259,7 @@ class ServicePackageController extends Controller
             array_unshift($gallery, $path);
             $gallery = array_values(array_unique($gallery));
             $this->syncGalleryItems($package, $gallery, $path);
+            $package->refresh();
         }
     }
 

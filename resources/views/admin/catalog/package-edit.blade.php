@@ -176,24 +176,34 @@
                                   class="w-full px-6 py-4 rounded-3xl border border-[#E1D3C5] bg-white text-[#3F2B1B] focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20 transition-all">{{ old('terms', $package->terms) }}</textarea>
                     </div>
 
+                    @php
+                        $overviewPath = $package->overview_image;
+                        $editableGallery = collect($gallery)
+                            ->reject(fn ($path) => $path === $overviewPath)
+                            ->values()
+                            ->all();
+                    @endphp
+
                     <!-- Overview Image -->
                     <div class="space-y-3">
                         <label class="block text-sm font-medium text-[#5C432C] flex items-center gap-2">
                             <i class="fa-solid fa-image text-[#D4A017]"></i>
                             Foto Overview
                         </label>
-                        @if($package->overview_image)
-                            <div class="flex gap-6 items-start">
-                                <div class="w-40 h-40 rounded-2xl overflow-hidden border border-[#EDE0D0]">
-                                    <img src="{{ Storage::url($package->overview_image) }}" class="w-full h-full object-cover" alt="Current Overview">
-                                </div>
-                                <div>
-                                    <p class="text-sm text-[#8B7359]">Foto saat ini</p>
-                                    <label class="inline-flex items-center gap-2 mt-2">
-                                        <input type="checkbox" name="remove_overview" value="1" class="rounded border-[#E1D3C5]">
-                                        <span class="text-[#5C432C] text-sm">Hapus foto ini</span>
-                                    </label>
-                                </div>
+                        @if($overviewPath)
+                            <div class="space-y-3">
+                                <label class="relative block w-44 h-44 max-w-full cursor-pointer overflow-hidden rounded-2xl border border-[#EDE0D0] bg-[#FAF6F0] shadow-sm group">
+                                    <input type="checkbox" name="remove_overview" value="1" class="peer sr-only">
+                                    <img src="{{ Storage::url($overviewPath) }}" class="w-full h-full object-cover transition duration-200 peer-checked:opacity-25" alt="Current Overview">
+                                    <span class="absolute bottom-3 left-3 right-3 inline-flex items-center justify-center gap-2 rounded-2xl bg-red-600 px-3 py-2 text-xs font-semibold text-white shadow-lg transition peer-checked:bg-red-700">
+                                        <i class="fa-solid fa-trash"></i>
+                                        Hapus Overview
+                                    </span>
+                                    <span class="absolute inset-0 hidden items-center justify-center bg-red-600/15 text-sm font-semibold text-red-700 peer-checked:flex">
+                                        Akan dihapus
+                                    </span>
+                                </label>
+                                <p class="text-xs text-[#8B7359]">Pilih hapus jika foto overview lama ingin dihapus, lalu klik Update Paket.</p>
                             </div>
                         @endif
                         <input type="file" name="overview_image" accept="image/*"
@@ -209,16 +219,25 @@
                             <i class="fa-solid fa-images text-[#D4A017]"></i>
                             Galeri Foto
                         </label>
-                        @if(!empty($gallery))
-                            <div class="mb-4">
-                                <p class="text-xs text-[#8B7359] mb-3">Galeri saat ini ({{ count($gallery) }} foto)</p>
-                                <div class="grid grid-cols-4 gap-3">
-                                    @foreach($gallery as $path)
-                                        <div class="aspect-square rounded-2xl overflow-hidden border border-[#EDE0D0]">
-                                            <img src="{{ Storage::url($path) }}" class="w-full h-full object-cover" alt="gallery">
-                                        </div>
+                        @if(!empty($editableGallery))
+                            <div class="mb-4 space-y-3">
+                                <p class="text-xs text-[#8B7359]">Galeri saat ini ({{ count($editableGallery) }} foto)</p>
+                                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                                    @foreach($editableGallery as $path)
+                                        <label class="relative aspect-square cursor-pointer overflow-hidden rounded-2xl border border-[#EDE0D0] bg-[#FAF6F0] shadow-sm group">
+                                            <input type="checkbox" name="remove_gallery[]" value="{{ $path }}" class="peer sr-only">
+                                            <img src="{{ Storage::url($path) }}" class="w-full h-full object-cover transition duration-200 peer-checked:opacity-25" alt="gallery">
+                                            <span class="absolute bottom-2 left-2 right-2 inline-flex items-center justify-center gap-2 rounded-2xl bg-red-600 px-3 py-2 text-xs font-semibold text-white shadow-lg transition peer-checked:bg-red-700">
+                                                <i class="fa-solid fa-trash"></i>
+                                                Hapus
+                                            </span>
+                                            <span class="absolute inset-0 hidden items-center justify-center bg-red-600/15 text-xs font-semibold text-red-700 peer-checked:flex">
+                                                Akan dihapus
+                                            </span>
+                                        </label>
                                     @endforeach
                                 </div>
+                                <p class="text-xs text-[#8B7359]">Klik Hapus pada foto galeri yang ingin dihapus, lalu klik Update Paket.</p>
                             </div>
                         @endif
                         <input type="file" name="gallery[]" multiple accept="image/*"
@@ -227,7 +246,6 @@
                             <p class="text-xs text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
-
                     <!-- Action Buttons -->
                     <div class="flex justify-end gap-4 pt-8 border-t border-[#EDE0D0]">
                         <a href="{{ route('admin.catalog.packages', $category) }}"

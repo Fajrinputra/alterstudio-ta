@@ -50,14 +50,36 @@ class ReportController extends Controller
 
         $photographerPerf = $this->performanceByRole(Role::PHOTOGRAPHER, $dateFrom, $dateTo, $categoryId);
         $editorPerf = $this->performanceByRole(Role::EDITOR, $dateFrom, $dateTo, $categoryId);
+        $categories = ServiceCategory::orderBy('name')->get();
+        $categoryLabel = $categoryId
+            ? ($categories->firstWhere('id', (int) $categoryId)?->name ?? 'Kategori tidak ditemukan')
+            : 'Semua Kategori';
+        $exportedAt = now();
+        $exportedBy = $request->user()?->name ?? '-';
+        $reportTitle = 'Laporan Kinerja Kru Alterstudio';
+        $fileBaseName = 'Laporan Kinerja Kru Alterstudio';
 
         if ($request->get('download') === 'csv') {
-            $csv = $this->buildCsv($dateFrom, $dateTo, $bookings, $photographerPerf, $editorPerf, $revenueTotal);
-            $filename = "laporan-{$dateFrom}-{$dateTo}.csv";
+            $csv = $this->buildCsv(
+                $dateFrom,
+                $dateTo,
+                $categoryLabel,
+                $exportedAt,
+                $exportedBy,
+                $bookings,
+                $photographerPerf,
+                $editorPerf,
+                $revenueTotal,
+                $totalOrders,
+                $assignedPhotographers,
+                $assignedEditors,
+                $activeClients,
+                $reportTitle
+            );
 
             return response()->streamDownload(function () use ($csv) {
                 echo $csv;
-            }, $filename, ['Content-Type' => 'text/csv']);
+            }, $fileBaseName.'.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
         }
 
         $chart = [
@@ -71,12 +93,34 @@ class ReportController extends Controller
             ],
         ];
 
-        $categories = ServiceCategory::orderBy('name')->get();
+        if ($request->get('download') === 'pdf') {
+            return view('admin.reports.print', compact(
+                'dateFrom',
+                'dateTo',
+                'categoryId',
+                'categoryLabel',
+                'exportedAt',
+                'exportedBy',
+                'reportTitle',
+                'bookings',
+                'revenueTotal',
+                'totalOrders',
+                'assignedEditors',
+                'assignedPhotographers',
+                'activeClients',
+                'photographerPerf',
+                'editorPerf'
+            ));
+        }
 
         return view('admin.reports.index', compact(
             'dateFrom',
             'dateTo',
             'categoryId',
+            'categoryLabel',
+            'exportedAt',
+            'exportedBy',
+            'reportTitle',
             'bookings',
             'revenueTotal',
             'totalOrders',
@@ -136,38 +180,122 @@ class ReportController extends Controller
             ->count($column);
     }
 
-    protected function buildCsv(string $from, string $to, $bookings, $photographerPerf, $editorPerf, $revenueTotal): string
-    {
-        $lines = [];
-        $lines[] = "Laporan Alter Studio;Periode;{$from};{$to}";
-        $lines[] = "";
-        $lines[] = "Pemesanan;Paket;Klien;Tanggal;Status;Nilai Pemesanan";
+    protected function buildCsv(
+        string $from,
+        string $to,
+        string $categoryLabel,
+        $exportedAt,
+        string $exportedBy,
+        $bookings,
+        $photographerPerf,
+        $editorPerf,
+        $revenueTotal,
+        int $totalOrders,
+        int $assignedPhotographers,
+        int $assignedEditors,
+        int $activeClients,
+        string $reportTitle
+    ): string {
+        $handle = fopen('php://temp', 'r+');
 
-        foreach ($bookings as $booking) {
-            $lines[] = implode(';', [
-                $booking->id,
+        fwrite($handle, "sep=;\r\n");
+        $this->writeCsvRow($handle, [$reportTitle]);
+        $this->writeCsvRow($handle, ['Alter Studio']);
+        $this->writeCsvRow($handle, []);
+        $this->writeCsvRow($handle, ['Periode', $this->formatDate($from).' - '.$this->formatDate($to)]);
+        $this->writeCsvRow($handle, ['Kategori', $categoryLabel]);
+        $this->writeCsvRow($handle, ['Diekspor Oleh', $exportedBy]);
+        $this->writeCsvRow($handle, ['Tanggal Ekspor', $exportedAt->format('d/m/Y H:i')]);
+        $this->writeCsvRow($handle, []);
+
+        $this->writeCsvRow($handle, ['Ringkasan Laporan']);
+        $this->writeCsvRow($handle, ['Total Pemesanan', $totalOrders]);
+        $this->writeCsvRow($handle, ['Pendapatan Diterima', $this->formatCurrency($revenueTotal)]);
+        $this->writeCsvRow($handle, ['Fotografer Bertugas', $assignedPhotographers]);
+        $this->writeCsvRow($handle, ['Editor Bertugas', $assignedEditors]);
+        $this->writeCsvRow($handle, ['Klien Aktif', $activeClients]);
+        $this->writeCsvRow($handle, []);
+
+        $this->writeCsvRow($handle, ['Pemesanan dalam Periode']);
+        $this->writeCsvRow($handle, ['No', 'ID Pemesanan', 'Paket', 'Klien', 'Tanggal', 'Status', 'Nilai Pemesanan']);
+
+        foreach ($bookings as $index => $booking) {
+            $this->writeCsvRow($handle, [
+                $index + 1,
+                '#'.$booking->id,
                 $booking->package->name ?? '-',
                 $booking->client->name ?? '-',
-                $booking->booking_date,
+                optional($booking->booking_date)->format('d/m/Y'),
                 $booking->statusLabel(),
-                $booking->total_price,
+                $this->formatCurrency((int) ($booking->total_price ?? 0)),
             ]);
         }
 
-        $lines[] = ";;Pendapatan Diterima;;;" . $revenueTotal;
-        $lines[] = "";
-        $lines[] = "Kinerja Fotografer;Nama;Total Project";
-
-        foreach ($photographerPerf as $photographer) {
-            $lines[] = implode(';', ['', $photographer['name'], $photographer['total']]);
+        if ($bookings->isEmpty()) {
+            $this->writeCsvRow($handle, ['-', '-', 'Belum ada pemesanan pada periode ini', '-', '-', '-', '-']);
         }
 
-        $lines[] = "Kinerja Editor;Nama;Total Project";
+        $this->writeCsvRow($handle, []);
+        $this->writeCsvRow($handle, ['Kinerja Fotografer']);
+        $this->writeCsvRow($handle, ['No', 'Nama Fotografer', 'Total Project', 'Paket yang Ditangani']);
 
-        foreach ($editorPerf as $editor) {
-            $lines[] = implode(';', ['', $editor['name'], $editor['total']]);
+        foreach ($photographerPerf as $index => $photographer) {
+            $this->writeCsvRow($handle, [
+                $index + 1,
+                $photographer['name'],
+                $photographer['total'],
+                $this->packageBreakdown($photographer['packages']),
+            ]);
         }
 
-        return implode("\n", $lines);
+        if ($photographerPerf->isEmpty()) {
+            $this->writeCsvRow($handle, ['-', 'Belum ada data fotografer pada periode ini', '-', '-']);
+        }
+
+        $this->writeCsvRow($handle, []);
+        $this->writeCsvRow($handle, ['Kinerja Editor']);
+        $this->writeCsvRow($handle, ['No', 'Nama Editor', 'Total Project', 'Paket yang Ditangani']);
+
+        foreach ($editorPerf as $index => $editor) {
+            $this->writeCsvRow($handle, [
+                $index + 1,
+                $editor['name'],
+                $editor['total'],
+                $this->packageBreakdown($editor['packages']),
+            ]);
+        }
+
+        if ($editorPerf->isEmpty()) {
+            $this->writeCsvRow($handle, ['-', 'Belum ada data editor pada periode ini', '-', '-']);
+        }
+
+        rewind($handle);
+        $csv = stream_get_contents($handle);
+        fclose($handle);
+
+        return "\xEF\xBB\xBF".$csv;
+    }
+
+    protected function writeCsvRow($handle, array $row): void
+    {
+        fputcsv($handle, $row, ';');
+    }
+
+    protected function packageBreakdown($packages): string
+    {
+        return collect($packages)
+            ->map(fn ($count, $name) => $name.' ('.$count.')')
+            ->values()
+            ->implode(', ');
+    }
+
+    protected function formatDate(?string $date): string
+    {
+        return $date ? CarbonImmutable::parse($date)->format('d/m/Y') : '-';
+    }
+
+    protected function formatCurrency(int|float $amount): string
+    {
+        return 'Rp '.number_format((float) $amount, 0, ',', '.');
     }
 }

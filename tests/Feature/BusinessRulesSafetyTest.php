@@ -86,7 +86,7 @@ class BusinessRulesSafetyTest extends TestCase
         ]);
 
         $this->actingAs($client)
-            ->delete(route('profile.destroy'), ['password' => 'password'])
+            ->delete(route('profile.destroy'))
             ->assertRedirect(route('profile.edit'));
 
         $this->assertDatabaseHas('users', ['id' => $client->id]);

@@ -67,11 +67,11 @@
                                 <i class="fa-solid fa-file-csv"></i>
                                 Unduh CSV
                             </a>
-                            <button type="button" onclick="window.print()"
-                                    class="h-14 px-8 rounded-3xl border border-[#E1D3C5] text-[#5C432C] hover:bg-white hover:border-[#D4A017] transition-all flex items-center justify-center gap-3">
-                                <i class="fa-solid fa-print"></i>
-                                Print Laporan
-                            </button>
+                            <a href="{{ request()->fullUrlWithQuery(['download'=>'pdf']) }}" target="_blank"
+                               class="h-14 px-8 rounded-3xl border border-[#E1D3C5] text-[#5C432C] hover:bg-white hover:border-[#D4A017] transition-all flex items-center justify-center gap-3">
+                                <i class="fa-solid fa-file-pdf"></i>
+                                Unduh PDF
+                            </a>
                         </div>
                     </form>
                 </div>
