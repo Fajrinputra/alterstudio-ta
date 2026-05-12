@@ -2,11 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\User;
-use App\Models\ServiceCategory;
-use App\Models\ServicePackage;
+use Illuminate\Support\Facades\Hash;
 
 /**
  * Seeder data awal user + katalog layanan default.
@@ -27,6 +25,7 @@ class InitialDataSeeder extends Seeder
     {
         // Akun demo untuk masing-masing role.
         $users = [
+            ['name' => 'Owner Alter', 'email' => 'owner@alter.test', 'role' => 'OWNER', 'no_hp' => '08110000000'],
             ['name' => 'Admin Alter', 'email' => 'admin@alter.test', 'role' => 'ADMIN', 'no_hp' => '08110000001'],
             ['name' => 'Manager Alter', 'email' => 'manager@alter.test', 'role' => 'MANAGER', 'no_hp' => '08110000002'],
             ['name' => 'Photographer One', 'email' => 'photo@alter.test', 'role' => 'PHOTOGRAPHER', 'no_hp' => '08110000003'],
@@ -35,7 +34,15 @@ class InitialDataSeeder extends Seeder
         ];
 
         foreach ($users as $data) {
-            User::factory()->create(array_merge($data, ['password' => 'password']));
+            User::updateOrCreate(
+                ['email' => $data['email']],
+                $data + [
+                    'password' => Hash::make('password'),
+                    'email_verified_at' => now(),
+                    'is_active' => true,
+                    'roles' => [$data['role']],
+                ]
+            );
         }
     }
 

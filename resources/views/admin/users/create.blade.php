@@ -84,8 +84,8 @@
                                 </label>
                                 <select name="role" 
                                         class="w-full px-6 py-4 rounded-3xl border border-[#E1D3C5] bg-white/70 backdrop-blur-md text-[#3F2B1B] focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20 transition-all">
-                                    @foreach(Role::cases() as $role)
-                                        <option value="{{ $role->value }}">{{ ucfirst($role->value) }}</option>
+                                    @foreach($roles as $roleValue)
+                                        <option value="{{ $roleValue }}">{{ ucfirst(strtolower($roleValue)) }}</option>
                                     @endforeach
                                 </select>
                             </div>

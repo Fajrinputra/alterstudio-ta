@@ -226,6 +226,56 @@
             <div class="summary-card purple"><span class="label">Klien Aktif</span><strong>{{ $activeClients }}</strong></div>
         </section>
 
+        @if($isOwnerReport)
+            <section class="section">
+                <div class="section-title">
+                    <span>Detail Owner - Ringkasan Final</span>
+                    <span class="section-note">Detail pembayaran dan status pemesanan dari filter laporan</span>
+                </div>
+                <table class="table-blue">
+                    <thead>
+                        <tr>
+                            <th style="width: 40%">Jenis Pembayaran</th>
+                            <th style="width: 20%">Transaksi</th>
+                            <th style="width: 40%">Nominal Diterima</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($paymentBreakdown as $item)
+                            <tr>
+                                <td class="name">{{ $item['label'] }}</td>
+                                <td class="text-center">{{ $item['total'] }}</td>
+                                <td class="text-right money">Rp {{ number_format($item['amount'], 0, ',', '.') }}</td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="3" class="empty">Belum ada pembayaran berhasil pada periode ini.</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+
+                <table class="table-orange" style="margin-top: 14px;">
+                    <thead>
+                        <tr>
+                            <th style="width: 40%">Status Pemesanan</th>
+                            <th style="width: 20%">Jumlah</th>
+                            <th style="width: 40%">Nominal Diterima</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($statusSummary as $item)
+                            <tr>
+                                <td class="name">{{ $item['label'] }}</td>
+                                <td class="text-center">{{ $item['total'] }}</td>
+                                <td class="text-right money">Rp {{ number_format($item['amount'], 0, ',', '.') }}</td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="3" class="empty">Belum ada pemesanan pada periode ini.</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </section>
+        @endif
+
         <section class="section">
             <div class="section-title">
                 <span>Pemesanan dalam Periode</span>

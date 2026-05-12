@@ -11,7 +11,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 
 /**
- * Modul laporan operasional untuk manager.
+ * Modul laporan operasional untuk manajer dan owner.
  */
 class ReportController extends Controller
 {
@@ -19,9 +19,17 @@ class ReportController extends Controller
     {
         $dateFrom = $request->input('date_from', now()->subDays(30)->toDateString());
         $dateTo = $request->input('date_to', now()->toDateString());
-        $categoryId = $request->input('category_id');
+        $isOwnerReport = $request->user()?->isRole(Role::OWNER) === true;
+        $canExportReport = $request->user()?->isRole(Role::MANAGER) === true;
+        $categoryId = $isOwnerReport ? null : $request->input('category_id');
         $startAt = CarbonImmutable::parse($dateFrom)->startOfDay();
         $endAt = CarbonImmutable::parse($dateTo)->endOfDay();
+
+        if ($request->has('download') && ! $canExportReport) {
+            return redirect()
+                ->route('reports.index', $request->only(['date_from', 'date_to']))
+                ->with('error', 'Ekspor laporan dilakukan oleh manajer. Owner hanya melihat laporan berdasarkan periode.');
+        }
 
         $bookings = Booking::with(['package', 'client'])
             ->whereBetween('booking_date', [$startAt, $endAt])
@@ -47,6 +55,8 @@ class ReportController extends Controller
             ->whereIn('status', [Booking::STATUS_WAITING_PAYMENT, Booking::STATUS_DP_PAID, Booking::STATUS_PAID])
             ->distinct('client_id')
             ->count('client_id');
+        $paymentBreakdown = $this->paymentBreakdown($startAt, $endAt, $categoryId);
+        $statusSummary = $this->bookingStatusSummary($startAt, $endAt, $categoryId);
 
         $photographerPerf = $this->performanceByRole(Role::PHOTOGRAPHER, $dateFrom, $dateTo, $categoryId);
         $editorPerf = $this->performanceByRole(Role::EDITOR, $dateFrom, $dateTo, $categoryId);
@@ -74,6 +84,9 @@ class ReportController extends Controller
                 $assignedPhotographers,
                 $assignedEditors,
                 $activeClients,
+                $isOwnerReport,
+                $paymentBreakdown,
+                $statusSummary,
                 $reportTitle
             );
 
@@ -102,12 +115,16 @@ class ReportController extends Controller
                 'exportedAt',
                 'exportedBy',
                 'reportTitle',
+                'canExportReport',
                 'bookings',
                 'revenueTotal',
                 'totalOrders',
                 'assignedEditors',
                 'assignedPhotographers',
                 'activeClients',
+                'isOwnerReport',
+                'paymentBreakdown',
+                'statusSummary',
                 'photographerPerf',
                 'editorPerf'
             ));
@@ -121,12 +138,16 @@ class ReportController extends Controller
             'exportedAt',
             'exportedBy',
             'reportTitle',
+            'canExportReport',
             'bookings',
             'revenueTotal',
             'totalOrders',
             'assignedEditors',
             'assignedPhotographers',
             'activeClients',
+            'isOwnerReport',
+            'paymentBreakdown',
+            'statusSummary',
             'photographerPerf',
             'editorPerf',
             'chart',
@@ -180,6 +201,47 @@ class ReportController extends Controller
             ->count($column);
     }
 
+    /**
+     * Detail tambahan untuk owner: sumber pendapatan berdasarkan jenis pembayaran.
+     */
+    protected function paymentBreakdown($startAt, $endAt, ?int $categoryId = null)
+    {
+        return Payment::query()
+            ->selectRaw('type, COUNT(*) as total, COALESCE(SUM(amount), 0) as amount')
+            ->where('status', Payment::STATUS_PAID)
+            ->whereBetween('paid_at', [$startAt, $endAt])
+            ->whereHas('booking', fn ($q) => $q->where('status', '!=', Booking::STATUS_CANCELLED))
+            ->when($categoryId, fn ($q) => $q->whereHas('booking.package', fn ($p) => $p->where('category_id', $categoryId)))
+            ->groupBy('type')
+            ->orderBy('type')
+            ->get()
+            ->map(fn ($item) => [
+                'label' => $item->type === Payment::TYPE_DP ? 'DP' : 'Pelunasan / Lunas',
+                'total' => (int) $item->total,
+                'amount' => (int) $item->amount,
+            ])
+            ->values();
+    }
+
+    /**
+     * Detail tambahan untuk owner: sebaran status pemesanan dalam periode.
+     */
+    protected function bookingStatusSummary($startAt, $endAt, ?int $categoryId = null)
+    {
+        return Booking::query()
+            ->with('payments')
+            ->whereBetween('booking_date', [$startAt, $endAt])
+            ->when($categoryId, fn ($q) => $q->whereHas('package', fn ($p) => $p->where('category_id', $categoryId)))
+            ->get()
+            ->groupBy(fn (Booking $booking) => $booking->statusLabel())
+            ->map(fn ($items, string $label) => [
+                'label' => $label,
+                'total' => $items->count(),
+                'amount' => (int) $items->sum(fn (Booking $booking) => $booking->paidAmount()),
+            ])
+            ->values();
+    }
+
     protected function buildCsv(
         string $from,
         string $to,
@@ -194,6 +256,9 @@ class ReportController extends Controller
         int $assignedPhotographers,
         int $assignedEditors,
         int $activeClients,
+        bool $isOwnerReport,
+        $paymentBreakdown,
+        $statusSummary,
         string $reportTitle
     ): string {
         $handle = fopen('php://temp', 'r+');
@@ -215,6 +280,28 @@ class ReportController extends Controller
         $this->writeCsvRow($handle, ['Editor Bertugas', $assignedEditors]);
         $this->writeCsvRow($handle, ['Klien Aktif', $activeClients]);
         $this->writeCsvRow($handle, []);
+
+        if ($isOwnerReport) {
+            $this->writeCsvRow($handle, ['Detail Owner - Ringkasan Pembayaran']);
+            $this->writeCsvRow($handle, ['Jenis Pembayaran', 'Jumlah Transaksi', 'Nominal Diterima']);
+            foreach ($paymentBreakdown as $item) {
+                $this->writeCsvRow($handle, [$item['label'], $item['total'], $this->formatCurrency($item['amount'])]);
+            }
+            if ($paymentBreakdown->isEmpty()) {
+                $this->writeCsvRow($handle, ['Belum ada pembayaran berhasil', '-', '-']);
+            }
+
+            $this->writeCsvRow($handle, []);
+            $this->writeCsvRow($handle, ['Detail Owner - Status Pemesanan']);
+            $this->writeCsvRow($handle, ['Status', 'Jumlah Pemesanan', 'Nominal Diterima']);
+            foreach ($statusSummary as $item) {
+                $this->writeCsvRow($handle, [$item['label'], $item['total'], $this->formatCurrency($item['amount'])]);
+            }
+            if ($statusSummary->isEmpty()) {
+                $this->writeCsvRow($handle, ['Belum ada pemesanan pada periode ini', '-', '-']);
+            }
+            $this->writeCsvRow($handle, []);
+        }
 
         $this->writeCsvRow($handle, ['Pemesanan dalam Periode']);
         $this->writeCsvRow($handle, ['No', 'ID Pemesanan', 'Paket', 'Klien', 'Tanggal', 'Status', 'Nilai Pemesanan']);

@@ -11,11 +11,11 @@ use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Hash;
 
 /**
- * CRUD user internal (admin/manager) + aktivasi/nonaktivasi akun.
+ * CRUD user internal oleh owner + aktivasi/nonaktivasi akun.
  */
 class UserManagementController extends Controller
 {
-    /** Halaman kelola pengguna (admin & manager). */
+    /** Halaman kelola pengguna. */
     public function index(Request $request)
     {
         $roleFilter = $request->query('role_filter');
@@ -39,14 +39,14 @@ class UserManagementController extends Controller
     /** Halaman form create. */
     public function create()
     {
-        $roles = Role::all();
+        $roles = $this->assignableRoles();
         return view('admin.users.create', compact('roles'));
     }
 
     /** Halaman edit. */
     public function edit(User $user)
     {
-        $roles = Role::all();
+        $roles = $this->assignableRoles($user);
         return view('admin.users.edit', compact('user', 'roles'));
     }
 
@@ -56,7 +56,7 @@ class UserManagementController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
-            'role' => ['required', Rule::in(Role::all())],
+            'role' => ['required', Rule::in($this->assignableRoles())],
             'roles' => ['nullable', 'array'],
             'roles.*' => ['string', Rule::in([Role::PHOTOGRAPHER->value, Role::EDITOR->value])],
             'password' => ['nullable', 'string', 'min:8'],
@@ -85,7 +85,7 @@ class UserManagementController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
-            'role' => ['required', Rule::in(Role::all())],
+            'role' => ['required', Rule::in($this->assignableRoles($user))],
             'roles' => ['nullable', 'array'],
             'roles.*' => ['string', Rule::in([Role::PHOTOGRAPHER->value, Role::EDITOR->value])],
             'password' => ['nullable', 'string', 'min:8'],
@@ -96,7 +96,7 @@ class UserManagementController extends Controller
         $payload = [
             'name' => $data['name'],
             'email' => $data['email'],
-            'role' => $data['role'],
+            'role' => $user->role === Role::OWNER ? Role::OWNER->value : $data['role'],
             'roles' => $this->normalizeRoles($data['role'], $data['roles'] ?? []),
             'no_hp' => $data['no_hp'] ?? null,
         ];
@@ -105,8 +105,12 @@ class UserManagementController extends Controller
             $payload['password'] = Hash::make($data['password']);
         }
 
-        // Lindungi akun Manager: tidak boleh dinonaktifkan atau dihapus.
-        if ($user->role !== Role::MANAGER && array_key_exists('is_active', $data)) {
+        // Lindungi akun owner: tidak boleh dinonaktifkan atau diturunkan rolenya.
+        if ($user->role === Role::OWNER) {
+            $payload['role'] = Role::OWNER->value;
+            $payload['roles'] = [Role::OWNER->value];
+            $payload['is_active'] = true;
+        } elseif (array_key_exists('is_active', $data)) {
             if ((bool) $data['is_active'] === false && $this->hasActiveOperationalWork($user)) {
                 return back()->with('status', 'Akun tidak dapat dinonaktifkan karena masih memiliki pemesanan atau project yang belum selesai.');
             }
@@ -126,8 +130,8 @@ class UserManagementController extends Controller
     /** Nonaktif/aktifkan pengguna. */
     public function toggle(Request $request, User $user)
     {
-        if ($user->role === Role::MANAGER) {
-            return back()->with('status', 'Akun manajer tidak boleh dinonaktifkan.');
+        if ($user->role === Role::OWNER) {
+            return back()->with('status', 'Akun owner tidak boleh dinonaktifkan.');
         }
 
         $data = $request->validate([
@@ -146,8 +150,8 @@ class UserManagementController extends Controller
     /** Hapus akun. */
     public function destroy(User $user)
     {
-        if ($user->role === Role::MANAGER) {
-            return back()->with('status', 'Akun manajer tidak boleh dihapus.');
+        if ($user->role === Role::OWNER) {
+            return back()->with('status', 'Akun owner tidak boleh dihapus.');
         }
 
         if ($this->hasActiveOperationalWork($user)) {
@@ -157,6 +161,23 @@ class UserManagementController extends Controller
         $user->delete();
 
         return back()->with('user_status', 'Pengguna dihapus.');
+    }
+
+    /**
+     * Role owner tidak dibuat dari form biasa. Akun owner adalah akun inti sistem.
+     *
+     * @return array<int, string>
+     */
+    protected function assignableRoles(?User $target = null): array
+    {
+        if ($target?->role === Role::OWNER) {
+            return Role::all();
+        }
+
+        return array_values(array_filter(
+            Role::all(),
+            fn (string $role) => $role !== Role::OWNER->value
+        ));
     }
 
     /**

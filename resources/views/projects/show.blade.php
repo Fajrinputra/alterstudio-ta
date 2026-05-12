@@ -4,7 +4,7 @@
     $currentUser = auth()->user();
     $isCrewUser = $currentUser
         && $currentUser->isRole(Role::PHOTOGRAPHER, Role::EDITOR)
-        && ! $currentUser->isRole(Role::ADMIN, Role::MANAGER, Role::CLIENT);
+        && ! $currentUser->isRole(Role::OWNER, Role::ADMIN, Role::MANAGER, Role::CLIENT);
     $isPhotographerTask = $isCrewUser && $project->photographer_id === $currentUser->id;
     $isEditorTask = $isCrewUser && $project->editor_id === $currentUser->id;
     $driveUrl = $project->final_drive_url ?: $project->raw_drive_url;

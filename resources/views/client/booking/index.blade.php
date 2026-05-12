@@ -172,8 +172,8 @@
                                         </div>
                                     </div>
                                     <a href="{{ route('bookings.pay', $booking) }}" 
-                                       class="inline-flex items-center justify-center rounded-3xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] px-8 py-4 font-semibold text-white transition-all hover:brightness-110 sm:ml-auto">
-                                        Lanjutkan Pembayaran
+                                       class="inline-flex min-h-[76px] w-full items-center justify-center rounded-3xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] px-7 py-4 text-center font-semibold leading-snug text-white transition-all hover:brightness-110 sm:ml-auto sm:w-56">
+                                        <span class="block w-full text-center">Lanjutkan Pembayaran</span>
                                     </a>
                                 </div>
                             </div>

@@ -138,13 +138,27 @@
                     </div>
                 </section>
 
-            {{-- ==================== ADMIN / MANAGER ==================== --}}
-            @elseif($role === Role::ADMIN || $role === Role::MANAGER)
+            {{-- ==================== ADMIN / MANAGER / OWNER ==================== --}}
+            @elseif($role === Role::ADMIN || $role === Role::MANAGER || $role === Role::OWNER)
                 <section>
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                        <x-stat-card label="Total Pemesanan" :value="$data['metrics']['bookings'] ?? 0" />
-                        <x-stat-card label="Pengajuan & Pembayaran" :value="$data['metrics']['waiting_payment'] ?? 0" color="amber" />
-                        <x-stat-card label="Project Final" :value="$data['metrics']['projects_final'] ?? 0" color="emerald" />
+                    <div class="grid grid-cols-1 sm:grid-cols-2 {{ $role === Role::OWNER ? 'xl:grid-cols-6' : 'xl:grid-cols-5' }} gap-6">
+                        <x-stat-card label="Total Pemesanan" :value="$data['metrics']['bookings'] ?? 0" icon="receipt" />
+                        <x-stat-card label="Data Pengajuan" :value="$data['metrics']['submitted'] ?? 0" color="amber" icon="clipboard-list" />
+                        <x-stat-card label="Data Pembayaran" :value="$data['metrics']['waiting_payment'] ?? 0" color="blue" icon="credit-card" />
+                        <x-stat-card label="Project Final" :value="$data['metrics']['projects_final'] ?? 0" color="emerald" icon="circle-check" />
+                        <x-stat-card label="Belum Terjadwal" :value="$data['metrics']['unscheduled'] ?? 0" color="red" icon="calendar-xmark" />
+                        @if($role === Role::OWNER)
+                            <div class="relative overflow-hidden rounded-3xl border border-emerald-200 bg-gradient-to-br from-emerald-500/10 to-teal-600/10 p-6 text-emerald-700 shadow-xl">
+                                <div class="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-emerald-500 opacity-10 blur-2xl"></div>
+                                <div class="relative z-10">
+                                    <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500 text-white shadow-sm">
+                                        <i class="fa-solid fa-wallet text-lg"></i>
+                                    </div>
+                                    <p class="mb-2 text-xs font-medium uppercase tracking-[0.2em] opacity-80">Pendapatan Diterima</p>
+                                    <p class="text-2xl font-semibold leading-tight">Rp {{ number_format($data['metrics']['revenue_received'] ?? 0, 0, ',', '.') }}</p>
+                                </div>
+                            </div>
+                        @endif
                     </div>
                 </section>
 
@@ -207,7 +221,7 @@
                                 @endforelse
                             </div>
                         </div>
-                    @else
+                    @elseif($role === Role::MANAGER || $role === Role::OWNER)
                         <div class="bg-white rounded-3xl border border-[#EDE0D0] shadow-xl p-8">
                             <div class="flex items-center justify-between mb-6">
                                 <h3 class="text-2xl font-display font-semibold text-[#3F2B1B] flex items-center gap-3">
@@ -219,6 +233,7 @@
 
                             @php
                                 $roleLabels = [
+                                    Role::OWNER->value => 'Owner',
                                     Role::ADMIN->value => 'Admin',
                                     Role::MANAGER->value => 'Manajer',
                                     Role::CLIENT->value => 'Klien',
@@ -226,6 +241,7 @@
                                     Role::EDITOR->value => 'Editor',
                                 ];
                                 $roleIcons = [
+                                    Role::OWNER->value => 'fa-crown',
                                     Role::ADMIN->value => 'fa-user-shield',
                                     Role::MANAGER->value => 'fa-briefcase',
                                     Role::CLIENT->value => 'fa-user',

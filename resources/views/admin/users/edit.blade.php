@@ -2,6 +2,7 @@
     use App\Enums\Role;
     $effectiveRoles = old('roles', $user->effectiveRoles());
     $primaryRole = $user->role instanceof Role ? $user->role : Role::from($user->role);
+    $isOwnerAccount = $primaryRole === Role::OWNER;
 @endphp
 
 <x-app-layout>
@@ -91,11 +92,16 @@
                                     ROLE UTAMA
                                 </label>
                                 <select name="role"
+                                        @disabled($isOwnerAccount)
                                         class="w-full px-6 py-4 rounded-3xl border border-[#E1D3C5] bg-white/70 text-[#3F2B1B] focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20 transition-all">
-                                    @foreach(Role::cases() as $role)
-                                        <option value="{{ $role->value }}" @selected(old('role', $primaryRole->value) === $role->value)>{{ ucfirst(strtolower($role->value)) }}</option>
+                                    @foreach($roles as $roleValue)
+                                        <option value="{{ $roleValue }}" @selected(old('role', $primaryRole->value) === $roleValue)>{{ ucfirst(strtolower($roleValue)) }}</option>
                                     @endforeach
                                 </select>
+                                @if($isOwnerAccount)
+                                    <input type="hidden" name="role" value="{{ Role::OWNER->value }}">
+                                    <p class="text-xs text-[#8B7359]">Role owner tidak dapat diubah.</p>
+                                @endif
                             </div>
                         </div>
 
@@ -137,12 +143,13 @@
                             <div class="space-y-2 rounded-3xl border border-[#EDE0D0] bg-white/70 px-6 py-5">
                                 <label class="flex items-center gap-3 text-[#3F2B1B]">
                                     <input type="hidden" name="is_active" value="0">
-                                    <input type="checkbox" name="is_active" value="1" @checked(old('is_active', $user->is_active)) @disabled($primaryRole === Role::MANAGER)
+                                    <input type="checkbox" name="is_active" value="1" @checked(old('is_active', $user->is_active)) @disabled($isOwnerAccount)
                                            class="w-5 h-5 rounded-xl border-[#E1D3C5] text-[#D4A017] focus:ring-[#D4A017]">
                                     <span class="font-medium">Akun aktif</span>
                                 </label>
-                                @if($primaryRole === Role::MANAGER)
-                                    <p class="text-xs text-[#8B7359]">Akun manajer tidak dapat dinonaktifkan.</p>
+                                @if($isOwnerAccount)
+                                    <input type="hidden" name="is_active" value="1">
+                                    <p class="text-xs text-[#8B7359]">Akun owner tidak dapat dinonaktifkan.</p>
                                 @endif
                             </div>
                         </div>

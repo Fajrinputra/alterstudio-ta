@@ -1,4 +1,4 @@
-﻿<x-app-layout>
+<x-app-layout>
     <x-slot name="header">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
@@ -10,7 +10,7 @@
                     Kategori & Paket Foto
                 </h2>
             </div>
-            @if(auth()->check() && (auth()->user()->role === \App\Enums\Role::ADMIN || auth()->user()->role === \App\Enums\Role::MANAGER))
+            @if(auth()->check() && (auth()->user()->role === \App\Enums\Role::ADMIN || auth()->user()->role === \App\Enums\Role::MANAGER || auth()->user()->role === \App\Enums\Role::OWNER))
                 <a href="{{ route('admin.catalog.create') }}" 
                    class="inline-flex w-full sm:w-auto items-center justify-center gap-3 px-8 py-4 rounded-3xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] text-white font-semibold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all">
                     <i class="fa-solid fa-plus"></i>
@@ -40,7 +40,7 @@
                             </div>
                         </div>
                         
-                        @if(auth()->check() && (auth()->user()->role === \App\Enums\Role::ADMIN || auth()->user()->role === \App\Enums\Role::MANAGER))
+                        @if(auth()->check() && (auth()->user()->role === \App\Enums\Role::ADMIN || auth()->user()->role === \App\Enums\Role::MANAGER || auth()->user()->role === \App\Enums\Role::OWNER))
                             <div class="flex gap-3">
                                 <button type="button"
                                         @click="editCategory = true"
@@ -129,7 +129,7 @@
                         <div class="text-center py-16">
                             <i class="fa-solid fa-box-open text-6xl text-[#8B7359] mb-6 opacity-40"></i>
                             <p class="text-[#7A5B3A]">Belum ada paket dalam kategori ini.</p>
-                            @if(auth()->check() && (auth()->user()->role === \App\Enums\Role::ADMIN || auth()->user()->role === \App\Enums\Role::MANAGER))
+                            @if(auth()->check() && (auth()->user()->role === \App\Enums\Role::ADMIN || auth()->user()->role === \App\Enums\Role::MANAGER || auth()->user()->role === \App\Enums\Role::OWNER))
                                 <a href="{{ route('admin.catalog.packages', $category) }}" 
                                    class="inline-block mt-6 px-8 py-3 rounded-3xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] text-white font-medium">
                                     Tambah Paket Baru
@@ -139,7 +139,7 @@
                     @endif
                 </div>
 
-                @if(auth()->check() && (auth()->user()->role === \App\Enums\Role::ADMIN || auth()->user()->role === \App\Enums\Role::MANAGER))
+                @if(auth()->check() && (auth()->user()->role === \App\Enums\Role::ADMIN || auth()->user()->role === \App\Enums\Role::MANAGER || auth()->user()->role === \App\Enums\Role::OWNER))
                     <div x-show="editCategory" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60" x-transition.opacity>
                         <div class="w-full max-w-xl rounded-3xl bg-white p-8 shadow-2xl" @click.stop>
                             <div class="flex items-start justify-between gap-4 mb-6">
@@ -250,7 +250,7 @@
                 <i class="fa-solid fa-store-slash text-6xl text-[#8B7359] mb-6 opacity-40"></i>
                 <p class="text-[#3F2B1B] text-xl mb-2">Belum ada kategori layanan</p>
                 <p class="text-[#7A5B3A] mb-8">Silakan tambahkan kategori terlebih dahulu</p>
-                @if(auth()->check() && (auth()->user()->role === \App\Enums\Role::ADMIN || auth()->user()->role === \App\Enums\Role::MANAGER))
+                @if(auth()->check() && (auth()->user()->role === \App\Enums\Role::ADMIN || auth()->user()->role === \App\Enums\Role::MANAGER || auth()->user()->role === \App\Enums\Role::OWNER))
                     <a href="{{ route('admin.catalog.create') }}" 
                        class="inline-flex items-center gap-3 px-8 py-4 rounded-3xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] text-white font-semibold">
                         <i class="fa-solid fa-plus"></i>

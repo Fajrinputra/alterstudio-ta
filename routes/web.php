@@ -26,7 +26,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.form');
     Route::get('/profile/password', [\App\Http\Controllers\Auth\PasswordController::class, 'edit'])->name('profile.password');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // Client booking flow
     Route::middleware('role:CLIENT')->group(function () {
@@ -43,12 +42,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/projects/{project}/raw-download', [\App\Http\Controllers\MediaAssetController::class, 'downloadRaw'])->name('projects.raw.download');
     });
 
-    // Avatar upload
-    Route::post('/profile/avatar', \App\Http\Controllers\ProfileAvatarController::class)->name('profile.avatar');
-    Route::post('/profile/avatar/delete', [\App\Http\Controllers\ProfileAvatarController::class, 'destroy'])->name('profile.avatar.delete');
-
-    // Akses bersama admin/manager untuk monitoring pemesanan
-    Route::middleware('role:ADMIN,MANAGER')->group(function () {
+        // Akses bersama admin/manager/owner untuk monitoring pemesanan
+    Route::middleware('role:ADMIN,MANAGER,OWNER')->group(function () {
         Route::get('/admin/bookings', [\App\Http\Controllers\BookingController::class, 'index']);
     });
 
@@ -58,56 +53,7 @@ Route::middleware('auth')->group(function () {
         Route::put('/projects/{project}/schedule', [\App\Http\Controllers\ScheduleController::class, 'update'])->name('projects.schedule.update');
     });
 
-    // Kelola pengguna dan cabang hanya untuk manajer
-    Route::middleware('role:MANAGER')->group(function () {
-        Route::get('/admin/users', [\App\Http\Controllers\UserManagementController::class, 'index'])->name('admin.users.index');
-        Route::get('/admin/users/create', [\App\Http\Controllers\UserManagementController::class, 'create'])->name('admin.users.create');
-        Route::get('/admin/users/{user}/edit', [\App\Http\Controllers\UserManagementController::class, 'edit'])->name('admin.users.edit');
-        Route::post('/admin/users', [\App\Http\Controllers\UserManagementController::class, 'store'])->name('admin.users.store');
-        Route::put('/admin/users/{user}', [\App\Http\Controllers\UserManagementController::class, 'update'])->name('admin.users.update');
-        Route::post('/admin/users/{user}/toggle', [\App\Http\Controllers\UserManagementController::class, 'toggle'])->name('admin.users.toggle');
-        Route::delete('/admin/users/{user}', [\App\Http\Controllers\UserManagementController::class, 'destroy'])->name('admin.users.destroy');
-        Route::get('/reports', [\App\Http\Controllers\ReportController::class, 'index'])->name('reports.index');
-
-        // Kelola lokasi
-        Route::get('/admin/locations', [\App\Http\Controllers\Admin\StudioLocationController::class, 'index']);
-        Route::get('/admin/locations/manage', [\App\Http\Controllers\Admin\StudioLocationController::class, 'manage'])->name('admin.locations.manage');
-        Route::get('/admin/locations/create', [\App\Http\Controllers\Admin\StudioLocationController::class, 'create'])->name('admin.locations.create');
-        Route::post('/admin/locations', [\App\Http\Controllers\Admin\StudioLocationController::class, 'store'])->name('admin.locations.store');
-        Route::get('/admin/locations/{studioLocation}', [\App\Http\Controllers\Admin\StudioLocationController::class, 'show'])->name('admin.locations.show');
-        Route::get('/admin/locations/{studioLocation}/edit', [\App\Http\Controllers\Admin\StudioLocationController::class, 'edit'])->name('admin.locations.edit');
-        Route::put('/admin/locations/{studioLocation}', [\App\Http\Controllers\Admin\StudioLocationController::class, 'update'])->name('admin.locations.update');
-        Route::delete('/admin/locations/{studioLocation}', [\App\Http\Controllers\Admin\StudioLocationController::class, 'destroy'])->name('admin.locations.destroy');
-        Route::post('/admin/locations/room', [\App\Http\Controllers\Admin\StudioLocationController::class, 'storeRoom'])->name('admin.locations.room.store');
-        Route::put('/admin/locations/room/{studioRoom}', [\App\Http\Controllers\Admin\StudioLocationController::class, 'updateRoom'])->name('admin.locations.room.update');
-        Route::delete('/admin/locations/room/{studioRoom}', [\App\Http\Controllers\Admin\StudioLocationController::class, 'destroyRoom'])->name('admin.locations.room.destroy');
-    });
-
-    // Kelola katalog untuk admin + manajer
-    Route::middleware('role:ADMIN,MANAGER')->group(function () {
-        // Kelola katalog (view)
-        Route::get('/admin/catalog', [\App\Http\Controllers\Admin\CatalogController::class, 'index'])->name('admin.catalog');
-        Route::get('/admin/catalog/create', [\App\Http\Controllers\Admin\CatalogController::class, 'create'])->name('admin.catalog.create');
-        Route::post('/admin/catalog', [\App\Http\Controllers\Admin\CatalogController::class, 'store'])->name('admin.catalog.store');
-        Route::get('/admin/catalog/{category}', [\App\Http\Controllers\Admin\CatalogController::class, 'packages'])->name('admin.catalog.packages');
-        Route::get('/admin/catalog/{category}/packages/create', [\App\Http\Controllers\Admin\CatalogController::class, 'createPackage'])->name('admin.catalog.packages.create');
-        Route::post('/admin/catalog/{category}/packages', [\App\Http\Controllers\Admin\CatalogController::class, 'storePackage'])->name('admin.catalog.packages.store');
-
-        // Kelola kategori & paket
-        Route::get('/admin/categories', [\App\Http\Controllers\Admin\ServiceCategoryController::class, 'index']);
-        Route::post('/admin/categories', [\App\Http\Controllers\Admin\ServiceCategoryController::class, 'store']);
-        Route::put('/admin/categories/{serviceCategory}', [\App\Http\Controllers\Admin\ServiceCategoryController::class, 'update']);
-        Route::delete('/admin/categories/{serviceCategory}', [\App\Http\Controllers\Admin\ServiceCategoryController::class, 'destroy']);
-
-        Route::get('/admin/packages', [\App\Http\Controllers\Admin\ServicePackageController::class, 'index']);
-        Route::get('/admin/packages/{servicePackage}', [\App\Http\Controllers\Admin\ServicePackageController::class, 'show'])->name('admin.packages.show');
-        Route::get('/admin/packages/{servicePackage}/edit', [\App\Http\Controllers\Admin\ServicePackageController::class, 'edit'])->name('admin.packages.edit');
-        Route::post('/admin/packages', [\App\Http\Controllers\Admin\ServicePackageController::class, 'store'])->name('admin.packages.store');
-        Route::put('/admin/packages/{servicePackage}', [\App\Http\Controllers\Admin\ServicePackageController::class, 'update'])->name('admin.packages.update');
-        Route::delete('/admin/packages/{servicePackage}', [\App\Http\Controllers\Admin\ServicePackageController::class, 'destroy'])->name('admin.packages.destroy');
-    });
-
-    // Fitur khusus admin
+        // Fitur khusus admin
     Route::middleware('role:ADMIN')->group(function () {
         // Update status pembayaran hanya admin
         Route::post('/admin/bookings/{booking}/status', [\App\Http\Controllers\BookingController::class, 'updateStatus'])->name('admin.bookings.status');
@@ -129,8 +75,67 @@ Route::middleware('auth')->group(function () {
     });
 
     // Detail project boleh dilihat manager (read-only dari sisi route method GET)
-    Route::middleware('role:EDITOR,PHOTOGRAPHER,ADMIN,MANAGER')->group(function () {
+    Route::middleware('role:EDITOR,PHOTOGRAPHER,ADMIN,MANAGER,OWNER')->group(function () {
         Route::get('/projects/{project}', [\App\Http\Controllers\ProjectController::class, 'show'])->name('projects.show');
+    });
+
+    // Avatar upload
+    Route::post('/profile/avatar', \App\Http\Controllers\ProfileAvatarController::class)->name('profile.avatar');
+    Route::post('/profile/avatar/delete', [\App\Http\Controllers\ProfileAvatarController::class, 'destroy'])->name('profile.avatar.delete');
+
+
+
+    // Kelola pengguna dan cabang hanya untuk owner.
+    Route::middleware('role:OWNER')->group(function () {
+        Route::get('/admin/users', [\App\Http\Controllers\UserManagementController::class, 'index'])->name('admin.users.index');
+        Route::get('/admin/users/create', [\App\Http\Controllers\UserManagementController::class, 'create'])->name('admin.users.create');
+        Route::get('/admin/users/{user}/edit', [\App\Http\Controllers\UserManagementController::class, 'edit'])->name('admin.users.edit');
+        Route::post('/admin/users', [\App\Http\Controllers\UserManagementController::class, 'store'])->name('admin.users.store');
+        Route::put('/admin/users/{user}', [\App\Http\Controllers\UserManagementController::class, 'update'])->name('admin.users.update');
+        Route::post('/admin/users/{user}/toggle', [\App\Http\Controllers\UserManagementController::class, 'toggle'])->name('admin.users.toggle');
+        Route::delete('/admin/users/{user}', [\App\Http\Controllers\UserManagementController::class, 'destroy'])->name('admin.users.destroy');
+
+        // Kelola lokasi
+        Route::get('/admin/locations', [\App\Http\Controllers\Admin\StudioLocationController::class, 'index']);
+        Route::get('/admin/locations/manage', [\App\Http\Controllers\Admin\StudioLocationController::class, 'manage'])->name('admin.locations.manage');
+        Route::get('/admin/locations/create', [\App\Http\Controllers\Admin\StudioLocationController::class, 'create'])->name('admin.locations.create');
+        Route::post('/admin/locations', [\App\Http\Controllers\Admin\StudioLocationController::class, 'store'])->name('admin.locations.store');
+        Route::get('/admin/locations/{studioLocation}', [\App\Http\Controllers\Admin\StudioLocationController::class, 'show'])->name('admin.locations.show');
+        Route::get('/admin/locations/{studioLocation}/edit', [\App\Http\Controllers\Admin\StudioLocationController::class, 'edit'])->name('admin.locations.edit');
+        Route::put('/admin/locations/{studioLocation}', [\App\Http\Controllers\Admin\StudioLocationController::class, 'update'])->name('admin.locations.update');
+        Route::delete('/admin/locations/{studioLocation}', [\App\Http\Controllers\Admin\StudioLocationController::class, 'destroy'])->name('admin.locations.destroy');
+        Route::post('/admin/locations/room', [\App\Http\Controllers\Admin\StudioLocationController::class, 'storeRoom'])->name('admin.locations.room.store');
+        Route::put('/admin/locations/room/{studioRoom}', [\App\Http\Controllers\Admin\StudioLocationController::class, 'updateRoom'])->name('admin.locations.room.update');
+        Route::delete('/admin/locations/room/{studioRoom}', [\App\Http\Controllers\Admin\StudioLocationController::class, 'destroyRoom'])->name('admin.locations.room.destroy');
+    });
+
+    // Laporan dapat difilter/diolah manajer dan dilihat owner.
+    Route::middleware('role:MANAGER,OWNER')->group(function () {
+        Route::get('/reports', [\App\Http\Controllers\ReportController::class, 'index'])->name('reports.index');
+    });
+
+    // Kelola katalog untuk admin + manajer + owner
+    Route::middleware('role:ADMIN,MANAGER,OWNER')->group(function () {
+        // Kelola katalog (view)
+        Route::get('/admin/catalog', [\App\Http\Controllers\Admin\CatalogController::class, 'index'])->name('admin.catalog');
+        Route::get('/admin/catalog/create', [\App\Http\Controllers\Admin\CatalogController::class, 'create'])->name('admin.catalog.create');
+        Route::post('/admin/catalog', [\App\Http\Controllers\Admin\CatalogController::class, 'store'])->name('admin.catalog.store');
+        Route::get('/admin/catalog/{category}', [\App\Http\Controllers\Admin\CatalogController::class, 'packages'])->name('admin.catalog.packages');
+        Route::get('/admin/catalog/{category}/packages/create', [\App\Http\Controllers\Admin\CatalogController::class, 'createPackage'])->name('admin.catalog.packages.create');
+        Route::post('/admin/catalog/{category}/packages', [\App\Http\Controllers\Admin\CatalogController::class, 'storePackage'])->name('admin.catalog.packages.store');
+
+        // Kelola kategori & paket
+        Route::get('/admin/categories', [\App\Http\Controllers\Admin\ServiceCategoryController::class, 'index']);
+        Route::post('/admin/categories', [\App\Http\Controllers\Admin\ServiceCategoryController::class, 'store']);
+        Route::put('/admin/categories/{serviceCategory}', [\App\Http\Controllers\Admin\ServiceCategoryController::class, 'update']);
+        Route::delete('/admin/categories/{serviceCategory}', [\App\Http\Controllers\Admin\ServiceCategoryController::class, 'destroy']);
+
+        Route::get('/admin/packages', [\App\Http\Controllers\Admin\ServicePackageController::class, 'index']);
+        Route::get('/admin/packages/{servicePackage}', [\App\Http\Controllers\Admin\ServicePackageController::class, 'show'])->name('admin.packages.show');
+        Route::get('/admin/packages/{servicePackage}/edit', [\App\Http\Controllers\Admin\ServicePackageController::class, 'edit'])->name('admin.packages.edit');
+        Route::post('/admin/packages', [\App\Http\Controllers\Admin\ServicePackageController::class, 'store'])->name('admin.packages.store');
+        Route::put('/admin/packages/{servicePackage}', [\App\Http\Controllers\Admin\ServicePackageController::class, 'update'])->name('admin.packages.update');
+        Route::delete('/admin/packages/{servicePackage}', [\App\Http\Controllers\Admin\ServicePackageController::class, 'destroy'])->name('admin.packages.destroy');
     });
 });
 

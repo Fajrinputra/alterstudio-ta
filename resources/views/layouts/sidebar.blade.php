@@ -17,9 +17,11 @@
             $menu[] = ['label' => 'Hero Landing', 'href' => route('admin.landing.hero'), 'icon' => 'fa-solid fa-images', 'active' => ['admin/landing/hero*']];
         }
     }
-    if ($user?->isRole(Role::MANAGER)) {
+    if ($user?->isRole(Role::OWNER)) {
         $menu[] = ['label' => 'Kelola Pengguna', 'href' => route('admin.users.index'), 'icon' => 'fa-solid fa-users', 'active' => ['admin/users*']];
         $menu[] = ['label' => 'Cabang', 'href' => url('/admin/locations/manage'), 'icon' => 'fa-solid fa-building', 'active' => ['admin/locations*']];
+    }
+    if ($user?->isRole(Role::MANAGER, Role::OWNER)) {
         $menu[] = ['label' => 'Laporan', 'href' => route('reports.index'), 'icon' => 'fa-solid fa-chart-column', 'active' => ['reports*']];
     }
     if ($user?->isRole(Role::PHOTOGRAPHER, Role::EDITOR, Role::ADMIN)) {

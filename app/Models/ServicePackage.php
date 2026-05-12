@@ -64,15 +64,20 @@ class ServicePackage extends Model
 
     public function getFeaturesAttribute($value): array
     {
-        return collect(is_array($value) ? $value : (json_decode((string) $value, true) ?: []))
+        $items = is_array($value) ? $value : ($value ? (json_decode((string) $value, true) ?: []) : []);
+
+        return collect($items)
             ->filter(fn ($item) => is_string($item) && trim($item) !== '')
+            ->map(fn ($item) => trim($item))
             ->values()
             ->all();
     }
 
     public function getAddonsAttribute($value): array
     {
-        return collect(is_array($value) ? $value : (json_decode((string) $value, true) ?: []))
+        $items = is_array($value) ? $value : ($value ? (json_decode((string) $value, true) ?: []) : []);
+
+        return collect($items)
             ->map(function ($addon) {
                 if (! is_array($addon)) {
                     return null;
@@ -102,7 +107,9 @@ class ServicePackage extends Model
 
     public function getGalleryAttribute($value): array
     {
-        return collect(is_array($value) ? $value : (json_decode((string) $value, true) ?: []))
+        $items = is_array($value) ? $value : ($value ? (json_decode((string) $value, true) ?: []) : []);
+
+        return collect($items)
             ->map(function ($item) {
                 if (is_string($item)) {
                     return $item;

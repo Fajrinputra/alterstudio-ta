@@ -1,7 +1,5 @@
 <?php
-
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -98,7 +96,9 @@ class Booking extends Model
 
     public function getSelectedAddonsAttribute($value): array
     {
-        return collect(is_array($value) ? $value : (json_decode((string) $value, true) ?: []))
+        $items = is_array($value) ? $value : ($value ? (json_decode((string) $value, true) ?: []) : []);
+
+        return collect($items)
             ->map(function ($addon) {
                 if (! is_array($addon)) {
                     return null;

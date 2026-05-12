@@ -85,7 +85,7 @@
                             @php
                                 $effectiveRoles = $user->effectiveRoles();
                                 $primaryRole = $user->role instanceof Role ? $user->role->value : $user->role;
-                                $isManager = $user->role === \App\Enums\Role::MANAGER;
+                                $isOwner = $user->role === \App\Enums\Role::OWNER;
                             @endphp
                             <article class="rounded-3xl border border-[#EDE0D0] bg-white px-4 py-4 shadow-sm">
                                 <div class="flex items-start justify-between gap-3">
@@ -114,7 +114,7 @@
                                             <form method="POST" action="{{ route('admin.users.toggle', $user) }}">
                                                 @csrf
                                                 <select name="is_active" onchange="this.form.submit()"
-                                                        @disabled($isManager)
+                                                        @disabled($isOwner)
                                                         class="w-full rounded-2xl border px-3 py-2 text-sm font-medium transition-all {{ $user->is_active ? 'border-emerald-200 bg-emerald-100 text-emerald-700' : 'border-red-200 bg-red-100 text-red-700' }}">
                                                     <option value="1" @selected($user->is_active)>Aktif</option>
                                                     <option value="0" @selected(!$user->is_active)>Nonaktif</option>
@@ -141,7 +141,7 @@
                                         <i class="fa-solid fa-pen-to-square"></i>
                                         Edit
                                     </a>
-                                    @if(!$isManager)
+                                    @if(!$isOwner)
                                         <button @click="showDelete=true; deleteUrl='{{ route('admin.users.destroy',$user) }}'; deleteName='{{ addslashes($user->name) }}'"
                                                 class="inline-flex items-center gap-2 rounded-3xl border border-red-200 px-3 py-2 text-[11px] font-medium text-red-600 transition hover:border-red-300 hover:bg-red-50">
                                             <i class="fa-solid fa-trash-can"></i>
@@ -178,7 +178,7 @@
                                     @php
                                         $effectiveRoles = $user->effectiveRoles();
                                         $primaryRole = $user->role instanceof Role ? $user->role->value : $user->role;
-                                        $isManager = $user->role === \App\Enums\Role::MANAGER;
+                                        $isOwner = $user->role === \App\Enums\Role::OWNER;
                                     @endphp
                                     <tr class="hover:bg-[#FAF6F0] transition-all duration-300">
                                         <td class="px-3 py-4 align-middle text-left">
@@ -213,7 +213,7 @@
                                             <form method="POST" action="{{ route('admin.users.toggle', $user) }}" class="mx-auto w-fit">
                                                 @csrf
                                                 <select name="is_active" onchange="this.form.submit()"
-                                                        @disabled($isManager)
+                                                        @disabled($isOwner)
                                                         class="rounded-3xl border px-4 py-2 text-[11px] font-medium transition-all {{ $user->is_active ? 'border-emerald-200 bg-emerald-100 text-emerald-700' : 'border-red-200 bg-red-100 text-red-700' }}">
                                                     <option value="1" @selected($user->is_active)>Aktif</option>
                                                     <option value="0" @selected(!$user->is_active)>Nonaktif</option>
@@ -227,7 +227,7 @@
                                                     <i class="fa-solid fa-pen-to-square"></i>
                                                     Edit
                                                 </a>
-                                                @if(!$isManager)
+                                                @if(!$isOwner)
                                                     <button @click="showDelete=true; deleteUrl='{{ route('admin.users.destroy',$user) }}'; deleteName='{{ addslashes($user->name) }}'"
                                                             class="inline-flex items-center gap-2 rounded-3xl border border-red-200 px-3 py-2 text-[11px] font-medium text-red-600 transition hover:border-red-300 hover:bg-red-50">
                                                         <i class="fa-solid fa-trash-can"></i>

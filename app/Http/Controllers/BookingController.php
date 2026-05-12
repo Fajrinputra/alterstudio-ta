@@ -123,19 +123,27 @@ class BookingController extends Controller
 
         $addonOptions = $selectedPackage ? $this->normalizePackageAddons($selectedPackage) : [];
         $locations = \App\Models\StudioLocation::where('is_active', true)->orderBy('name')->get();
-        return view('client.booking.create', compact('packages', 'locations', 'selectedPackage', 'addonOptions'));
+        $maxBookingDate = Carbon::today()->addMonth()->toDateString();
+
+        return view('client.booking.create', compact('packages', 'locations', 'selectedPackage', 'addonOptions', 'maxBookingDate'));
     }
 
     public function availability(Request $request)
     {
+        $maxBookingDate = Carbon::today()->addMonth()->toDateString();
+
         $validated = $request->validate([
             'package_id' => ['required', Rule::exists(ServicePackage::class, 'id')],
             'studio_location_id' => ['required', 'exists:studio_locations,id'],
-            'booking_date' => ['required', 'date', 'after_or_equal:today'],
+            'booking_date' => ['required', 'date', 'after_or_equal:today', 'before_or_equal:'.$maxBookingDate],
             'selected_addons' => ['nullable', 'array'],
             'selected_addons.*' => ['string'],
             'addon_quantities' => ['nullable', 'array'],
             'addon_quantities.*' => ['nullable', 'integer', 'min:1'],
+        ], [
+            'booking_date.required' => 'Tanggal pemesanan wajib dipilih.',
+            'booking_date.after_or_equal' => 'Tanggal pemesanan tidak boleh sebelum hari ini.',
+            'booking_date.before_or_equal' => 'Tanggal pemesanan hanya dapat dipilih maksimal 1 bulan ke depan.',
         ]);
 
         $package = ServicePackage::findOrFail($validated['package_id']);
@@ -169,10 +177,11 @@ class BookingController extends Controller
     public function store(Request $request)
     {
         $user = Auth::user();
+        $maxBookingDate = Carbon::today()->addMonth()->toDateString();
 
         $validated = $request->validate([
             'package_id' => ['required', Rule::exists(ServicePackage::class, 'id')],
-            'booking_date' => ['required', 'date', 'after_or_equal:today'],
+            'booking_date' => ['required', 'date', 'after_or_equal:today', 'before_or_equal:'.$maxBookingDate],
             'booking_time' => ['required', 'date_format:H:i'],
             'studio_location_id' => ['required', 'exists:studio_locations,id'],
             'notes' => ['nullable', 'string'],
@@ -181,6 +190,10 @@ class BookingController extends Controller
             'selected_addons.*' => ['string'],
             'addon_quantities' => ['nullable', 'array'],
             'addon_quantities.*' => ['nullable', 'integer', 'min:1'],
+        ], [
+            'booking_date.required' => 'Tanggal pemesanan wajib dipilih.',
+            'booking_date.after_or_equal' => 'Tanggal pemesanan tidak boleh sebelum hari ini.',
+            'booking_date.before_or_equal' => 'Tanggal pemesanan hanya dapat dipilih maksimal 1 bulan ke depan.',
         ]);
 
         $package = ServicePackage::findOrFail($validated['package_id']);
@@ -234,7 +247,7 @@ class BookingController extends Controller
         ]);
 
         // Kirim notifikasi bahwa ada pemesanan baru yang perlu ditinjau.
-        $admins = \App\Models\User::whereIn('role', [Role::ADMIN, Role::MANAGER])->get();
+        $admins = \App\Models\User::whereIn('role', [Role::ADMIN, Role::OWNER])->get();
         $notification = new \App\Notifications\BookingCreatedNotification(
             $booking->load(['package', 'client', 'studioLocation', 'studioRoom'])
         );

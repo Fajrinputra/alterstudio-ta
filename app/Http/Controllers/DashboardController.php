@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\Role;
 use App\Models\Booking;
+use App\Models\Payment;
 use App\Models\Project;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -26,6 +27,7 @@ class DashboardController extends Controller
             Role::CLIENT => $this->clientData($user->id),
             Role::ADMIN => $this->adminData(),
             Role::MANAGER => $this->managerData(),
+            Role::OWNER => $this->ownerData(),
             Role::PHOTOGRAPHER => $this->photographerData($user->id),
             Role::EDITOR => $this->editorData($user->id),
         };
@@ -72,9 +74,16 @@ class DashboardController extends Controller
 
         $metrics = [
             'bookings' => Booking::count(),
-            // Samakan dengan daftar pemesanan: menunggu pembayaran dihitung dari status booking.
-            'waiting_payment' => Booking::where('status', Booking::STATUS_WAITING_PAYMENT)->count(),
+            'submitted' => Booking::where('status', Booking::STATUS_WAITING_PAYMENT)
+                ->whereNull('confirmed_at')
+                ->count(),
+            'waiting_payment' => Booking::where('status', Booking::STATUS_WAITING_PAYMENT)
+                ->whereNotNull('confirmed_at')
+                ->count(),
             'projects_final' => Project::where('status', Project::STATUS_FINAL)->count(),
+            'unscheduled' => Project::whereNull('start_at')
+                ->whereHas('booking', fn ($booking) => $booking->whereIn('status', [Booking::STATUS_DP_PAID, Booking::STATUS_PAID]))
+                ->count(),
         ];
 
         $schedules = Project::with(['booking', 'photographer', 'editor'])
@@ -94,8 +103,16 @@ class DashboardController extends Controller
 
         $metrics = [
             'bookings' => Booking::count(),
-            'waiting_payment' => Booking::where('status', Booking::STATUS_WAITING_PAYMENT)->count(),
+            'submitted' => Booking::where('status', Booking::STATUS_WAITING_PAYMENT)
+                ->whereNull('confirmed_at')
+                ->count(),
+            'waiting_payment' => Booking::where('status', Booking::STATUS_WAITING_PAYMENT)
+                ->whereNotNull('confirmed_at')
+                ->count(),
             'projects_final' => Project::where('status', Project::STATUS_FINAL)->count(),
+            'unscheduled' => Project::whereNull('start_at')
+                ->whereHas('booking', fn ($booking) => $booking->whereIn('status', [Booking::STATUS_DP_PAID, Booking::STATUS_PAID]))
+                ->count(),
         ];
 
         $roleCounts = User::query()
@@ -105,6 +122,21 @@ class DashboardController extends Controller
             ->pluck('total', 'role');
 
         return compact('metrics', 'statusCounts', 'roleCounts');
+    }
+
+    protected function ownerData(): array
+    {
+        $data = $this->managerData();
+
+        $data['metrics']['active_users'] = User::where('is_active', true)->count();
+        $data['metrics']['managers'] = User::where('role', Role::MANAGER)->count();
+        $data['metrics']['admins'] = User::where('role', Role::ADMIN)->count();
+        $data['metrics']['revenue_received'] = Payment::query()
+            ->where('status', Payment::STATUS_PAID)
+            ->whereHas('booking', fn ($booking) => $booking->where('status', '!=', Booking::STATUS_CANCELLED))
+            ->sum('amount');
+
+        return $data;
     }
 
     protected function photographerData(int $userId): array

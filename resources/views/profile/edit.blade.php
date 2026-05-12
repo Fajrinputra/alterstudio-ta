@@ -106,16 +106,21 @@
                                 </div>
                             </div>
                         </div>
+
+                        @if($user->role === \App\Enums\Role::CLIENT)
+                            <div class="mt-8 rounded-3xl border border-amber-200 bg-amber-50 px-6 py-5 text-sm text-amber-800">
+                                <div class="flex items-start gap-3">
+                                    <i class="fa-solid fa-circle-info mt-1 text-amber-600"></i>
+                                    <p>
+                                        Akun klien yang tidak melakukan transaksi selama 6 bulan dapat dihapus otomatis oleh sistem.
+                                        Notifikasi akan dikirimkan ke email akun sebelum penghapusan dilakukan.
+                                    </p>
+                                </div>
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>
-
-            {{-- Delete Account Section --}}
-            @if($user->role !== \App\Enums\Role::MANAGER)
-                <div class="bg-white/80 border border-[#EDE0D0] rounded-3xl shadow-xl p-8">
-                    @include('profile.partials.delete-user-form')
-                </div>
-            @endif
         </div>
     </div>
 </x-app-layout>

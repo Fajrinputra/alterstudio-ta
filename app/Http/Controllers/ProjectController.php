@@ -15,9 +15,15 @@ class ProjectController extends Controller
     public function show(Project $project)
     {
         $user = Auth::user();
+        $isCrewOnly = $user->isRole(\App\Enums\Role::PHOTOGRAPHER, \App\Enums\Role::EDITOR)
+            && ! $user->isRole(\App\Enums\Role::OWNER, \App\Enums\Role::ADMIN, \App\Enums\Role::MANAGER, \App\Enums\Role::CLIENT);
 
         // Akses hanya untuk pemilik project atau kru/admin yang terlibat.
         if ($user->role === \App\Enums\Role::CLIENT && $project->booking->client_id !== $user->id) {
+            abort(403);
+        }
+
+        if ($isCrewOnly && ! in_array($user->id, [$project->photographer_id, $project->editor_id], true)) {
             abort(403);
         }
 

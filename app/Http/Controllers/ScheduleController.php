@@ -35,10 +35,10 @@ class ScheduleController extends Controller
             'booking.studioRoom',
             'photographer',
             'editor',
-        ]);
+        ])->whereHas('booking');
 
         $isCrewOnly = $user->isRole(Role::PHOTOGRAPHER, Role::EDITOR)
-            && ! $user->isRole(Role::ADMIN, Role::MANAGER, Role::CLIENT);
+            && ! $user->isRole(Role::OWNER, Role::ADMIN, Role::MANAGER, Role::CLIENT);
 
         if ($isCrewOnly) {
             $query->where(function ($q) use ($user) {
@@ -130,6 +130,12 @@ class ScheduleController extends Controller
     public function store(Request $request, Project $project)
     {
         $booking = $project->booking;
+        if (! $booking) {
+            return $request->wantsJson()
+                ? response()->json(['message' => 'Data pemesanan untuk project ini tidak ditemukan.'], 404)
+                : back()->with('error', 'Data pemesanan untuk project ini tidak ditemukan.');
+        }
+
         if ($booking->status === Booking::STATUS_CANCELLED) {
             return $request->wantsJson()
                 ? response()->json(['message' => 'Pemesanan sudah dibatalkan dan tidak dapat dijadwalkan.'], 422)
@@ -212,6 +218,12 @@ class ScheduleController extends Controller
     /** Edit jadwal jika project belum berjalan (aman diubah). */
     public function update(Request $request, Project $project)
     {
+        if (! $project->booking) {
+            return $request->wantsJson()
+                ? response()->json(['message' => 'Data pemesanan untuk project ini tidak ditemukan.'], 404)
+                : back()->with('error', 'Data pemesanan untuk project ini tidak ditemukan.');
+        }
+
         if (! $project->hasSchedule()) {
             return $request->wantsJson()
                 ? response()->json(['message' => 'Jadwal belum tersedia'], 404)
@@ -420,6 +432,12 @@ class ScheduleController extends Controller
     protected function buildScheduleWindow(Project $project): array
     {
         $booking = $project->booking;
+        if (! $booking) {
+            $start = now();
+
+            return [$start, $start->clone()];
+        }
+
         $dateString = $booking->booking_date ? Carbon::parse($booking->booking_date)->toDateString() : now()->toDateString();
         $timeString = $booking->booking_time ?? '00:00';
         $start = Carbon::parse($dateString.' '.$timeString);

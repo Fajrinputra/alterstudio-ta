@@ -18,9 +18,9 @@ class BusinessRulesSafetyTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_manager_cannot_deactivate_user_with_active_project(): void
+    public function test_owner_cannot_deactivate_user_with_active_project(): void
     {
-        $manager = User::factory()->create(['role' => Role::MANAGER]);
+        $owner = User::factory()->create(['role' => Role::OWNER]);
         $photographer = User::factory()->create([
             'role' => Role::PHOTOGRAPHER,
             'roles' => [Role::PHOTOGRAPHER->value],
@@ -51,43 +51,23 @@ class BusinessRulesSafetyTest extends TestCase
             'end_at' => now()->addDay()->addHour(),
         ]);
 
-        $this->actingAs($manager)
+        $this->actingAs($owner)
             ->post(route('admin.users.toggle', $photographer), ['is_active' => 0])
             ->assertRedirect();
 
         $this->assertTrue($photographer->fresh()->is_active);
     }
 
-    public function test_user_cannot_delete_own_account_when_booking_or_project_is_active(): void
+    public function test_profile_self_delete_is_not_available(): void
     {
         $client = User::factory()->create([
             'role' => Role::CLIENT,
             'password' => bcrypt('password'),
         ]);
-        $category = ServiceCategory::create(['name' => 'Graduation']);
-        $package = ServicePackage::factory()->create(['category_id' => $category->id]);
-        $location = StudioLocation::create(['name' => 'Cabang B', 'slug' => 'cabang-b', 'is_active' => true]);
-
-        $booking = Booking::create([
-            'client_id' => $client->id,
-            'package_id' => $package->id,
-            'studio_location_id' => $location->id,
-            'booking_date' => now()->addDays(2),
-            'booking_time' => '15:00',
-            'status' => Booking::STATUS_PAID,
-            'payment_type' => Booking::PAYMENT_TYPE_FULL,
-            'addon_total' => 0,
-            'total_price' => 300000,
-        ]);
-
-        Project::create([
-            'booking_id' => $booking->id,
-            'status' => Project::STATUS_EDITING,
-        ]);
 
         $this->actingAs($client)
-            ->delete(route('profile.destroy'))
-            ->assertRedirect(route('profile.edit'));
+            ->delete('/profile')
+            ->assertStatus(405);
 
         $this->assertDatabaseHas('users', ['id' => $client->id]);
     }

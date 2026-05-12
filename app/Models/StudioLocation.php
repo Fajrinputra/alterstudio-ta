@@ -47,7 +47,9 @@ class StudioLocation extends Model
 
     public function getPhotoGalleryAttribute($value): array
     {
-        return collect(is_array($value) ? $value : (json_decode((string) $value, true) ?: []))
+        $items = is_array($value) ? $value : ($value ? (json_decode((string) $value, true) ?: []) : []);
+
+        return collect($items)
             ->map(function ($item) {
                 if (is_string($item)) {
                     return $item;

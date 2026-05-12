@@ -14,6 +14,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $schedule->command('bookings:cancel-expired')->everyMinute();
         // Bersihkan media kedaluwarsa setiap hari pukul 02:00.
         $schedule->command('media:cleanup-expired')->dailyAt('02:00');
+        // Hapus/anonymize akun klien yang tidak bertransaksi selama 6 bulan.
+        $schedule->command('clients:cleanup-inactive')->dailyAt('03:00');
     })
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([

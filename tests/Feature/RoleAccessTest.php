@@ -48,4 +48,34 @@ class RoleAccessTest extends TestCase
             ->postJson("/projects/{$project->id}/schedule", [])
             ->assertStatus(403);
     }
+
+    public function test_manager_cannot_access_owner_master_data_pages(): void
+    {
+        $manager = User::factory()->create(['role' => Role::MANAGER]);
+
+        $this->actingAs($manager)
+            ->get(route('admin.users.index'))
+            ->assertStatus(403);
+
+        $this->actingAs($manager)
+            ->get(route('admin.locations.manage'))
+            ->assertStatus(403);
+    }
+
+    public function test_owner_can_access_user_location_and_report_pages(): void
+    {
+        $owner = User::factory()->create(['role' => Role::OWNER]);
+
+        $this->actingAs($owner)
+            ->get(route('admin.users.index'))
+            ->assertOk();
+
+        $this->actingAs($owner)
+            ->get(route('admin.locations.manage'))
+            ->assertOk();
+
+        $this->actingAs($owner)
+            ->get(route('reports.index'))
+            ->assertOk();
+    }
 }

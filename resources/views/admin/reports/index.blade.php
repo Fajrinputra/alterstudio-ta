@@ -41,37 +41,41 @@
                             <input type="date" name="date_to" value="{{ $dateTo }}"
                                    class="w-full px-6 py-4 rounded-3xl border border-[#E1D3C5] bg-white/70 backdrop-blur-md text-[#3F2B1B] focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20 transition-all">
                         </div>
-                        <div class="flex-1 min-w-[220px]">
-                            <label class="block text-xs font-medium text-[#7A5B3A] tracking-widest mb-2 flex items-center gap-2">
-                                <i class="fa-solid fa-layer-group text-[#D4A017]"></i>
-                                Kategori Laporan
-                            </label>
-                            <select name="category_id"
-                                    class="w-full px-6 py-4 rounded-3xl border border-[#E1D3C5] bg-white/70 backdrop-blur-md text-[#3F2B1B] focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20 transition-all">
-                                <option value="">Semua Kategori</option>
-                                @foreach($categories as $category)
-                                    <option value="{{ $category->id }}" @selected((string)($categoryId ?? '') === (string)$category->id)>
-                                        {{ $category->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
+                        @unless($isOwnerReport)
+                            <div class="flex-1 min-w-[220px]">
+                                <label class="block text-xs font-medium text-[#7A5B3A] tracking-widest mb-2 flex items-center gap-2">
+                                    <i class="fa-solid fa-layer-group text-[#D4A017]"></i>
+                                    Kategori Laporan
+                                </label>
+                                <select name="category_id"
+                                        class="w-full px-6 py-4 rounded-3xl border border-[#E1D3C5] bg-white/70 backdrop-blur-md text-[#3F2B1B] focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20 transition-all">
+                                    <option value="">Semua Kategori</option>
+                                    @foreach($categories as $category)
+                                        <option value="{{ $category->id }}" @selected((string)($categoryId ?? '') === (string)$category->id)>
+                                            {{ $category->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        @endunless
                         
                         <div class="flex w-full sm:w-auto gap-3">
                             <button class="h-14 px-8 rounded-3xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] text-white font-semibold shadow-xl hover:shadow-2xl hover:-translate-y-0.5 transition-all flex items-center justify-center gap-3">
                                 <i class="fa-solid fa-filter"></i>
-                                Terapkan Filter
+                                {{ $isOwnerReport ? 'Terapkan Periode' : 'Terapkan Filter' }}
                             </button>
-                            <a href="{{ request()->fullUrlWithQuery(['download'=>'csv']) }}"
-                               class="h-14 px-8 rounded-3xl border border-[#E1D3C5] text-[#5C432C] hover:bg-white hover:border-[#D4A017] transition-all flex items-center justify-center gap-3">
-                                <i class="fa-solid fa-file-csv"></i>
-                                Unduh CSV
-                            </a>
-                            <a href="{{ request()->fullUrlWithQuery(['download'=>'pdf']) }}" target="_blank"
-                               class="h-14 px-8 rounded-3xl border border-[#E1D3C5] text-[#5C432C] hover:bg-white hover:border-[#D4A017] transition-all flex items-center justify-center gap-3">
-                                <i class="fa-solid fa-file-pdf"></i>
-                                Unduh PDF
-                            </a>
+                            @if($canExportReport)
+                                <a href="{{ request()->fullUrlWithQuery(['download'=>'csv']) }}"
+                                   class="h-14 px-8 rounded-3xl border border-[#E1D3C5] text-[#5C432C] hover:bg-white hover:border-[#D4A017] transition-all flex items-center justify-center gap-3">
+                                    <i class="fa-solid fa-file-csv"></i>
+                                    Unduh CSV
+                                </a>
+                                <a href="{{ request()->fullUrlWithQuery(['download'=>'pdf']) }}" target="_blank"
+                                   class="h-14 px-8 rounded-3xl border border-[#E1D3C5] text-[#5C432C] hover:bg-white hover:border-[#D4A017] transition-all flex items-center justify-center gap-3">
+                                    <i class="fa-solid fa-file-pdf"></i>
+                                    Unduh PDF
+                                </a>
+                            @endif
                         </div>
                     </form>
                 </div>
@@ -151,6 +155,73 @@
                     </div>
                 </div>
             </div>
+
+            @if($isOwnerReport)
+                <div class="relative group">
+                    <div class="absolute inset-0 bg-gradient-to-r from-[#3F2B1B]/10 to-[#D4A017]/10 rounded-3xl blur-2xl"></div>
+                    <div class="relative bg-white/85 backdrop-blur-2xl border border-[#EDE0D0] rounded-3xl p-8 shadow-xl">
+                        <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-6">
+                            <div>
+                                <p class="text-xs font-semibold tracking-widest text-[#D4A017] uppercase">Detail Owner</p>
+                                <h3 class="font-display text-2xl text-[#3F2B1B]">Ringkasan Final Pemasukan</h3>
+                            </div>
+                            <span class="text-sm text-[#7A5B3A]">Data final dari filter laporan yang sedang diterapkan.</span>
+                        </div>
+
+                        <div class="grid gap-6 lg:grid-cols-2">
+                            <div class="overflow-x-auto rounded-3xl border border-[#EDE0D0] bg-white">
+                                <table class="min-w-full text-sm">
+                                    <thead class="bg-[#3F2B1B] text-white">
+                                        <tr>
+                                            <th class="px-4 py-3 text-center font-semibold">Jenis Pembayaran</th>
+                                            <th class="px-4 py-3 text-center font-semibold">Transaksi</th>
+                                            <th class="px-4 py-3 text-center font-semibold">Nominal Diterima</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-[#EDE0D0]">
+                                        @forelse($paymentBreakdown as $item)
+                                            <tr>
+                                                <td class="px-4 py-3 text-left font-medium text-[#3F2B1B]">{{ $item['label'] }}</td>
+                                                <td class="px-4 py-3 text-center text-[#7A5B3A]">{{ $item['total'] }}</td>
+                                                <td class="px-4 py-3 text-right font-semibold text-[#D4A017]">Rp {{ number_format($item['amount'], 0, ',', '.') }}</td>
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="3" class="px-4 py-6 text-center text-[#7A5B3A]">Belum ada pembayaran berhasil pada periode ini.</td>
+                                            </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="overflow-x-auto rounded-3xl border border-[#EDE0D0] bg-white">
+                                <table class="min-w-full text-sm">
+                                    <thead class="bg-[#7A5B3A] text-white">
+                                        <tr>
+                                            <th class="px-4 py-3 text-center font-semibold">Status Pemesanan</th>
+                                            <th class="px-4 py-3 text-center font-semibold">Jumlah</th>
+                                            <th class="px-4 py-3 text-center font-semibold">Nominal Diterima</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-[#EDE0D0]">
+                                        @forelse($statusSummary as $item)
+                                            <tr>
+                                                <td class="px-4 py-3 text-left font-medium text-[#3F2B1B]">{{ $item['label'] }}</td>
+                                                <td class="px-4 py-3 text-center text-[#7A5B3A]">{{ $item['total'] }}</td>
+                                                <td class="px-4 py-3 text-right font-semibold text-[#D4A017]">Rp {{ number_format($item['amount'], 0, ',', '.') }}</td>
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="3" class="px-4 py-6 text-center text-[#7A5B3A]">Belum ada pemesanan pada periode ini.</td>
+                                            </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @endif
 
             {{-- Tabel Pemesanan --}}
             <div class="relative group">

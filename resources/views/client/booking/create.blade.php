@@ -149,7 +149,13 @@
                                    required
                                    class="w-full px-5 py-4 rounded-3xl border border-[#E1D3C5] bg-white focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20 transition-all"
                                    min="{{ date('Y-m-d') }}"
+                                   max="{{ $maxBookingDate }}"
+                                   data-min-date="{{ date('Y-m-d') }}"
+                                   data-max-date="{{ $maxBookingDate }}"
                                    value="{{ $oldDate }}">
+                            <p class="text-xs text-[#8B7359]">
+                                Tanggal pemesanan hanya dapat dipilih maksimal 1 bulan ke depan.
+                            </p>
                         </div>
                         <div class="space-y-2">
                             <label class="block text-sm font-medium text-[#5C432C]">Jam Pemesanan yang Tersedia</label>
@@ -263,6 +269,8 @@
             const availabilityAlert = document.getElementById('availability-alert');
             const submitButton = document.getElementById('booking-submit');
             const oldTime = form.dataset.oldTime || '';
+            const minBookingDate = dateInput.dataset.minDate || '';
+            const maxBookingDate = dateInput.dataset.maxDate || '';
 
             const updateTotal = () => {
                 let addonTotal = 0;
@@ -310,11 +318,47 @@
                 submitButton.classList.toggle('cursor-not-allowed', !enabled);
             };
 
-            const resetSlots = (message = '') => {
+            const resetSlots = (message = '', variant = 'warning') => {
                 timeInput.innerHTML = '<option value="">Pilih tanggal dan cabang terlebih dahulu</option>';
                 timeInput.disabled = true;
                 setSubmitState(false);
-                showAlert(message, message ? 'warning' : 'info');
+                showAlert(message, message ? variant : 'info');
+            };
+
+            const formatDateLabel = (value) => {
+                if (!value || !value.includes('-')) return value;
+
+                const [year, month, day] = value.split('-').map(Number);
+                return new Intl.DateTimeFormat('id-ID', {
+                    day: '2-digit',
+                    month: 'long',
+                    year: 'numeric',
+                }).format(new Date(year, month - 1, day));
+            };
+
+            const validateBookingDate = () => {
+                const bookingDate = dateInput.value;
+                dateInput.setCustomValidity('');
+
+                if (!bookingDate) {
+                    return true;
+                }
+
+                if (minBookingDate && bookingDate < minBookingDate) {
+                    const message = `Tanggal pemesanan tidak boleh sebelum hari ini (${formatDateLabel(minBookingDate)}).`;
+                    dateInput.setCustomValidity(message);
+                    resetSlots(message, 'danger');
+                    return false;
+                }
+
+                if (maxBookingDate && bookingDate > maxBookingDate) {
+                    const message = `Tanggal pemesanan hanya dapat dipilih maksimal 1 bulan ke depan, sampai ${formatDateLabel(maxBookingDate)}.`;
+                    dateInput.setCustomValidity(message);
+                    resetSlots(message, 'danger');
+                    return false;
+                }
+
+                return true;
             };
 
             const appendSelectedAddons = (url) => {
@@ -339,6 +383,10 @@
                     return;
                 }
 
+                if (!validateBookingDate()) {
+                    return;
+                }
+
                 timeInput.disabled = true;
                 timeInput.innerHTML = '<option value="">Memuat slot tersedia...</option>';
                 setSubmitState(false);
@@ -360,7 +408,8 @@
 
                     const data = await response.json();
                     if (!response.ok) {
-                        throw new Error(data.message || 'Gagal memuat jadwal yang tersedia.');
+                        const firstError = data.errors ? Object.values(data.errors).flat()[0] : null;
+                        throw new Error(firstError || data.message || 'Gagal memuat jadwal yang tersedia.');
                     }
 
                     if (data.is_closed) {
@@ -400,7 +449,7 @@
                     const successMessage = data.is_today
                         ? `Slot hari ini sudah diperbarui. Jam yang sudah lewat sampai ${data.current_time || 'saat ini'} tidak ditampilkan. ${slotRule}`
                         : `Slot yang tersedia sudah diperbarui. ${slotRule}`;
-                    showAlert(successMessage, 'success');
+                    showAlert(successMessage, data.is_today ? 'warning' : 'success');
                 } catch (error) {
                     timeInput.innerHTML = '<option value="">Gagal memuat slot</option>';
                     setSubmitState(false);
@@ -417,8 +466,19 @@
                 loadAvailability();
             }));
             locationInput.addEventListener('change', loadAvailability);
-            dateInput.addEventListener('change', loadAvailability);
+            dateInput.addEventListener('input', validateBookingDate);
+            dateInput.addEventListener('change', () => {
+                if (validateBookingDate()) {
+                    loadAvailability();
+                }
+            });
             timeInput.addEventListener('change', () => setSubmitState(Boolean(timeInput.value)));
+            form.addEventListener('submit', (event) => {
+                if (!validateBookingDate()) {
+                    event.preventDefault();
+                    dateInput.reportValidity();
+                }
+            });
 
             updateTotal();
 

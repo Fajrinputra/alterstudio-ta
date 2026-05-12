@@ -32,7 +32,7 @@ class ServicePackageController extends Controller
         $this->syncGallery($request, $package);
 
         if ($request->wantsJson()) {
-            return response()->json($package->load('category'), 201);
+            return response()->json($package->fresh()->load('category'), 201);
         }
         return back()->with('status', 'Paket ditambahkan.');
     }
@@ -67,7 +67,7 @@ class ServicePackageController extends Controller
         $this->syncGallery($request, $servicePackage);
 
         if ($request->wantsJson()) {
-            return response()->json($servicePackage->load('category'));
+            return response()->json($servicePackage->fresh()->load('category'));
         }
         return redirect()
             ->route('admin.catalog.packages', $servicePackage->category_id)

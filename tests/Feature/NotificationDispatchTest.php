@@ -42,7 +42,7 @@ class NotificationDispatchTest extends TestCase
         ]);
         $client = User::factory()->create(['role' => Role::CLIENT]);
         $admin = User::factory()->create(['role' => Role::ADMIN]);
-        $manager = User::factory()->create(['role' => Role::MANAGER]);
+        $owner = User::factory()->create(['role' => Role::OWNER]);
 
         $this->actingAs($client)
             ->post('/bookings', [
@@ -56,7 +56,7 @@ class NotificationDispatchTest extends TestCase
 
         Notification::assertSentTo($client, BookingCreatedNotification::class);
         Notification::assertSentTo($admin, BookingCreatedNotification::class);
-        Notification::assertSentTo($manager, BookingCreatedNotification::class);
+        Notification::assertSentTo($owner, BookingCreatedNotification::class);
     }
 
     public function test_schedule_creation_dispatches_notification_to_assigned_crew(): void

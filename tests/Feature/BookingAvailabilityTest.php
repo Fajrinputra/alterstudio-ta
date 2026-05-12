@@ -285,4 +285,45 @@ class BookingAvailabilityTest extends TestCase
             ->assertOk()
             ->assertJsonPath('is_closed', true);
     }
+
+    public function test_booking_date_cannot_be_more_than_one_month_ahead(): void
+    {
+        config()->set('studio.closed_weekdays', []);
+
+        $client = User::factory()->create(['role' => Role::CLIENT]);
+        $package = ServicePackage::factory()->create();
+        $location = StudioLocation::create([
+            'name' => 'Cabang Batas Bulan',
+            'slug' => 'cabang-batas-bulan',
+            'address' => 'Jl. Batas Bulan',
+            'is_active' => true,
+        ]);
+        StudioRoom::create([
+            'studio_location_id' => $location->id,
+            'name' => 'Studio Batas',
+            'is_active' => true,
+        ]);
+
+        $tooFarDate = Carbon::today()->addMonth()->addDay()->toDateString();
+
+        $this->actingAs($client)
+            ->getJson(route('bookings.availability', [
+                'package_id' => $package->id,
+                'studio_location_id' => $location->id,
+                'booking_date' => $tooFarDate,
+            ]))
+            ->assertStatus(422);
+
+        $this->actingAs($client)
+            ->from(route('bookings.create'))
+            ->post(route('bookings.store'), [
+                'package_id' => $package->id,
+                'studio_location_id' => $location->id,
+                'booking_date' => $tooFarDate,
+                'booking_time' => '13:00',
+                'payment_type' => Booking::PAYMENT_TYPE_FULL,
+            ])
+            ->assertRedirect(route('bookings.create'))
+            ->assertSessionHasErrors('booking_date');
+    }
 }
