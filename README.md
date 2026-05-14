@@ -64,11 +64,11 @@ Sistem Informasi Manajemen Alur Kerja Terintegrasi untuk Alter Studio berbasis L
 
 Fitur utama:
 - Autentikasi user (Laravel Breeze)
-- Multi-role (Admin, Klien, Fotografer, Editor, Manajer)
+- Multi-role (Admin, Klien, Fotografer, Editor, Manajer dan Owner)
 - Booking project
 - Penjadwalan kru
 - Workflow pascaproduksi
-- Penggajian & laporan
+- Laporan Kinerja Kru
 
 ---
 
