@@ -136,7 +136,7 @@ class PublicPagesAndDashboardTest extends TestCase
             ->assertViewHas('role', Role::OWNER)
             ->assertSee('Pendapatan Diterima', false)
             ->assertSee('Rp 750.000', false);
-        $this->assertSame(750000, $ownerResponse->viewData('data')['metrics']['revenue_received']);
+        $this->assertSame(750000.0, $ownerResponse->viewData('data')['metrics']['revenue_received']);
     }
 
     public function test_dual_crew_dashboard_contains_photographer_and_editor_sections(): void
