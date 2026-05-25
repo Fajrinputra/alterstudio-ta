@@ -12,6 +12,10 @@ class PasswordResetTest extends TestCase
 {
     use RefreshDatabase;
 
+    /**
+     * Pengujian: tampilan halaman permintaan reset password.
+     * Hasil yang diharapkan: halaman lupa password dapat dirender dengan status berhasil.
+     */
     public function test_reset_password_link_screen_can_be_rendered(): void
     {
         $response = $this->get('/forgot-password');
@@ -19,6 +23,10 @@ class PasswordResetTest extends TestCase
         $response->assertStatus(200);
     }
 
+    /**
+     * Pengujian: permintaan link reset password.
+     * Hasil yang diharapkan: sistem mengirim notifikasi reset password ke email pengguna.
+     */
     public function test_reset_password_link_can_be_requested(): void
     {
         Notification::fake();
@@ -30,6 +38,10 @@ class PasswordResetTest extends TestCase
         Notification::assertSentTo($user, ResetPassword::class);
     }
 
+    /**
+     * Pengujian: tampilan halaman reset password dari token notifikasi.
+     * Hasil yang diharapkan: halaman reset password dapat dibuka melalui token yang dikirim.
+     */
     public function test_reset_password_screen_can_be_rendered(): void
     {
         Notification::fake();
@@ -47,6 +59,10 @@ class PasswordResetTest extends TestCase
         });
     }
 
+    /**
+     * Pengujian: proses reset password dengan token valid.
+     * Hasil yang diharapkan: password berhasil diperbarui dan pengguna diarahkan ke halaman login.
+     */
     public function test_password_can_be_reset_with_valid_token(): void
     {
         Notification::fake();

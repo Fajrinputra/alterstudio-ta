@@ -40,7 +40,6 @@ class InitialDataSeeder extends Seeder
                     'password' => Hash::make('password'),
                     'email_verified_at' => now(),
                     'is_active' => true,
-                    'roles' => [$data['role']],
                 ]
             );
         }
@@ -130,8 +129,8 @@ class InitialDataSeeder extends Seeder
     protected function seedLocations(): void
     {
         $locations = [
-            ['name' => 'Signature by Alter', 'map_url' => 'https://maps.app.goo.gl/ZPfMbxaEsyTRVZTg9', 'city' => 'Jakarta', 'is_active' => true],
-            ['name' => 'Casa De Alter', 'map_url' => 'https://maps.app.goo.gl/j4UgwRtTC7nxDeEL7', 'city' => 'Jakarta', 'is_active' => true],
+            ['name' => 'Signature by Alter', 'map_url' => 'https://maps.app.goo.gl/ZPfMbxaEsyTRVZTg9', 'is_active' => true],
+            ['name' => 'Casa De Alter', 'map_url' => 'https://maps.app.goo.gl/j4UgwRtTC7nxDeEL7', 'is_active' => true],
         ];
 
         foreach ($locations as $loc) {

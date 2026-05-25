@@ -23,6 +23,10 @@ class NotificationDispatchTest extends TestCase
 {
     use RefreshDatabase;
 
+    /**
+     * Pengujian: pengiriman notifikasi saat booking baru dibuat.
+     * Hasil yang diharapkan: klien, admin, dan owner menerima notifikasi booking baru.
+     */
     public function test_booking_creation_dispatches_notification_to_client_and_ops(): void
     {
         Notification::fake();
@@ -59,6 +63,10 @@ class NotificationDispatchTest extends TestCase
         Notification::assertSentTo($owner, BookingCreatedNotification::class);
     }
 
+    /**
+     * Pengujian: pengiriman notifikasi saat admin menjadwalkan kru.
+     * Hasil yang diharapkan: fotografer dan editor yang ditugaskan menerima notifikasi jadwal.
+     */
     public function test_schedule_creation_dispatches_notification_to_assigned_crew(): void
     {
         Notification::fake();
@@ -100,6 +108,10 @@ class NotificationDispatchTest extends TestCase
         Notification::assertSentTo($editor, ScheduleAssignedNotification::class);
     }
 
+    /**
+     * Pengujian: pengiriman notifikasi permintaan edit dari klien.
+     * Hasil yang diharapkan: editor project menerima notifikasi permintaan edit.
+     */
     public function test_edit_request_dispatches_notification_to_editor(): void
     {
         Notification::fake();
@@ -122,6 +134,10 @@ class NotificationDispatchTest extends TestCase
         Notification::assertSentTo($editor, EditRequestSubmittedNotification::class);
     }
 
+    /**
+     * Pengujian: notifikasi kepada klien pada alur Drive.
+     * Hasil yang diharapkan: klien diberi notifikasi saat link foto mentah dan hasil final tersedia.
+     */
     public function test_drive_workflow_dispatches_client_notifications(): void
     {
         Notification::fake();

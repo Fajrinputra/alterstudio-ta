@@ -94,7 +94,6 @@ return new class extends Migration
             $table->string('name', 100)->change();
             $table->string('slug', 100)->change();
             $table->string('address', 200)->nullable()->change();
-            $table->string('city', 100)->nullable()->change();
             $table->string('phone', 20)->nullable()->change();
             $table->string('email', 100)->nullable()->change();
             // map_url tetap 255 (URL Google Maps bisa cukup panjang)
@@ -177,7 +176,6 @@ return new class extends Migration
             $table->string('name', 255)->change();
             $table->string('slug', 255)->change();
             $table->string('address', 255)->nullable()->change();
-            $table->string('city', 255)->nullable()->change();
             $table->string('phone', 255)->nullable()->change();
             $table->string('email', 255)->nullable()->change();
         });

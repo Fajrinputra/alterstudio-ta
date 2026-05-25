@@ -11,6 +11,10 @@ class PasswordUpdateTest extends TestCase
 {
     use RefreshDatabase;
 
+    /**
+     * Pengujian: pembaruan password dari halaman profil.
+     * Hasil yang diharapkan: password berubah, sesi logout, dan pengguna diarahkan ke login.
+     */
     public function test_password_can_be_updated(): void
     {
         $user = User::factory()->create();
@@ -32,6 +36,10 @@ class PasswordUpdateTest extends TestCase
         $this->assertGuest();
     }
 
+    /**
+     * Pengujian: validasi password lama saat pembaruan password.
+     * Hasil yang diharapkan: sistem menolak perubahan jika password lama tidak sesuai.
+     */
     public function test_correct_password_must_be_provided_to_update_password(): void
     {
         $user = User::factory()->create();

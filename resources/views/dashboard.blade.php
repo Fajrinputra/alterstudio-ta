@@ -13,12 +13,6 @@
                 <h2 class="font-display font-bold text-4xl bg-gradient-to-r from-[#D4A017] via-[#E07A5F] to-[#B56D3E] bg-clip-text text-transparent tracking-tighter">
                     Dashboard Alter Studio
                 </h2>
-                @if($hasBothCrewRoles ?? false)
-                    <p class="mt-3 inline-flex items-center gap-2 rounded-3xl border border-[#E1D3C5] bg-white/70 px-4 py-1.5 text-xs font-medium text-[#5C432C] shadow-sm">
-                        <i class="fa-solid fa-users-gear text-[#D4A017]"></i>
-                        Mode Kru Ganda: Fotografer & Editor
-                    </p>
-                @endif
             </div>
         </div>
     </x-slot>
@@ -269,75 +263,6 @@
                     @endif
                 </section>
 
-            {{-- ==================== PHOTOGRAPHER + EDITOR (BOTH) ==================== --}}
-            @elseif($hasBothCrewRoles ?? false)
-                <section>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
-                        <x-stat-card label="Project Foto Final" :value="$data['completed'] ?? 0" color="emerald" />
-                        <x-stat-card label="Jadwal Foto Mendatang" :value="$data['upcoming']->count() ?? 0" color="blue" />
-                        <x-stat-card label="Final Ditandai di Drive" :value="$data['finalized'] ?? 0" color="emerald" />
-                        <x-stat-card label="Antrian Edit" :value="$data['queue']->count() ?? 0" color="amber" />
-                    </div>
-
-                    <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
-                        <!-- Tugas Fotografer -->
-                        <div class="bg-white rounded-3xl border border-[#EDE0D0] shadow-xl overflow-hidden">
-                            <div class="px-8 py-6 border-b border-[#EDE0D0] bg-gradient-to-r from-[#FAF6F0] to-white">
-                                <h3 class="font-display text-3xl font-semibold text-[#3F2B1B]">Tugas Fotografer</h3>
-                            </div>
-                            <div class="divide-y divide-[#EDE0D0]">
-                                @forelse($data['upcoming'] ?? [] as $item)
-                                    <div class="px-8 py-6 hover:bg-[#FAF6F0] transition-all">
-                                        <div class="flex gap-4">
-                                            <div class="w-10 h-10 flex-shrink-0 bg-gradient-to-br from-[#D4A017] to-[#E07A5F] rounded-2xl flex items-center justify-center text-white">
-                                                <i class="fa-solid fa-camera"></i>
-                                            </div>
-                                            <div class="flex-1">
-                                                <p class="font-semibold text-[#3F2B1B]">{{ $item->start_at->translatedFormat('d M H:i') }} – {{ $item->end_at->translatedFormat('H:i') }}</p>
-                                                <p class="text-sm text-[#7A5B3A]">Lokasi: {{ $item->booking->location ?? '-' }}</p>
-                                                <p class="text-sm text-[#7A5B3A]">Klien: {{ $item->booking->client->name ?? '-' }}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                @empty
-                                    <div class="px-8 py-16 text-center text-[#8B7359]">
-                                        <i class="fa-solid fa-calendar-check text-6xl mb-4 opacity-30"></i>
-                                        <p>Tidak ada tugas fotografer saat ini</p>
-                                    </div>
-                                @endforelse
-                            </div>
-                        </div>
-
-                        <!-- Tugas Editor -->
-                        <div class="bg-white rounded-3xl border border-[#EDE0D0] shadow-xl overflow-hidden">
-                            <div class="px-8 py-6 border-b border-[#EDE0D0] bg-gradient-to-r from-[#FAF6F0] to-white">
-                                <h3 class="font-display text-3xl font-semibold text-[#3F2B1B]">Tugas Editor</h3>
-                            </div>
-                            <div class="divide-y divide-[#EDE0D0]">
-                                @forelse($data['queue'] ?? [] as $item)
-                                    <div class="px-8 py-6 hover:bg-[#FAF6F0] transition-all">
-                                        <div class="flex gap-4">
-                                            <div class="w-10 h-10 flex-shrink-0 bg-gradient-to-br from-[#6B4A2D] to-[#4C351F] rounded-2xl flex items-center justify-center text-white">
-                                                <i class="fa-solid fa-pen-ruler"></i>
-                                            </div>
-                                            <div class="flex-1">
-                                                <p class="font-semibold text-[#3F2B1B]">{{ $item->booking->location ?? 'N/A' }}</p>
-                                                <p class="text-sm text-[#7A5B3A]">Mulai: {{ optional($item->start_at)?->translatedFormat('d M H:i') ?? '-' }}</p>
-                                                <p class="text-sm text-[#7A5B3A]">Klien: {{ $item->booking->client->name ?? '-' }}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                @empty
-                                    <div class="px-8 py-16 text-center text-[#8B7359]">
-                                        <i class="fa-solid fa-face-smile text-6xl mb-4 opacity-30"></i>
-                                        <p>Tidak ada antrian edit</p>
-                                    </div>
-                                @endforelse
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
             {{-- ==================== PHOTOGRAPHER ONLY ==================== --}}
             @elseif($role === Role::PHOTOGRAPHER)
                 <section>
@@ -412,3 +337,4 @@
         </div>
     </div>
 </x-app-layout>
+

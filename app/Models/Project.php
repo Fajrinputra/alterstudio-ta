@@ -4,6 +4,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * Representasi workflow pasca-booking: jadwal, link Drive, permintaan edit, final.
@@ -73,6 +74,11 @@ class Project extends Model
         return $this->hasMany(PhotoSelection::class);
     }
 
+    public function scheduleRecord(): HasOne
+    {
+        return $this->hasOne(ProjectSchedule::class);
+    }
+
     public function photographer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'photographer_id');
@@ -98,6 +104,26 @@ class Project extends Model
      */
     public function getScheduleAttribute(): ?object
     {
+        $scheduleRecord = $this->exists
+            ? ($this->relationLoaded('scheduleRecord')
+                ? $this->scheduleRecord
+                : $this->scheduleRecord()->with(['photographerAssignment.user', 'editorAssignment.user'])->first())
+            : null;
+
+        if ($scheduleRecord) {
+            return (object) [
+                'id' => $scheduleRecord->id,
+                'project_id' => $this->id,
+                'photographer_id' => $scheduleRecord->photographer_id,
+                'editor_id' => $scheduleRecord->editor_id,
+                'start_at' => $scheduleRecord->start_at,
+                'end_at' => $scheduleRecord->end_at,
+                'photographer' => $scheduleRecord->photographer,
+                'editor' => $scheduleRecord->editor,
+                'location' => $this->booking?->location,
+            ];
+        }
+
         if (! $this->start_at && ! $this->end_at && ! $this->photographer_id && ! $this->editor_id) {
             return null;
         }
@@ -116,7 +142,8 @@ class Project extends Model
 
     public function hasSchedule(): bool
     {
-        return $this->start_at !== null && $this->end_at !== null;
+        return ($this->exists && $this->scheduleRecord()->exists())
+            || ($this->start_at !== null && $this->end_at !== null);
     }
 
     public function hasRawDriveLink(): bool
@@ -192,4 +219,3 @@ class Project extends Model
         };
     }
 }
-

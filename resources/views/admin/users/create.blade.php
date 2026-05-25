@@ -91,34 +91,6 @@
                             </div>
                         </div>
 
-                        {{-- Akses Kru Tambahan --}}
-                        <div class="rounded-3xl border border-[#EDE0D0] bg-[#FAF6F0] p-7">
-                            <div class="mb-5">
-                                <p class="text-sm font-medium text-[#3F2B1B] flex items-center gap-2">
-                                    <i class="fa-solid fa-id-badge text-[#D4A017]"></i>
-                                    Akses Kru Tambahan
-                                </p>
-                                <p class="text-xs text-[#7A5B3A] mt-2 leading-relaxed">
-                                    Centang jika akun ini merangkap tugas. Login tetap satu akun, tapi dashboard akan menyesuaikan role utama.
-                                </p>
-                                <p class="text-xs text-[#7A5B3A] mt-1">
-                                    Akun harus memiliki akses fotografer atau editor agar muncul di pilihan kru saat penjadwalan.
-                                </p>
-                            </div>
-                            <div class="flex flex-wrap gap-6">
-                                <label class="inline-flex items-center gap-3 text-[#3F2B1B]">
-                                    <input type="checkbox" name="roles[]" value="{{ Role::PHOTOGRAPHER->value }}" 
-                                           class="w-5 h-5 rounded-xl border-[#E1D3C5] text-[#D4A017] focus:ring-[#D4A017]">
-                                    <span class="font-medium">Fotografer</span>
-                                </label>
-                                <label class="inline-flex items-center gap-3 text-[#3F2B1B]">
-                                    <input type="checkbox" name="roles[]" value="{{ Role::EDITOR->value }}" 
-                                           class="w-5 h-5 rounded-xl border-[#E1D3C5] text-[#D4A017] focus:ring-[#D4A017]">
-                                    <span class="font-medium">Editor</span>
-                                </label>
-                            </div>
-                        </div>
-
                         {{-- Password --}}
                         <div class="space-y-2">
                             <label class="block text-xs font-medium text-[#7A5B3A] tracking-widest flex items-center gap-2">

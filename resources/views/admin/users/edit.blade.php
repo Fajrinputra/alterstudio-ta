@@ -1,6 +1,5 @@
 @php
     use App\Enums\Role;
-    $effectiveRoles = old('roles', $user->effectiveRoles());
     $primaryRole = $user->role instanceof Role ? $user->role : Role::from($user->role);
     $isOwnerAccount = $primaryRole === Role::OWNER;
 @endphp
@@ -36,7 +35,7 @@
                         </div>
                         <div>
                             <h3 class="font-display text-3xl text-[#3F2B1B]">Form Edit Pengguna</h3>
-                            <p class="text-[#7A5B3A]">Perbarui identitas, role, akses tambahan, dan status akun.</p>
+                            <p class="text-[#7A5B3A]">Perbarui identitas, role, dan status akun.</p>
                         </div>
                     </div>
 
@@ -102,30 +101,6 @@
                                     <input type="hidden" name="role" value="{{ Role::OWNER->value }}">
                                     <p class="text-xs text-[#8B7359]">Role owner tidak dapat diubah.</p>
                                 @endif
-                            </div>
-                        </div>
-
-                        <div class="rounded-3xl border border-[#EDE0D0] bg-[#FAF6F0] p-7">
-                            <div class="mb-5">
-                                <p class="text-sm font-medium text-[#3F2B1B] flex items-center gap-2">
-                                    <i class="fa-solid fa-id-badge text-[#D4A017]"></i>
-                                    Akses Kru Tambahan
-                                </p>
-                                <p class="text-xs text-[#7A5B3A] mt-2 leading-relaxed">
-                                    Akses tambahan hanya berlaku untuk akun fotografer atau editor yang dapat merangkap tugas.
-                                </p>
-                            </div>
-                            <div class="flex flex-wrap gap-6">
-                                <label class="inline-flex items-center gap-3 text-[#3F2B1B]">
-                                    <input type="checkbox" name="roles[]" value="{{ Role::PHOTOGRAPHER->value }}" @checked(in_array(Role::PHOTOGRAPHER->value, $effectiveRoles, true))
-                                           class="w-5 h-5 rounded-xl border-[#E1D3C5] text-[#D4A017] focus:ring-[#D4A017]">
-                                    <span class="font-medium">Fotografer</span>
-                                </label>
-                                <label class="inline-flex items-center gap-3 text-[#3F2B1B]">
-                                    <input type="checkbox" name="roles[]" value="{{ Role::EDITOR->value }}" @checked(in_array(Role::EDITOR->value, $effectiveRoles, true))
-                                           class="w-5 h-5 rounded-xl border-[#E1D3C5] text-[#D4A017] focus:ring-[#D4A017]">
-                                    <span class="font-medium">Editor</span>
-                                </label>
                             </div>
                         </div>
 

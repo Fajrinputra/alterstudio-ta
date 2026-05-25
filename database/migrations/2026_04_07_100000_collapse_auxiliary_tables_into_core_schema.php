@@ -38,7 +38,7 @@ return new class extends Migration
 
         Schema::table('studio_locations', function (Blueprint $table) {
             if (! Schema::hasColumn('studio_locations', 'photo_gallery')) {
-                $table->longText('photo_gallery')->nullable()->after('facilities');
+                $table->longText('photo_gallery')->nullable()->after('map_url');
             }
         });
 

@@ -20,6 +20,10 @@ class AdminMasterDataTest extends TestCase
 {
     use RefreshDatabase;
 
+    /**
+     * Pengujian: Admin mengelola kategori layanan yang belum digunakan.
+     * Hasil yang diharapkan: kategori dapat dibuat, diperbarui, dan dihapus dari database.
+     */
     public function test_admin_can_create_update_and_delete_service_category_when_unused(): void
     {
         $admin = User::factory()->create(['role' => Role::ADMIN]);
@@ -44,6 +48,10 @@ class AdminMasterDataTest extends TestCase
         $this->assertDatabaseMissing('service_categories', ['id' => $category->id]);
     }
 
+    /**
+     * Pengujian: perlindungan penghapusan kategori yang masih memiliki paket.
+     * Hasil yang diharapkan: sistem menolak penghapusan dan data kategori tetap tersimpan.
+     */
     public function test_category_with_packages_cannot_be_deleted(): void
     {
         $admin = User::factory()->create(['role' => Role::ADMIN]);
@@ -57,6 +65,10 @@ class AdminMasterDataTest extends TestCase
         $this->assertDatabaseHas('service_categories', ['id' => $category->id]);
     }
 
+    /**
+     * Pengujian: Admin membuat dan memperbarui paket layanan.
+     * Hasil yang diharapkan: fitur dan add-on paket tersimpan dalam format yang sudah dinormalisasi.
+     */
     public function test_admin_can_create_and_update_service_package_with_normalized_features_and_addons(): void
     {
         $admin = User::factory()->create(['role' => Role::ADMIN]);
@@ -106,6 +118,10 @@ class AdminMasterDataTest extends TestCase
         $this->assertSame(850000, $package->price);
     }
 
+    /**
+     * Pengujian: penghapusan paket yang sudah dipakai pada booking aktif.
+     * Hasil yang diharapkan: paket tidak dihapus permanen, tetapi dinonaktifkan.
+     */
     public function test_package_used_by_active_booking_is_deactivated_instead_of_deleted(): void
     {
         $admin = User::factory()->create(['role' => Role::ADMIN]);
@@ -135,6 +151,10 @@ class AdminMasterDataTest extends TestCase
         $this->assertDatabaseHas('service_packages', ['id' => $package->id]);
     }
 
+    /**
+     * Pengujian: Owner mengelola data cabang studio.
+     * Hasil yang diharapkan: cabang dapat dibuat, diperbarui, dan dihapus saat belum dipakai.
+     */
     public function test_owner_can_create_update_and_delete_studio_location(): void
     {
         $owner = User::factory()->create(['role' => Role::OWNER]);
@@ -169,6 +189,10 @@ class AdminMasterDataTest extends TestCase
         $this->assertDatabaseMissing('studio_locations', ['id' => $location->id]);
     }
 
+    /**
+     * Pengujian: Owner mengelola ruangan studio pada cabang.
+     * Hasil yang diharapkan: ruangan yang sudah dipakai booking dinonaktifkan saat proses hapus.
+     */
     public function test_owner_can_manage_studio_rooms_and_used_room_is_deactivated_on_delete(): void
     {
         $owner = User::factory()->create(['role' => Role::OWNER]);
@@ -218,6 +242,10 @@ class AdminMasterDataTest extends TestCase
         $this->assertFalse($room->fresh()->is_active);
     }
 
+    /**
+     * Pengujian: Admin mengelola hero landing page.
+     * Hasil yang diharapkan: slide hero dapat dibuat, diperbarui, gambar lama diganti, dan slide dihapus.
+     */
     public function test_admin_can_create_update_and_delete_landing_hero_slide(): void
     {
         Storage::fake('public');

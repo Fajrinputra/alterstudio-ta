@@ -22,6 +22,10 @@ class NotificationMailTest extends TestCase
 {
     use RefreshDatabase;
 
+    /**
+     * Pengujian: isi email notifikasi setelah booking dikonfirmasi admin.
+     * Hasil yang diharapkan: email berisi subjek, pesan, dan tombol menuju pembayaran.
+     */
     public function test_booking_confirmed_notification_builds_payment_mail(): void
     {
         [$booking, , $client] = $this->makeBooking();
@@ -34,6 +38,10 @@ class NotificationMailTest extends TestCase
         $this->assertSame('Lanjutkan Pembayaran', $mail->actionText);
     }
 
+    /**
+     * Pengujian: template email saat booking baru dibuat oleh klien.
+     * Hasil yang diharapkan: notifikasi memakai markdown booking dan data penerima klien terbaca.
+     */
     public function test_booking_created_notification_uses_booking_markdown_template(): void
     {
         [$booking, $package, $client] = $this->makeBooking();
@@ -46,6 +54,10 @@ class NotificationMailTest extends TestCase
         $this->assertTrue($mail->viewData['isClientRecipient']);
     }
 
+    /**
+     * Pengujian: isi email konfirmasi pembayaran.
+     * Hasil yang diharapkan: email memuat jenis pembayaran dan nominal yang berhasil dibayar.
+     */
     public function test_payment_confirmed_notification_contains_payment_detail(): void
     {
         [$booking, , $client] = $this->makeBooking();
@@ -65,6 +77,10 @@ class NotificationMailTest extends TestCase
         $this->assertContains('Nominal: Rp 100.000', $mail->introLines);
     }
 
+    /**
+     * Pengujian: isi email penugasan jadwal untuk kru.
+     * Hasil yang diharapkan: kru menerima pesan penugasan dan tombol menuju jadwal.
+     */
     public function test_schedule_assigned_notification_contains_schedule_context(): void
     {
         [$booking] = $this->makeBooking();
@@ -84,6 +100,10 @@ class NotificationMailTest extends TestCase
         $this->assertSame('Lihat Jadwal', $mail->actionText);
     }
 
+    /**
+     * Pengujian: email notifikasi pada alur Drive dan hasil final.
+     * Hasil yang diharapkan: klien/editor menerima pesan sesuai tahapan foto mentah, edit, dan final.
+     */
     public function test_drive_workflow_notifications_build_expected_mail_messages(): void
     {
         [$booking, $package, $client] = $this->makeBooking();

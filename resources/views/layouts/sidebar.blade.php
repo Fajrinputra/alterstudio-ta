@@ -3,10 +3,8 @@
     use Illuminate\Support\Facades\Storage;
     $user = Auth::user();
     $role = $user?->role;
-    $effectiveRoles = $user?->effectiveRoles() ?? [];
-    $roleLabel = collect($effectiveRoles)
-        ->map(fn ($item) => ucfirst(strtolower($item)))
-        ->join(' / ');
+    $roleValue = $role instanceof Role ? $role->value : $role;
+    $roleLabel = $roleValue ? ucfirst(strtolower($roleValue)) : '';
     $menu = [
         ['label' => 'Dashboard', 'href' => route('dashboard'), 'icon' => 'fa-solid fa-house', 'active' => ['dashboard']],
     ];
@@ -33,12 +31,12 @@
     }
 @endphp
 
-<aside class="hidden lg:flex w-72 shrink-0 bg-gradient-to-b from-[#FAF6F0] to-[#F4EDE4] border-r border-[#EDE0D0] fixed inset-y-0 left-0 z-40 shadow-2xl">
-    <div class="flex flex-col w-full p-6 space-y-8 h-full overflow-y-auto">
+<aside class="hidden lg:flex w-64 shrink-0 bg-gradient-to-b from-[#FAF6F0] to-[#F4EDE4] border-r border-[#EDE0D0] fixed inset-y-0 left-0 z-40 shadow-xl">
+    <div class="flex flex-col w-full p-4 space-y-5 h-full overflow-y-auto">
         <!-- Logo & User Info -->
         <div class="relative">
-            <div class="absolute -top-4 -left-4 w-28 h-28 bg-[#D4A017]/20 rounded-full blur-2xl"></div>
-            <div class="relative rounded-3xl border border-[#D4A017]/55 bg-white/60 p-4 shadow-2xl shadow-[#6B4A2D]/15 ring-1 ring-[#E07A5F]/25 backdrop-blur-xl">
+            <div class="absolute -top-3 -left-3 w-20 h-20 bg-[#D4A017]/20 rounded-full blur-2xl"></div>
+            <div class="relative rounded-2xl border border-[#D4A017]/45 bg-white/60 p-3 shadow-lg shadow-[#6B4A2D]/10 ring-1 ring-[#E07A5F]/20 backdrop-blur-xl">
                 <div class="flex items-center gap-3">
                     @php
                         $avatarUrl = $user?->avatar_path ? Storage::disk('public')->url($user->avatar_path) : null;
@@ -46,17 +44,17 @@
                     @endphp
                     <div class="relative">
                         @if($avatarUrl)
-                            <img src="{{ $avatarUrl }}" alt="Avatar" class="h-16 w-16 rounded-2xl border-2 border-white object-cover shadow-xl shadow-[#6B4A2D]/20">
+                            <img src="{{ $avatarUrl }}" alt="Avatar" class="h-12 w-12 rounded-xl border-2 border-white object-cover shadow-lg shadow-[#6B4A2D]/20">
                         @else
-                            <div class="h-16 w-16 rounded-2xl bg-gradient-to-br from-[#D4A017] to-[#E07A5F] flex items-center justify-center text-white font-black text-2xl shadow-xl shadow-[#6B4A2D]/20">
+                            <div class="h-12 w-12 rounded-xl bg-gradient-to-br from-[#D4A017] to-[#E07A5F] flex items-center justify-center text-white font-black text-xl shadow-lg shadow-[#6B4A2D]/20">
                                 {{ $initial }}
                             </div>
                         @endif
-                        <div class="absolute -bottom-1 -right-1 w-6 h-6 bg-emerald-500 border-2 border-white rounded-full ring-2 ring-white shadow-md"></div>
+                        <div class="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 border-2 border-white rounded-full ring-2 ring-white shadow-md"></div>
                     </div>
                     <div class="flex-1 min-w-0">
-                        <p class="font-display text-[1.35rem] font-semibold leading-tight tracking-tight text-[#3F2B1B] whitespace-nowrap">Alter Studio</p>
-                        <p class="text-xs uppercase tracking-widest text-[#8B7359] flex items-center gap-2 mt-1">
+                        <p class="font-display text-lg font-semibold leading-tight tracking-tight text-[#3F2B1B] whitespace-nowrap">Alter Studio</p>
+                        <p class="text-[11px] uppercase tracking-widest text-[#8B7359] flex items-center gap-2 mt-1">
                             <span class="inline-block w-2 h-2 rounded-full bg-[#D4A017]"></span>
                             {{ $roleLabel !== '' ? $roleLabel : ucfirst(strtolower($role?->value ?? '')) }}
                         </p>
@@ -77,12 +75,12 @@
                 @endphp
                 <a href="{{ $item['href'] }}"
                    @if($isExternal) target="_blank" rel="noopener noreferrer" @endif
-                   class="group flex items-center gap-4 px-5 py-4 rounded-2xl text-sm font-medium transition-all duration-300
+                   class="group flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300
                           {{ $isActive 
                               ? 'bg-gradient-to-r from-[#D4A017] to-[#E07A5F] text-white shadow-lg shadow-[#D4A017]/40' 
                               : 'text-[#5C432C] hover:bg-white hover:shadow-md hover:text-[#D4A017]' }}">
                     <span class="flex h-7 w-7 shrink-0 items-center justify-center">
-                        <i class="{{ $item['icon'] }} w-7 text-center text-xl {{ $isActive ? 'text-white' : 'text-[#8B7359] group-hover:text-[#D4A017]' }}"></i>
+                        <i class="{{ $item['icon'] }} w-6 text-center text-base {{ $isActive ? 'text-white' : 'text-[#8B7359] group-hover:text-[#D4A017]' }}"></i>
                     </span>
                     <span class="flex-1 text-left">{{ $item['label'] }}</span>
                     @if($isActive)
@@ -93,10 +91,10 @@
         </nav>
 
         <!-- Logout -->
-        <div class="pt-6 border-t border-[#EDE0D0]">
+        <div class="pt-4 border-t border-[#EDE0D0]">
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
-                <button class="w-full flex items-center gap-4 px-5 py-4 rounded-2xl border border-[#E1D3C5] text-[#5C432C] hover:bg-red-500 hover:text-white hover:border-red-500 transition-all group">
+                <button class="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-[#E1D3C5] text-[#5C432C] hover:bg-red-500 hover:text-white hover:border-red-500 transition-all group">
                     <span class="flex h-7 w-7 shrink-0 items-center justify-center">
                         <i class="fa-solid fa-arrow-right-from-bracket w-7 text-center transition-transform group-hover:rotate-180"></i>
                     </span>
@@ -117,17 +115,17 @@
            x-transition:leave="transform transition ease-in duration-200"
            x-transition:leave-start="translate-x-0"
            x-transition:leave-end="-translate-x-full"
-           class="fixed inset-y-0 left-0 z-50 w-80 bg-gradient-to-b from-[#FAF6F0] to-[#F4EDE4] border-r border-[#EDE0D0] shadow-2xl overflow-y-auto">
-        <div class="flex flex-col w-full p-6 space-y-8 h-full">
+           class="fixed inset-y-0 left-0 z-50 w-72 max-w-[88vw] bg-gradient-to-b from-[#FAF6F0] to-[#F4EDE4] border-r border-[#EDE0D0] shadow-2xl overflow-y-auto">
+        <div class="flex flex-col w-full p-4 space-y-5 h-full">
             <div class="flex items-center justify-between">
-                <p class="font-display text-2xl font-semibold text-[#3F2B1B]">Alter Studio</p>
-                <button @click="mobileSidebar = false" class="w-10 h-10 flex items-center justify-center rounded-2xl hover:bg-white/70 text-[#8B7359]">
-                    <i class="fa-solid fa-xmark text-2xl"></i>
+                <p class="font-display text-xl font-semibold text-[#3F2B1B]">Alter Studio</p>
+                <button @click="mobileSidebar = false" class="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-white/70 text-[#8B7359]">
+                    <i class="fa-solid fa-xmark text-xl"></i>
                 </button>
             </div>
 
             <!-- Mobile User Info -->
-            <div class="glass rounded-3xl p-5 border border-white/60">
+            <div class="glass rounded-2xl p-4 border border-white/60">
                 <div class="flex items-center gap-4">
                     @php
                         $avatarUrl = $user?->avatar_path ? Storage::disk('public')->url($user->avatar_path) : null;
@@ -164,10 +162,10 @@
                     <a href="{{ $item['href'] }}"
                        @if($isExternal) target="_blank" rel="noopener noreferrer" @endif
                        @click="mobileSidebar = false"
-                       class="group flex items-center gap-4 px-5 py-4 rounded-2xl text-sm font-medium transition-all
+                       class="group flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all
                               {{ $isActive ? 'bg-gradient-to-r from-[#D4A017] to-[#E07A5F] text-white shadow-lg' : 'text-[#5C432C] hover:bg-white hover:text-[#D4A017]' }}">
                         <span class="flex h-7 w-7 shrink-0 items-center justify-center">
-                            <i class="{{ $item['icon'] }} w-7 text-center text-xl {{ $isActive ? 'text-white' : 'text-[#8B7359]' }}"></i>
+                            <i class="{{ $item['icon'] }} w-6 text-center text-base {{ $isActive ? 'text-white' : 'text-[#8B7359]' }}"></i>
                         </span>
                         <span class="flex-1 text-left">{{ $item['label'] }}</span>
                     </a>
@@ -177,7 +175,7 @@
             <!-- Mobile Logout -->
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
-                <button class="w-full flex items-center gap-4 px-5 py-4 rounded-2xl border border-[#E1D3C5] text-[#5C432C] hover:bg-red-500 hover:text-white transition-all">
+                <button class="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-[#E1D3C5] text-[#5C432C] hover:bg-red-500 hover:text-white transition-all">
                     <span class="flex h-7 w-7 shrink-0 items-center justify-center">
                         <i class="fa-solid fa-arrow-right-from-bracket w-7 text-center"></i>
                     </span>

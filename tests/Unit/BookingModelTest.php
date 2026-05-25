@@ -12,6 +12,10 @@ class BookingModelTest extends TestCase
 {
     use RefreshDatabase;
 
+    /**
+     * Pengujian: normalisasi add-on yang tersimpan pada model Booking.
+     * Hasil yang diharapkan: add-on kosong dibuang dan subtotal dihitung dari harga serta kuantitas.
+     */
     public function test_selected_addons_are_normalized_into_consistent_structure(): void
     {
         $booking = new Booking();
@@ -48,6 +52,10 @@ class BookingModelTest extends TestCase
         $this->assertSame(25000, $addons[1]['subtotal']);
     }
 
+    /**
+     * Pengujian: label status booking pada beberapa kondisi utama.
+     * Hasil yang diharapkan: setiap status menampilkan label sesuai alur pemesanan.
+     */
     public function test_status_label_reflects_booking_state_correctly(): void
     {
         $submitted = new Booking([
@@ -73,6 +81,10 @@ class BookingModelTest extends TestCase
         $this->assertSame('Dibatalkan', $cancelled->statusLabel());
     }
 
+    /**
+     * Pengujian: perhitungan nominal terbayar dan sisa pembayaran.
+     * Hasil yang diharapkan: hanya pembayaran berstatus lunas yang dihitung sebagai pembayaran sah.
+     */
     public function test_paid_and_remaining_amount_only_count_paid_payments(): void
     {
         $booking = Booking::factory()->create([
@@ -105,6 +117,10 @@ class BookingModelTest extends TestCase
         $this->assertSame(350000, $booking->remainingAmount());
     }
 
+    /**
+     * Pengujian: nominal pembayaran berikutnya untuk pembayaran DP dan lunas.
+     * Hasil yang diharapkan: DP dihitung 10% dan pelunasan menghasilkan sisa tagihan.
+     */
     public function test_next_payable_amount_follows_dp_and_settlement_rules(): void
     {
         $fullBooking = new Booking([
@@ -146,6 +162,10 @@ class BookingModelTest extends TestCase
         $this->assertTrue($settlementBooking->isAwaitingSettlement());
     }
 
+    /**
+     * Pengujian: add-on tambah waktu pada durasi efektif booking.
+     * Hasil yang diharapkan: setiap kuantitas tambah waktu menambah durasi 10 menit.
+     */
     public function test_extra_time_addon_extends_effective_duration_by_ten_minutes_each(): void
     {
         $booking = Booking::factory()->create([

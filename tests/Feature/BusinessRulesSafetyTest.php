@@ -18,12 +18,15 @@ class BusinessRulesSafetyTest extends TestCase
 {
     use RefreshDatabase;
 
+    /**
+     * Pengujian: perlindungan akun kru yang masih memiliki project aktif.
+     * Hasil yang diharapkan: Owner tidak dapat menonaktifkan pengguna yang masih terhubung project berjalan.
+     */
     public function test_owner_cannot_deactivate_user_with_active_project(): void
     {
         $owner = User::factory()->create(['role' => Role::OWNER]);
         $photographer = User::factory()->create([
             'role' => Role::PHOTOGRAPHER,
-            'roles' => [Role::PHOTOGRAPHER->value],
             'is_active' => true,
         ]);
         $client = User::factory()->create(['role' => Role::CLIENT]);
@@ -58,6 +61,10 @@ class BusinessRulesSafetyTest extends TestCase
         $this->assertTrue($photographer->fresh()->is_active);
     }
 
+    /**
+     * Pengujian: penghapusan akun mandiri melalui profil.
+     * Hasil yang diharapkan: route hapus profil tidak tersedia dan akun pengguna tetap ada.
+     */
     public function test_profile_self_delete_is_not_available(): void
     {
         $client = User::factory()->create([
@@ -72,6 +79,10 @@ class BusinessRulesSafetyTest extends TestCase
         $this->assertDatabaseHas('users', ['id' => $client->id]);
     }
 
+    /**
+     * Pengujian: booking menunggu pembayaran yang melewati batas waktu.
+     * Hasil yang diharapkan: booking otomatis dibatalkan dan pembayaran pending menjadi kedaluwarsa.
+     */
     public function test_expired_waiting_payment_booking_is_cancelled_automatically(): void
     {
         Carbon::setTestNow(now());

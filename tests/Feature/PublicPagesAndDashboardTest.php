@@ -19,6 +19,10 @@ class PublicPagesAndDashboardTest extends TestCase
 {
     use RefreshDatabase;
 
+    /**
+     * Pengujian: halaman landing publik memuat katalog, cabang, dan hero aktif.
+     * Hasil yang diharapkan: hanya paket aktif, cabang aktif, dan slide aktif yang tampil.
+     */
     public function test_landing_page_loads_active_catalog_locations_and_hero_slides(): void
     {
         $category = ServiceCategory::factory()->create(['name' => 'Family']);
@@ -59,6 +63,10 @@ class PublicPagesAndDashboardTest extends TestCase
         $this->assertTrue($response->viewData('heroSlides')->contains('id', $slide->id));
     }
 
+    /**
+     * Pengujian: detail cabang studio pada halaman publik.
+     * Hasil yang diharapkan: halaman menampilkan data cabang, foto, dan ruangan studio aktif.
+     */
     public function test_public_location_detail_loads_rooms_and_photos(): void
     {
         $location = StudioLocation::create([
@@ -83,6 +91,10 @@ class PublicPagesAndDashboardTest extends TestCase
             ->assertSee('Studio A', false);
     }
 
+    /**
+     * Pengujian: isi dashboard berdasarkan role pengguna.
+     * Hasil yang diharapkan: Manajer, Klien, dan Owner mendapat data dashboard sesuai kewenangannya.
+     */
     public function test_dashboard_data_changes_by_role(): void
     {
         $manager = User::factory()->create(['role' => Role::MANAGER]);
@@ -136,15 +148,12 @@ class PublicPagesAndDashboardTest extends TestCase
             ->assertViewHas('role', Role::OWNER)
             ->assertSee('Pendapatan Diterima', false)
             ->assertSee('Rp 750.000', false);
-        $this->assertSame(750000.0, $ownerResponse->viewData('data')['metrics']['revenue_received']);
+        $this->assertSame(750000, $ownerResponse->viewData('data')['metrics']['revenue_received']);
     }
 
-    public function test_dual_crew_dashboard_contains_photographer_and_editor_sections(): void
+    public function test_photographer_dashboard_contains_only_photographer_section(): void
     {
-        $crew = User::factory()->create([
-            'role' => Role::PHOTOGRAPHER,
-            'roles' => [Role::EDITOR->value],
-        ]);
+        $crew = User::factory()->create(['role' => Role::PHOTOGRAPHER]);
         $client = User::factory()->create(['role' => Role::CLIENT]);
         $package = ServicePackage::factory()->create();
         $location = StudioLocation::create([
@@ -172,8 +181,7 @@ class PublicPagesAndDashboardTest extends TestCase
         $response = $this->actingAs($crew)->get(route('dashboard'));
 
         $response->assertOk();
-        $this->assertTrue($response->viewData('hasBothCrewRoles'));
         $this->assertArrayHasKey('upcoming', $response->viewData('data'));
-        $this->assertArrayHasKey('queue', $response->viewData('data'));
+        $this->assertArrayNotHasKey('queue', $response->viewData('data'));
     }
 }

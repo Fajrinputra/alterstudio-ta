@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Enums\Role;
 use App\Models\Booking;
 use App\Models\Project;
+use App\Models\ProjectSchedule;
+use App\Models\ProjectScheduleUser;
 use App\Models\ServicePackage;
 use App\Models\StudioRoom;
 use App\Models\User;
@@ -12,6 +14,7 @@ use App\Notifications\ScheduleAssignedNotification;
 use Carbon\Carbon;
 use DateTimeInterface;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 
 /**
@@ -33,6 +36,8 @@ class ScheduleController extends Controller
             'booking.package',
             'booking.studioLocation.rooms',
             'booking.studioRoom',
+            'scheduleRecord.photographerAssignment.user',
+            'scheduleRecord.editorAssignment.user',
             'photographer',
             'editor',
         ])->whereHas('booking');
@@ -176,25 +181,29 @@ class ScheduleController extends Controller
         [$start, $end] = $this->buildScheduleWindow($project);
         if ($this->hasRoomOverlap($booking, $room->id, $start, $end)) {
             return $request->wantsJson()
-                ? response()->json(['message' => 'Ruangan yang dipilih sudah terisi pada jam tersebut.'], 422)
-                : back()->with('error', 'Ruangan yang dipilih sudah terisi pada jam tersebut.');
+                ? response()->json(['message' => 'Jadwal bentrok: ruangan yang dipilih sudah memiliki jadwal pada waktu tersebut.'], 422)
+                : back()->with('error', 'Jadwal bentrok: ruangan yang dipilih sudah memiliki jadwal pada waktu tersebut.');
         }
 
         if ($this->hasOverlap($start, $end, $validated['photographer_id'], $validated['editor_id'], $project->id)) {
             return $request->wantsJson()
-                ? response()->json(['message' => 'Bentrok jadwal terdeteksi untuk kru yang dipilih.'], 422)
-                : back()->with('error', 'Bentrok jadwal terdeteksi untuk kru yang dipilih.');
+                ? response()->json(['message' => 'Jadwal bentrok: fotografer atau editor yang dipilih sudah memiliki jadwal pada waktu tersebut.'], 422)
+                : back()->with('error', 'Jadwal bentrok: fotografer atau editor yang dipilih sudah memiliki jadwal pada waktu tersebut.');
         }
 
-        $booking->update(['studio_room_id' => $room->id]);
-        $project->update([
-            'photographer_id' => $validated['photographer_id'],
-            'editor_id' => $validated['editor_id'],
-            'start_at' => $start,
-            'end_at' => $end,
-            'status' => Project::STATUS_SCHEDULED,
-        ]);
-        $project->load(['photographer', 'editor', 'booking']);
+        DB::transaction(function () use ($booking, $room, $project, $validated, $start, $end, $request) {
+            $booking->update(['studio_room_id' => $room->id]);
+            $project->update([
+                'photographer_id' => $validated['photographer_id'],
+                'editor_id' => $validated['editor_id'],
+                'start_at' => $start,
+                'end_at' => $end,
+                'status' => Project::STATUS_SCHEDULED,
+            ]);
+            $this->syncScheduleRecord($project, $booking, $room, $validated, $start, $end, $request->user()?->id);
+        });
+
+        $project->load(['photographer', 'editor', 'booking', 'scheduleRecord.photographerAssignment.user', 'scheduleRecord.editorAssignment.user']);
 
         $recipients = collect([$project->photographer, $project->editor])->filter();
         if ($recipients->isNotEmpty()) {
@@ -258,24 +267,28 @@ class ScheduleController extends Controller
         [$start, $end] = $this->buildScheduleWindow($project);
         if ($this->hasRoomOverlap($project->booking, $room->id, $start, $end)) {
             return $request->wantsJson()
-                ? response()->json(['message' => 'Ruangan yang dipilih sudah terisi pada jam tersebut.'], 422)
-                : back()->with('error', 'Ruangan yang dipilih sudah terisi pada jam tersebut.');
+                ? response()->json(['message' => 'Jadwal bentrok: ruangan yang dipilih sudah memiliki jadwal pada waktu tersebut.'], 422)
+                : back()->with('error', 'Jadwal bentrok: ruangan yang dipilih sudah memiliki jadwal pada waktu tersebut.');
         }
 
         if ($this->hasOverlap($start, $end, $validated['photographer_id'], $validated['editor_id'], $project->id)) {
             return $request->wantsJson()
-                ? response()->json(['message' => 'Bentrok jadwal terdeteksi untuk kru yang dipilih.'], 422)
-                : back()->with('error', 'Bentrok jadwal terdeteksi.');
+                ? response()->json(['message' => 'Jadwal bentrok: fotografer atau editor yang dipilih sudah memiliki jadwal pada waktu tersebut.'], 422)
+                : back()->with('error', 'Jadwal bentrok: fotografer atau editor yang dipilih sudah memiliki jadwal pada waktu tersebut.');
         }
 
-        $project->booking->update(['studio_room_id' => $room->id]);
-        $project->update([
-            'photographer_id' => $validated['photographer_id'],
-            'editor_id' => $validated['editor_id'],
-            'start_at' => $start,
-            'end_at' => $end,
-        ]);
-        $project->load(['photographer', 'editor']);
+        DB::transaction(function () use ($project, $room, $validated, $start, $end, $request) {
+            $project->booking->update(['studio_room_id' => $room->id]);
+            $project->update([
+                'photographer_id' => $validated['photographer_id'],
+                'editor_id' => $validated['editor_id'],
+                'start_at' => $start,
+                'end_at' => $end,
+            ]);
+            $this->syncScheduleRecord($project, $project->booking, $room, $validated, $start, $end, $request->user()?->id);
+        });
+
+        $project->load(['photographer', 'editor', 'scheduleRecord.photographerAssignment.user', 'scheduleRecord.editorAssignment.user']);
 
         $recipients = collect([$project->photographer, $project->editor])->filter();
         if ($recipients->isNotEmpty()) {
@@ -309,13 +322,16 @@ class ScheduleController extends Controller
                 : back()->with('error', 'Jadwal tidak bisa dihapus karena project sudah berjalan.');
         }
 
-        $project->update([
-            'photographer_id' => null,
-            'editor_id' => null,
-            'start_at' => null,
-            'end_at' => null,
-            'status' => Project::STATUS_DRAFT,
-        ]);
+        DB::transaction(function () use ($project) {
+            $project->scheduleRecord?->delete();
+            $project->update([
+                'photographer_id' => null,
+                'editor_id' => null,
+                'start_at' => null,
+                'end_at' => null,
+                'status' => Project::STATUS_DRAFT,
+            ]);
+        });
 
         return $request->wantsJson()
             ? response()->json(['message' => 'Jadwal berhasil dihapus'])
@@ -325,6 +341,18 @@ class ScheduleController extends Controller
     protected function hasOverlap(DateTimeInterface $start, DateTimeInterface $end, int $photographerId, int $editorId, int $projectId): bool
     {
         $assignedIds = array_values(array_unique([$photographerId, $editorId]));
+
+        $scheduleOverlap = ProjectSchedule::query()
+            ->whereHas('users', fn ($q) => $q->whereIn('user_id', $assignedIds))
+            ->whereHas('booking', fn ($q) => $q->where('status', '!=', Booking::STATUS_CANCELLED))
+            ->where('project_id', '!=', $projectId)
+            ->where('start_at', '<', $end->format('Y-m-d H:i:s'))
+            ->where('end_at', '>', $start->format('Y-m-d H:i:s'))
+            ->exists();
+
+        if ($scheduleOverlap) {
+            return true;
+        }
 
         return Project::query()
             ->where(function ($q) use ($assignedIds) {
@@ -341,6 +369,16 @@ class ScheduleController extends Controller
 
     protected function overlappingAssignedUserIds(DateTimeInterface $start, DateTimeInterface $end, int $projectId): array
     {
+        $scheduleUserIds = ProjectSchedule::query()
+            ->with('users:id,project_schedule_id,user_id')
+            ->whereHas('booking', fn ($q) => $q->where('status', '!=', Booking::STATUS_CANCELLED))
+            ->where('project_id', '!=', $projectId)
+            ->where('start_at', '<', $end->format('Y-m-d H:i:s'))
+            ->where('end_at', '>', $start->format('Y-m-d H:i:s'))
+            ->get()
+            ->flatMap(fn (ProjectSchedule $schedule) => $schedule->users->pluck('user_id'))
+            ->map(fn ($id) => (int) $id);
+
         $projects = Project::query()
             ->whereHas('booking', fn ($q) => $q->where('status', '!=', Booking::STATUS_CANCELLED))
             ->where('id', '!=', $projectId)
@@ -351,6 +389,7 @@ class ScheduleController extends Controller
 
         return $projects
             ->flatMap(fn ($item) => [$item->photographer_id, $item->editor_id])
+            ->merge($scheduleUserIds)
             ->filter()
             ->map(fn ($id) => (int) $id)
             ->unique()
@@ -363,6 +402,18 @@ class ScheduleController extends Controller
         $buffer = max(0, (int) config('studio.booking_buffer_minutes', 15));
         $candidateStart = Carbon::parse($start->format('Y-m-d H:i:s'));
         $candidateBlockedEnd = Carbon::parse($end->format('Y-m-d H:i:s'))->addMinutes($buffer);
+
+        $scheduleOverlap = ProjectSchedule::query()
+            ->where('booking_id', '!=', $booking->id)
+            ->where('studio_room_id', $roomId)
+            ->whereHas('booking', fn ($q) => $q->where('status', '!=', Booking::STATUS_CANCELLED))
+            ->where('start_at', '<', $candidateBlockedEnd->format('Y-m-d H:i:s'))
+            ->where('end_at', '>', $candidateStart->format('Y-m-d H:i:s'))
+            ->exists();
+
+        if ($scheduleOverlap) {
+            return true;
+        }
 
         return Booking::query()
             ->with('package:id,duration_minutes')
@@ -453,5 +504,38 @@ class ScheduleController extends Controller
             ->where('studio_location_id', $locationId)
             ->where('is_active', true)
             ->first();
+    }
+
+    /**
+     * @param array{photographer_id:int, editor_id:int, studio_room_id:int} $validated
+     */
+    protected function syncScheduleRecord(Project $project, Booking $booking, StudioRoom $room, array $validated, DateTimeInterface $start, DateTimeInterface $end, ?int $scheduledBy): ProjectSchedule
+    {
+        $schedule = ProjectSchedule::updateOrCreate(
+            ['project_id' => $project->id],
+            [
+                'booking_id' => $booking->id,
+                'studio_location_id' => (int) $booking->studio_location_id,
+                'studio_room_id' => $room->id,
+                'scheduled_by' => $scheduledBy,
+                'start_at' => $start,
+                'end_at' => $end,
+                'status' => ProjectSchedule::STATUS_SCHEDULED,
+            ]
+        );
+
+        $schedule->users()->delete();
+        ProjectScheduleUser::create([
+            'project_schedule_id' => $schedule->id,
+            'user_id' => $validated['photographer_id'],
+            'role' => Role::PHOTOGRAPHER->value,
+        ]);
+        ProjectScheduleUser::create([
+            'project_schedule_id' => $schedule->id,
+            'user_id' => $validated['editor_id'],
+            'role' => Role::EDITOR->value,
+        ]);
+
+        return $schedule;
     }
 }

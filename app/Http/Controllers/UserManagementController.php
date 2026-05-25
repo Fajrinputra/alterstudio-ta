@@ -23,10 +23,6 @@ class UserManagementController extends Controller
         $users = User::query()
             ->when($roleFilter === 'photographer', fn ($query) => $query->withRole(Role::PHOTOGRAPHER))
             ->when($roleFilter === 'editor', fn ($query) => $query->withRole(Role::EDITOR))
-            ->when($roleFilter === 'dual_crew', function ($query) {
-                $query->withRole(Role::PHOTOGRAPHER)
-                    ->withRole(Role::EDITOR);
-            })
             ->orderBy('role')
             ->orderBy('name')
             ->paginate(12)
@@ -57,20 +53,16 @@ class UserManagementController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'role' => ['required', Rule::in($this->assignableRoles())],
-            'roles' => ['nullable', 'array'],
-            'roles.*' => ['string', Rule::in([Role::PHOTOGRAPHER->value, Role::EDITOR->value])],
             'password' => ['nullable', 'string', 'min:8'],
             'no_hp' => ['nullable', 'string', 'max:30'],
         ]);
 
         $password = $data['password'] ?? 'password';
-        $roles = $this->normalizeRoles($data['role'], $data['roles'] ?? []);
 
         User::create([
             'name' => $data['name'],
             'email' => $data['email'],
             'role' => $data['role'],
-            'roles' => $roles,
             'no_hp' => $data['no_hp'] ?? null,
             'password' => Hash::make($password),
             'is_active' => true,
@@ -86,8 +78,6 @@ class UserManagementController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
             'role' => ['required', Rule::in($this->assignableRoles($user))],
-            'roles' => ['nullable', 'array'],
-            'roles.*' => ['string', Rule::in([Role::PHOTOGRAPHER->value, Role::EDITOR->value])],
             'password' => ['nullable', 'string', 'min:8'],
             'no_hp' => ['nullable', 'string', 'max:30'],
             'is_active' => ['nullable', 'boolean'],
@@ -97,7 +87,6 @@ class UserManagementController extends Controller
             'name' => $data['name'],
             'email' => $data['email'],
             'role' => $user->role === Role::OWNER ? Role::OWNER->value : $data['role'],
-            'roles' => $this->normalizeRoles($data['role'], $data['roles'] ?? []),
             'no_hp' => $data['no_hp'] ?? null,
         ];
 
@@ -108,7 +97,6 @@ class UserManagementController extends Controller
         // Lindungi akun owner: tidak boleh dinonaktifkan atau diturunkan rolenya.
         if ($user->role === Role::OWNER) {
             $payload['role'] = Role::OWNER->value;
-            $payload['roles'] = [Role::OWNER->value];
             $payload['is_active'] = true;
         } elseif (array_key_exists('is_active', $data)) {
             if ((bool) $data['is_active'] === false && $this->hasActiveOperationalWork($user)) {
@@ -178,25 +166,6 @@ class UserManagementController extends Controller
             Role::all(),
             fn (string $role) => $role !== Role::OWNER->value
         ));
-    }
-
-    /**
-     * Role utama tetap satu, tetapi akun kru boleh punya akses ganda fotografer+editor.
-     *
-     * @param array<int, string> $roles
-     * @return array<int, string>
-     */
-    protected function normalizeRoles(string $primaryRole, array $roles): array
-    {
-        $crewRoles = [Role::PHOTOGRAPHER->value, Role::EDITOR->value];
-
-        if (! in_array($primaryRole, $crewRoles, true)) {
-            return [$primaryRole];
-        }
-
-        $normalized = array_values(array_unique(array_filter(array_merge([$primaryRole], $roles))));
-
-        return array_values(array_intersect($normalized, $crewRoles));
     }
 
     protected function hasActiveOperationalWork(User $user): bool

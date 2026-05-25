@@ -16,7 +16,11 @@ class UserManagementWorkflowTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_owner_can_create_internal_user_with_dual_crew_roles(): void
+    /**
+     * Pengujian: Owner membuat pengguna internal dengan satu role.
+     * Hasil yang diharapkan: akun tersimpan aktif dengan role utama yang sesuai.
+     */
+    public function test_owner_can_create_internal_user_with_single_role(): void
     {
         $owner = User::factory()->create(['role' => Role::OWNER]);
 
@@ -25,7 +29,6 @@ class UserManagementWorkflowTest extends TestCase
                 'name' => 'Crew Dual',
                 'email' => 'crew-dual@example.test',
                 'role' => Role::PHOTOGRAPHER->value,
-                'roles' => [Role::EDITOR->value],
                 'password' => 'secret123',
                 'no_hp' => '08110000001',
             ])
@@ -35,10 +38,13 @@ class UserManagementWorkflowTest extends TestCase
 
         $this->assertTrue(Hash::check('secret123', $user->password));
         $this->assertSame(Role::PHOTOGRAPHER, $user->role);
-        $this->assertSame([Role::PHOTOGRAPHER->value, Role::EDITOR->value], $user->roles);
         $this->assertTrue($user->is_active);
     }
 
+    /**
+     * Pengujian: Owner memperbarui pengguna tanpa mengisi password baru.
+     * Hasil yang diharapkan: data pengguna berubah, tetapi password lama tetap dipertahankan.
+     */
     public function test_owner_can_update_user_without_overwriting_password_when_blank(): void
     {
         $owner = User::factory()->create(['role' => Role::OWNER]);
@@ -53,7 +59,6 @@ class UserManagementWorkflowTest extends TestCase
                 'name' => 'Editor Updated',
                 'email' => 'editor-updated@example.test',
                 'role' => Role::EDITOR->value,
-                'roles' => [Role::PHOTOGRAPHER->value],
                 'password' => '',
                 'no_hp' => '08110000002',
                 'is_active' => true,
@@ -65,9 +70,13 @@ class UserManagementWorkflowTest extends TestCase
         $this->assertSame('Editor Updated', $user->name);
         $this->assertSame('editor-updated@example.test', $user->email);
         $this->assertSame($oldPassword, $user->password);
-        $this->assertSame([Role::EDITOR->value, Role::PHOTOGRAPHER->value], $user->roles);
+        $this->assertSame(Role::EDITOR, $user->role);
     }
 
+    /**
+     * Pengujian: perlindungan akun Owner dari nonaktif dan hapus.
+     * Hasil yang diharapkan: akun Owner tetap aktif dan tidak terhapus, sedangkan Manajer tanpa pekerjaan aktif dapat dihapus.
+     */
     public function test_owner_account_cannot_be_deactivated_or_deleted_but_manager_can_be_deleted(): void
     {
         $owner = User::factory()->create(['role' => Role::OWNER]);
@@ -93,6 +102,10 @@ class UserManagementWorkflowTest extends TestCase
         $this->assertDatabaseMissing('users', ['id' => $manager->id]);
     }
 
+    /**
+     * Pengujian: perlindungan akun yang masih memiliki booking atau project aktif.
+     * Hasil yang diharapkan: akun tidak dapat dinonaktifkan atau dihapus selama pekerjaan belum selesai.
+     */
     public function test_user_with_active_booking_or_project_cannot_be_deactivated_or_deleted(): void
     {
         $owner = User::factory()->create(['role' => Role::OWNER]);
@@ -124,6 +137,10 @@ class UserManagementWorkflowTest extends TestCase
         $this->assertDatabaseHas('users', ['id' => $client->id]);
     }
 
+    /**
+     * Pengujian: perubahan status dan penghapusan akun tanpa pekerjaan aktif.
+     * Hasil yang diharapkan: akun dapat dinonaktifkan lalu dihapus dari database.
+     */
     public function test_user_without_active_work_can_be_toggled_and_deleted(): void
     {
         $owner = User::factory()->create(['role' => Role::OWNER]);
@@ -142,6 +159,10 @@ class UserManagementWorkflowTest extends TestCase
         $this->assertDatabaseMissing('users', ['id' => $crew->id]);
     }
 
+    /**
+     * Pengujian: penghapusan kru yang masih memiliki project aktif.
+     * Hasil yang diharapkan: sistem menolak penghapusan dan akun kru tetap tersimpan.
+     */
     public function test_crew_with_active_project_cannot_be_deleted(): void
     {
         $owner = User::factory()->create(['role' => Role::OWNER]);

@@ -18,6 +18,10 @@ class MediaWorkflowStatusTest extends TestCase
 {
     use RefreshDatabase;
 
+    /**
+     * Pengujian: fotografer menyimpan link Google Drive foto mentah.
+     * Hasil yang diharapkan: project berubah menjadi shoot done dan link Drive tersimpan.
+     */
     public function test_photographer_storing_raw_drive_link_marks_project_as_shoot_done(): void
     {
         Notification::fake();
@@ -39,6 +43,10 @@ class MediaWorkflowStatusTest extends TestCase
         ]);
     }
 
+    /**
+     * Pengujian: penyimpanan link Drive pada booking yang dibatalkan.
+     * Hasil yang diharapkan: sistem menolak proses pasca-produksi dan link tidak tersimpan.
+     */
     public function test_cancelled_booking_cannot_start_raw_drive_workflow(): void
     {
         Notification::fake();
@@ -57,6 +65,10 @@ class MediaWorkflowStatusTest extends TestCase
         $this->assertNull($project->fresh()->raw_drive_url);
     }
 
+    /**
+     * Pengujian: penyimpanan link Drive saat pembayaran baru DP.
+     * Hasil yang diharapkan: sistem menolak karena pasca-produksi hanya boleh setelah lunas.
+     */
     public function test_dp_paid_booking_cannot_start_raw_drive_workflow(): void
     {
         Notification::fake();
@@ -78,6 +90,10 @@ class MediaWorkflowStatusTest extends TestCase
         $this->assertEquals(Project::STATUS_SCHEDULED, $project->status);
     }
 
+    /**
+     * Pengujian: penyimpanan link Drive pada project yang belum dijadwalkan.
+     * Hasil yang diharapkan: sistem menolak karena project harus dijadwalkan admin terlebih dahulu.
+     */
     public function test_unscheduled_project_cannot_start_raw_drive_workflow(): void
     {
         Notification::fake();
@@ -100,6 +116,10 @@ class MediaWorkflowStatusTest extends TestCase
         $this->assertNull($project->fresh()->raw_drive_url);
     }
 
+    /**
+     * Pengujian: editor menandai link hasil final tersedia.
+     * Hasil yang diharapkan: project berubah menjadi final dan link Drive final tersimpan.
+     */
     public function test_editor_marking_final_drive_link_marks_project_as_final(): void
     {
         Notification::fake();
@@ -131,6 +151,10 @@ class MediaWorkflowStatusTest extends TestCase
         ]);
     }
 
+    /**
+     * Pengujian: editor menandai hasil final pada booking yang dibatalkan.
+     * Hasil yang diharapkan: sistem menolak proses final dan link final tidak tersimpan.
+     */
     public function test_cancelled_booking_cannot_mark_final_drive_link(): void
     {
         Notification::fake();

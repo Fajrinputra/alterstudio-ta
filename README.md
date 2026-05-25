@@ -151,15 +151,6 @@ alterstudio-ta/
 
 ---
 
-## 🧪 Testing
-
-- **118 skenario test** (Feature Tests dengan PHPUnit)
-- **471 assertions**
-- **Code Coverage**: ~70% Lines (target 100% dengan Xdebug)
-- Test berjalan menggunakan SQLite in-memory (cepat & terisolasi)
-
----
-
 ## ⚙️ Perintah Instalasi Lengkap
 
 ### Prasyarat

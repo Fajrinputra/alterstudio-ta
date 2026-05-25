@@ -13,6 +13,10 @@ class EmailVerificationTest extends TestCase
 {
     use RefreshDatabase;
 
+    /**
+     * Pengujian: tampilan halaman verifikasi email.
+     * Hasil yang diharapkan: pengguna yang belum verifikasi dapat membuka halaman instruksi verifikasi.
+     */
     public function test_email_verification_screen_can_be_rendered(): void
     {
         $user = User::factory()->unverified()->create();
@@ -22,6 +26,10 @@ class EmailVerificationTest extends TestCase
         $response->assertStatus(200);
     }
 
+    /**
+     * Pengujian: proses verifikasi email dengan link valid.
+     * Hasil yang diharapkan: event Verified dikirim dan status email pengguna menjadi terverifikasi.
+     */
     public function test_email_can_be_verified(): void
     {
         $user = User::factory()->unverified()->create();
@@ -41,6 +49,10 @@ class EmailVerificationTest extends TestCase
         $response->assertRedirect(route('dashboard', absolute: false).'?verified=1');
     }
 
+    /**
+     * Pengujian: proses verifikasi email dengan hash tidak valid.
+     * Hasil yang diharapkan: email tidak terverifikasi karena link tidak sesuai data pengguna.
+     */
     public function test_email_is_not_verified_with_invalid_hash(): void
     {
         $user = User::factory()->unverified()->create();

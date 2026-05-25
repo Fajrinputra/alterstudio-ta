@@ -20,10 +20,8 @@ class DashboardController extends Controller
     {
         $user = $request->user();
         $role = $user->role instanceof Role ? $user->role : Role::from($user->role);
-        $hasBothCrewRoles = $user->hasBothCrewRoles()
-            && in_array($role, [Role::PHOTOGRAPHER, Role::EDITOR], true);
 
-        $data = $hasBothCrewRoles ? $this->dualCrewData($user->id) : match ($role) {
+        $data = match ($role) {
             Role::CLIENT => $this->clientData($user->id),
             Role::ADMIN => $this->adminData(),
             Role::MANAGER => $this->managerData(),
@@ -34,7 +32,6 @@ class DashboardController extends Controller
 
         return view('dashboard', [
             'role' => $role,
-            'hasBothCrewRoles' => $hasBothCrewRoles,
             'data' => $data,
         ]);
     }
@@ -131,7 +128,7 @@ class DashboardController extends Controller
         $data['metrics']['active_users'] = User::where('is_active', true)->count();
         $data['metrics']['managers'] = User::where('role', Role::MANAGER)->count();
         $data['metrics']['admins'] = User::where('role', Role::ADMIN)->count();
-        $data['metrics']['revenue_received'] = Payment::query()
+        $data['metrics']['revenue_received'] = (int) Payment::query()
             ->where('status', Payment::STATUS_PAID)
             ->whereHas('booking', fn ($booking) => $booking->where('status', '!=', Booking::STATUS_CANCELLED))
             ->sum('amount');
@@ -182,19 +179,5 @@ class DashboardController extends Controller
         ];
     }
 
-    protected function dualCrewData(int $userId): array
-    {
-        $photographer = $this->photographerData($userId);
-        $editor = $this->editorData($userId);
-
-        return [
-            'upcoming' => $photographer['upcoming'],
-            'completed' => $photographer['completed'],
-            'queue' => $editor['queue'],
-            'finalized' => $editor['finalized'],
-        ];
-    }
 }
-
-
 

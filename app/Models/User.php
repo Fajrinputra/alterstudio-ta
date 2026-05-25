@@ -27,7 +27,6 @@ class User extends Authenticatable implements MustVerifyEmail
         'email',
         'password',
         'role',
-        'roles',
         'is_active',
         'avatar_path',
         'no_hp',
@@ -54,7 +53,6 @@ class User extends Authenticatable implements MustVerifyEmail
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'role' => Role::class,
-            'roles' => 'array',
             'is_active' => 'boolean',
             'avatar_path' => 'string',
         ];
@@ -67,39 +65,19 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function isRole(string|\App\Enums\Role ...$roles): bool
     {
+        $current = $this->role instanceof Role ? $this->role->value : (string) $this->role;
         $target = array_map(function ($role) {
             return $role instanceof Role ? $role->value : $role;
         }, $roles);
 
-        return count(array_intersect($this->effectiveRoles(), $target)) > 0;
-    }
-
-    /**
-     * Seluruh akses role efektif user (role utama + akses tambahan).
-     *
-     * @return array<int, string>
-     */
-    public function effectiveRoles(): array
-    {
-        $current = $this->role instanceof Role ? $this->role->value : (string) $this->role;
-        $extra = is_array($this->roles) ? $this->roles : [];
-
-        return array_values(array_unique(array_filter(array_merge([$current], $extra))));
-    }
-
-    public function hasBothCrewRoles(): bool
-    {
-        return $this->isRole(Role::PHOTOGRAPHER) && $this->isRole(Role::EDITOR);
+        return in_array($current, $target, true);
     }
 
     public function scopeWithRole($query, string|Role $role)
     {
         $roleValue = $role instanceof Role ? $role->value : $role;
 
-        return $query->where(function ($inner) use ($roleValue) {
-            $inner->where('role', $roleValue)
-                ->orWhereJsonContains('roles', $roleValue);
-        });
+        return $query->where('role', $roleValue);
     }
 
     public function bookings(): HasMany
@@ -120,11 +98,13 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function schedulesAsPhotographer(): HasMany
     {
-        return $this->hasMany(Project::class, 'photographer_id');
+        return $this->hasMany(ProjectScheduleUser::class, 'user_id')
+            ->where('role', Role::PHOTOGRAPHER->value);
     }
 
     public function schedulesAsEditor(): HasMany
     {
-        return $this->hasMany(Project::class, 'editor_id');
+        return $this->hasMany(ProjectScheduleUser::class, 'user_id')
+            ->where('role', Role::EDITOR->value);
     }
 }

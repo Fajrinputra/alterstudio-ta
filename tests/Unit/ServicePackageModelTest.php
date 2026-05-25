@@ -7,6 +7,10 @@ use Tests\TestCase;
 
 class ServicePackageModelTest extends TestCase
 {
+    /**
+     * Pengujian: normalisasi fitur paket layanan.
+     * Hasil yang diharapkan: fitur kosong dibuang dan teks fitur dirapikan.
+     */
     public function test_features_are_normalized_from_json_and_empty_values_are_removed(): void
     {
         $package = new ServicePackage();
@@ -17,6 +21,10 @@ class ServicePackageModelTest extends TestCase
         $this->assertSame(['Cetak foto', 'File digital'], $package->features);
     }
 
+    /**
+     * Pengujian: normalisasi add-on paket dan pembacaan harga dari label.
+     * Hasil yang diharapkan: add-on valid tersimpan rapi dan harga shorthand seperti 100k terbaca benar.
+     */
     public function test_addons_are_normalized_and_price_can_be_parsed_from_label(): void
     {
         $package = new ServicePackage();
@@ -39,6 +47,10 @@ class ServicePackageModelTest extends TestCase
         $this->assertFalse($addons[1]['is_active']);
     }
 
+    /**
+     * Pengujian: normalisasi galeri paket dan gambar ringkasan.
+     * Hasil yang diharapkan: galeri hanya berisi path valid dan gambar pertama menjadi fallback overview.
+     */
     public function test_gallery_and_overview_image_fallback_are_normalized(): void
     {
         $package = new ServicePackage();

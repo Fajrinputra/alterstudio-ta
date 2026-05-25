@@ -17,6 +17,10 @@ class ReportExportTest extends TestCase
 {
     use RefreshDatabase;
 
+    /**
+     * Pengujian: Manajer melihat laporan dengan filter periode dan kategori.
+     * Hasil yang diharapkan: ringkasan laporan menampilkan data pendapatan, pesanan, dan kru sesuai filter.
+     */
     public function test_manager_can_view_report_with_filtered_summary_data(): void
     {
         [$manager, $category] = $this->seedReportScenario();
@@ -37,6 +41,10 @@ class ReportExportTest extends TestCase
             ->assertSee('Total Pendapatan', false);
     }
 
+    /**
+     * Pengujian: ekspor laporan CSV oleh Manajer.
+     * Hasil yang diharapkan: file CSV berisi kop laporan, metadata periode, dan tabel ringkasan.
+     */
     public function test_csv_export_contains_letterhead_metadata_and_report_tables(): void
     {
         [$manager, $category] = $this->seedReportScenario();
@@ -66,6 +74,10 @@ class ReportExportTest extends TestCase
         $this->assertStringContainsString('Rp 500.000', $csv);
     }
 
+    /**
+     * Pengujian: ekspor laporan PDF oleh Manajer.
+     * Hasil yang diharapkan: tampilan cetak laporan berisi metadata dan tabel kinerja kru.
+     */
     public function test_pdf_export_returns_printable_report_view(): void
     {
         [$manager, $category] = $this->seedReportScenario();
@@ -86,6 +98,10 @@ class ReportExportTest extends TestCase
             ->assertSee('Kinerja Editor', false);
     }
 
+    /**
+     * Pengujian: tampilan laporan Owner.
+     * Hasil yang diharapkan: Owner melihat detail final, filter kategori diabaikan, dan tombol ekspor tidak muncul.
+     */
     public function test_owner_report_contains_additional_final_detail(): void
     {
         [, $category] = $this->seedReportScenario();
@@ -110,6 +126,10 @@ class ReportExportTest extends TestCase
             ->assertDontSee('Unduh PDF', false);
     }
 
+    /**
+     * Pengujian: pembatasan ekspor laporan untuk Owner.
+     * Hasil yang diharapkan: permintaan ekspor Owner dialihkan kembali ke halaman laporan tanpa file unduhan.
+     */
     public function test_owner_cannot_export_report_files(): void
     {
         $owner = User::factory()->create(['role' => Role::OWNER, 'name' => 'Owner Alter']);

@@ -14,6 +14,10 @@ class EditRequestLimitTest extends TestCase
 {
     use RefreshDatabase;
 
+    /**
+     * Pengujian: klien mengirim kode foto dan deskripsi edit satu kali.
+     * Hasil yang diharapkan: permintaan edit tersimpan, terkunci, dan tidak dapat diubah ulang.
+     */
     public function test_client_can_submit_photo_codes_and_edit_description_once(): void
     {
         [$project, $client] = $this->makeProject([
@@ -44,6 +48,10 @@ class EditRequestLimitTest extends TestCase
             ->assertSessionHas('error', 'Permintaan edit sudah dikirim dan tidak dapat diubah.');
     }
 
+    /**
+     * Pengujian: permintaan edit sebelum link Drive foto mentah tersedia.
+     * Hasil yang diharapkan: sistem menolak permintaan edit dan menampilkan pesan error.
+     */
     public function test_client_cannot_submit_edit_request_before_drive_link_exists(): void
     {
         [$project, $client] = $this->makeProject();
@@ -57,6 +65,10 @@ class EditRequestLimitTest extends TestCase
             ->assertSessionHas('error', 'Link Drive foto mentah belum tersedia.');
     }
 
+    /**
+     * Pengujian: batas maksimal kode foto yang dikirim klien.
+     * Hasil yang diharapkan: sistem menolak permintaan jika kode foto lebih dari 10.
+     */
     public function test_client_cannot_submit_more_than_ten_photo_codes(): void
     {
         [$project, $client] = $this->makeProject([
@@ -76,6 +88,10 @@ class EditRequestLimitTest extends TestCase
         $this->assertNull($project->fresh()->edit_requested_at);
     }
 
+    /**
+     * Pengujian: permintaan edit pada booking yang sudah dibatalkan.
+     * Hasil yang diharapkan: proses pasca-produksi dihentikan dan data edit tidak tersimpan.
+     */
     public function test_cancelled_booking_cannot_submit_edit_request(): void
     {
         [$project, $client] = $this->makeProject([

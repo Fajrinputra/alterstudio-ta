@@ -16,6 +16,10 @@ class ScheduleOverlapTest extends TestCase
 {
     use RefreshDatabase;
 
+    /**
+     * Pengujian: bentrok jadwal pada fotografer yang sama.
+     * Hasil yang diharapkan: sistem menolak jadwal kedua jika fotografer sudah bertugas pada waktu tersebut.
+     */
     public function test_overlap_for_same_photographer_is_blocked(): void
     {
         $admin = User::factory()->create(['role' => Role::ADMIN]);
@@ -50,6 +54,10 @@ class ScheduleOverlapTest extends TestCase
             ->assertStatus(422);
     }
 
+    /**
+     * Pengujian: bentrok jadwal pada ruangan studio yang sama.
+     * Hasil yang diharapkan: sistem menolak penggunaan ruangan yang sama pada jam yang berbenturan.
+     */
     public function test_overlap_for_same_studio_room_is_blocked_even_with_different_crew(): void
     {
         $admin = User::factory()->create(['role' => Role::ADMIN]);

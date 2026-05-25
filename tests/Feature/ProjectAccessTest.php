@@ -15,6 +15,10 @@ class ProjectAccessTest extends TestCase
 {
     use RefreshDatabase;
 
+    /**
+     * Pengujian: akses detail project oleh kru.
+     * Hasil yang diharapkan: kru yang ditugaskan dapat membuka detail, sedangkan kru lain ditolak.
+     */
     public function test_assigned_crew_can_open_project_detail_and_unassigned_crew_is_forbidden(): void
     {
         [$project, $photographer] = $this->makeProject();
@@ -30,6 +34,10 @@ class ProjectAccessTest extends TestCase
             ->assertForbidden();
     }
 
+    /**
+     * Pengujian: akses monitoring detail project oleh admin dan manajer.
+     * Hasil yang diharapkan: admin dan manajer dapat membuka detail project untuk pemantauan.
+     */
     public function test_admin_and_manager_can_open_project_detail_for_monitoring(): void
     {
         [$project] = $this->makeProject();
@@ -40,6 +48,10 @@ class ProjectAccessTest extends TestCase
         $this->actingAs($manager)->get(route('projects.show', $project))->assertOk();
     }
 
+    /**
+     * Pengujian: akses klien ke link Drive foto mentah.
+     * Hasil yang diharapkan: klien pemilik diarahkan ke Drive, sedangkan klien lain ditolak.
+     */
     public function test_client_raw_download_redirects_to_drive_only_for_owned_project(): void
     {
         [$project, , , $client] = $this->makeProject([

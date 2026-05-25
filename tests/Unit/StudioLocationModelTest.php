@@ -7,6 +7,10 @@ use Tests\TestCase;
 
 class StudioLocationModelTest extends TestCase
 {
+    /**
+     * Pengujian: normalisasi galeri foto cabang studio.
+     * Hasil yang diharapkan: hanya path foto valid yang dipakai dan foto pertama menjadi foto utama.
+     */
     public function test_photo_gallery_is_normalized_and_photo_path_uses_first_photo(): void
     {
         $location = new StudioLocation();

@@ -2,30 +2,30 @@
     <x-slot name="header">
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-                <p class="flex items-center gap-2 text-sm font-medium uppercase tracking-[1.5px] text-[#8B7359]">
+                <p class="flex items-center gap-2 text-xs font-medium uppercase tracking-[1.5px] text-[#8B7359]">
                     <i class="fa-solid fa-receipt text-[#D4A017]"></i>
                     Monitoring Pemesanan
                 </p>
-                <h2 class="mt-1 font-display text-4xl font-semibold tracking-[-1px] text-[#3F2B1B] md:text-5xl">
+                <h2 class="mt-1 font-display text-3xl font-semibold tracking-tight text-[#3F2B1B] md:text-4xl">
                     Daftar <span class="bg-gradient-to-r from-[#D4A017] via-[#E07A5F] to-[#D4A017] bg-clip-text font-medium text-transparent">Pemesanan Masuk</span>
                 </h2>
             </div>
         </div>
     </x-slot>
 
-    <div class="bg-[#FAF6F0] py-8">
-        <div class="mx-auto max-w-7xl space-y-8 px-4 sm:px-6 lg:px-8">
+    <div class="bg-[#FAF6F0] py-5">
+        <div class="mx-auto max-w-[1180px] space-y-5 px-0 sm:px-2 lg:px-4">
             <div class="relative group">
-                <div class="absolute inset-0 rounded-3xl bg-gradient-to-r from-[#D4A017]/10 via-[#E07A5F]/10 to-[#D4A017]/10 blur-2xl opacity-70 transition-all group-hover:opacity-90"></div>
-                <div class="relative rounded-3xl border border-[#EDE0D0] bg-white/80 p-8 shadow-xl backdrop-blur-2xl">
-                    <form method="GET" class="space-y-6">
-                        <div class="grid grid-cols-1 gap-6 md:grid-cols-4">
+                <div class="absolute inset-0 rounded-2xl bg-gradient-to-r from-[#D4A017]/10 via-[#E07A5F]/10 to-[#D4A017]/10 blur-xl opacity-60 transition-all group-hover:opacity-80"></div>
+                <div class="relative rounded-2xl border border-[#EDE0D0] bg-white/80 p-4 shadow-md backdrop-blur-2xl sm:p-5">
+                    <form method="GET" class="space-y-4">
+                        <div class="grid grid-cols-1 gap-4 md:grid-cols-4">
                             <div class="space-y-2">
                                 <label class="flex items-center gap-2 text-xs font-medium uppercase tracking-widest text-[#7A5B3A]">
                                     <i class="fa-solid fa-credit-card text-[#D4A017]"></i>
                                     Status Pemesanan
                                 </label>
-                                <select name="status" class="w-full rounded-3xl border border-[#E1D3C5] bg-white/70 px-5 py-3.5 text-sm text-[#3F2B1B] transition-all focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20">
+                                <select name="status" class="w-full rounded-2xl border border-[#E1D3C5] bg-white/70 px-4 py-2.5 text-sm text-[#3F2B1B] transition-all focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20">
                                     <option value="">Semua Status</option>
                                     @php
                                         $statusLabels = [
@@ -47,7 +47,7 @@
                                     <i class="fa-solid fa-calendar text-[#D4A017]"></i>
                                     Status Jadwal
                                 </label>
-                                <select name="schedule_status" class="w-full rounded-3xl border border-[#E1D3C5] bg-white/70 px-5 py-3.5 text-sm text-[#3F2B1B] transition-all focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20">
+                                <select name="schedule_status" class="w-full rounded-2xl border border-[#E1D3C5] bg-white/70 px-4 py-2.5 text-sm text-[#3F2B1B] transition-all focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20">
                                     <option value="">Semua</option>
                                     <option value="scheduled" @selected(request('schedule_status') === 'scheduled')>Sudah dijadwalkan</option>
                                     <option value="unscheduled" @selected(request('schedule_status') === 'unscheduled')>Belum dijadwalkan</option>
@@ -59,7 +59,7 @@
                                     <i class="fa-solid fa-box text-[#D4A017]"></i>
                                     Paket
                                 </label>
-                                <select name="package_id" class="w-full rounded-3xl border border-[#E1D3C5] bg-white/70 px-5 py-3.5 text-sm text-[#3F2B1B] transition-all focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20">
+                                <select name="package_id" class="w-full rounded-2xl border border-[#E1D3C5] bg-white/70 px-4 py-2.5 text-sm text-[#3F2B1B] transition-all focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20">
                                     <option value="">Semua Paket</option>
                                     @foreach($packages ?? [] as $p)
                                         <option value="{{ $p->id }}" @selected(request('package_id') == $p->id)>{{ $p->name }}</option>
@@ -73,13 +73,13 @@
                                     Rentang Tanggal
                                 </label>
                                 <div class="grid grid-cols-2 gap-3">
-                                    <input type="date" name="date_from" value="{{ request('date_from') }}" class="rounded-3xl border border-[#E1D3C5] bg-white/70 px-5 py-3.5 text-sm text-[#3F2B1B] transition-all focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20">
-                                    <input type="date" name="date_to" value="{{ request('date_to') }}" class="rounded-3xl border border-[#E1D3C5] bg-white/70 px-5 py-3.5 text-sm text-[#3F2B1B] transition-all focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20">
+                                    <input type="date" name="date_from" value="{{ request('date_from') }}" class="rounded-2xl border border-[#E1D3C5] bg-white/70 px-3 py-2.5 text-sm text-[#3F2B1B] transition-all focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20">
+                                    <input type="date" name="date_to" value="{{ request('date_to') }}" class="rounded-2xl border border-[#E1D3C5] bg-white/70 px-3 py-2.5 text-sm text-[#3F2B1B] transition-all focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20">
                                 </div>
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1 items-end gap-6 md:grid-cols-4">
+                        <div class="grid grid-cols-1 items-end gap-4 md:grid-cols-4">
                             <div class="space-y-2 md:col-span-3">
                                 <label class="flex items-center gap-2 text-xs font-medium uppercase tracking-widest text-[#7A5B3A]">
                                     <i class="fa-solid fa-magnifying-glass text-[#D4A017]"></i>
@@ -89,11 +89,11 @@
                                     <span class="absolute left-5 top-1/2 -translate-y-1/2 text-[#D4A017]">
                                         <i class="fa-solid fa-search"></i>
                                     </span>
-                                    <input type="text" name="q" value="{{ request('q') }}" placeholder="Misal: 5 atau 'Client Demo'" class="w-full rounded-3xl border border-[#E1D3C5] bg-white/70 py-3.5 pl-12 pr-5 text-sm text-[#3F2B1B] transition-all focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20">
+                                    <input type="text" name="q" value="{{ request('q') }}" placeholder="Misal: 5 atau 'Client Demo'" class="w-full rounded-2xl border border-[#E1D3C5] bg-white/70 py-2.5 pl-11 pr-4 text-sm text-[#3F2B1B] transition-all focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20">
                                 </div>
                             </div>
                             <div>
-                                <button class="flex h-[52px] w-full items-center justify-center gap-3 rounded-3xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] text-base font-semibold text-white shadow-xl shadow-[#D4A017]/30 transition-all hover:-translate-y-0.5 hover:shadow-2xl active:scale-[0.98]">
+                                <button class="flex h-[44px] w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] text-sm font-semibold text-white shadow-md shadow-[#D4A017]/25 transition-all hover:-translate-y-0.5 hover:shadow-lg active:scale-[0.98]">
                                     <i class="fa-solid fa-filter"></i>
                                     Terapkan Filter
                                 </button>
@@ -104,15 +104,15 @@
             </div>
 
             <div class="relative group">
-                <div class="absolute inset-0 rounded-3xl bg-gradient-to-br from-[#D4A017]/5 via-[#E07A5F]/5 to-[#FAF6F0] blur-3xl"></div>
-                <div class="relative overflow-hidden rounded-3xl border border-[#EDE0D0] bg-white/80 shadow-2xl backdrop-blur-2xl">
+                <div class="absolute inset-0 rounded-2xl bg-gradient-to-br from-[#D4A017]/5 via-[#E07A5F]/5 to-[#FAF6F0] blur-2xl"></div>
+                <div class="relative overflow-hidden rounded-2xl border border-[#EDE0D0] bg-white/80 shadow-lg backdrop-blur-2xl">
                     @if($bookings->isEmpty())
                         <div class="px-6 py-16 text-center text-[#8B7359]">
                             <i class="fa-solid fa-inbox mb-4 text-4xl text-[#D4A017]/60"></i>
                             <p class="text-lg font-medium text-[#3F2B1B]">Belum ada pemesanan yang sesuai filter.</p>
                         </div>
                     @else
-                        <div class="space-y-4 p-4 lg:hidden">
+                        <div class="space-y-3 p-3 lg:hidden">
                             @foreach($bookings as $b)
                                 @php
                                     $displayStatusKey = $b->isSubmitted()
@@ -142,7 +142,7 @@
                                     $remainingAddonCount = max(0, $addonCollection->count() - $addonPreview->count());
                                 @endphp
 
-                                <article x-data="{ statusActionOpen: false }" class="rounded-3xl border border-[#EDE0D0] bg-white px-4 py-4 shadow-sm">
+                                <article x-data="{ statusActionOpen: false }" class="rounded-2xl border border-[#EDE0D0] bg-white px-4 py-3 shadow-sm">
                                     <div class="flex items-start justify-between gap-3">
                                         <div>
                                             <p class="font-mono text-sm font-semibold text-[#D4A017]">#{{ $b->id }}</p>
@@ -150,12 +150,12 @@
                                             <p class="text-sm text-[#8B7359]">{{ $b->package->name ?? '-' }}</p>
                                         </div>
                                         @if($canUpdatePayment)
-                                            <button type="button" @click="statusActionOpen = true" class="inline-flex items-center gap-2 rounded-3xl px-3 py-1.5 text-[11px] font-semibold transition-all hover:-translate-y-0.5 hover:ring-2 hover:ring-[#D4A017]/30 {{ $badge['bg'] }} {{ $badge['text'] }}">
+                                            <button type="button" @click="statusActionOpen = true" class="inline-flex items-center gap-2 rounded-xl px-3 py-1.5 text-[11px] font-semibold transition-all hover:-translate-y-0.5 hover:ring-2 hover:ring-[#D4A017]/30 {{ $badge['bg'] }} {{ $badge['text'] }}">
                                                 <span class="h-2 w-2 rounded-full bg-current"></span>
                                                 {{ $badge['label'] }}
                                             </button>
                                         @else
-                                            <span class="inline-flex items-center gap-2 rounded-3xl px-3 py-1.5 text-[11px] font-semibold {{ $badge['bg'] }} {{ $badge['text'] }}">
+                                            <span class="inline-flex items-center gap-2 rounded-xl px-3 py-1.5 text-[11px] font-semibold {{ $badge['bg'] }} {{ $badge['text'] }}">
                                                 <span class="h-2 w-2 rounded-full bg-current"></span>
                                                 {{ $badge['label'] }}
                                             </span>

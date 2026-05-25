@@ -374,6 +374,7 @@
                                                 <option value="">Pilih Fotografer</option>
                                                 @foreach($photographers as $p)
                                                     <option value="{{ $p->id }}" 
+                                                            @class(['text-red-600' => in_array($p->id, $disabledPhotographers, true)])
                                                             @selected(optional($project->schedule)->photographer_id == $p->id)
                                                             @disabled(in_array($p->id, $disabledPhotographers, true))>
                                                         {{ $p->name }}
@@ -381,6 +382,12 @@
                                                     </option>
                                                 @endforeach
                                             </select>
+                                            @if(count($disabledPhotographers))
+                                                <div class="mt-2 rounded-2xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-medium text-red-700">
+                                                    <i class="fa-solid fa-triangle-exclamation mr-1"></i>
+                                                    Fotografer yang nonaktif di daftar sudah memiliki jadwal pada waktu tersebut.
+                                                </div>
+                                            @endif
                                         </div>
                                         <div>
                                             <label class="block text-xs font-medium text-[#7A5B3A] tracking-widest mb-2">
@@ -391,6 +398,7 @@
                                                 <option value="">Pilih Editor</option>
                                                 @foreach($editors as $e)
                                                     <option value="{{ $e->id }}" 
+                                                            @class(['text-red-600' => in_array($e->id, $disabledEditors, true)])
                                                             @selected(optional($project->schedule)->editor_id == $e->id)
                                                             @disabled(in_array($e->id, $disabledEditors, true))>
                                                         {{ $e->name }}
@@ -398,6 +406,12 @@
                                                     </option>
                                                 @endforeach
                                             </select>
+                                            @if(count($disabledEditors))
+                                                <div class="mt-2 rounded-2xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-medium text-red-700">
+                                                    <i class="fa-solid fa-triangle-exclamation mr-1"></i>
+                                                    Editor yang nonaktif di daftar sudah memiliki jadwal pada waktu tersebut.
+                                                </div>
+                                            @endif
                                         </div>
                                         <div>
                                             <label class="block text-xs font-medium text-[#7A5B3A] tracking-widest mb-2">
@@ -450,17 +464,33 @@
                                                     <label class="block text-xs font-medium text-[#7A5B3A] tracking-widest mb-2">Ubah Fotografer</label>
                                                     <select name="photographer_id" class="w-full px-5 py-4 rounded-3xl border border-[#E1D3C5] bg-white/70 backdrop-blur-md focus:border-[#D4A017]">
                                                         @foreach($photographers as $p)
-                                                            <option value="{{ $p->id }}" @selected(optional($project->schedule)->photographer_id == $p->id) @disabled(in_array($p->id, $disabledPhotographers, true))>{{ $p->name }}</option>
+                                                            <option value="{{ $p->id }}" @class(['text-red-600' => in_array($p->id, $disabledPhotographers, true)]) @selected(optional($project->schedule)->photographer_id == $p->id) @disabled(in_array($p->id, $disabledPhotographers, true))>
+                                                                {{ $p->name }} @if(in_array($p->id, $disabledPhotographers, true)) (Sudah ada jadwal) @endif
+                                                            </option>
                                                         @endforeach
                                                     </select>
+                                                    @if(count($disabledPhotographers))
+                                                        <div class="mt-2 rounded-2xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-medium text-red-700">
+                                                            <i class="fa-solid fa-triangle-exclamation mr-1"></i>
+                                                            Fotografer yang nonaktif sudah memiliki jadwal pada waktu ini.
+                                                        </div>
+                                                    @endif
                                                 </div>
                                                 <div>
                                                     <label class="block text-xs font-medium text-[#7A5B3A] tracking-widest mb-2">Ubah Editor</label>
                                                     <select name="editor_id" class="w-full px-5 py-4 rounded-3xl border border-[#E1D3C5] bg-white/70 backdrop-blur-md focus:border-[#D4A017]">
                                                         @foreach($editors as $e)
-                                                            <option value="{{ $e->id }}" @selected(optional($project->schedule)->editor_id == $e->id) @disabled(in_array($e->id, $disabledEditors, true))>{{ $e->name }}</option>
+                                                            <option value="{{ $e->id }}" @class(['text-red-600' => in_array($e->id, $disabledEditors, true)]) @selected(optional($project->schedule)->editor_id == $e->id) @disabled(in_array($e->id, $disabledEditors, true))>
+                                                                {{ $e->name }} @if(in_array($e->id, $disabledEditors, true)) (Sudah ada jadwal) @endif
+                                                            </option>
                                                         @endforeach
                                                     </select>
+                                                    @if(count($disabledEditors))
+                                                        <div class="mt-2 rounded-2xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-medium text-red-700">
+                                                            <i class="fa-solid fa-triangle-exclamation mr-1"></i>
+                                                            Editor yang nonaktif sudah memiliki jadwal pada waktu ini.
+                                                        </div>
+                                                    @endif
                                                 </div>
                                                 <div>
                                                     <label class="block text-xs font-medium text-[#7A5B3A] tracking-widest mb-2">Ubah Ruangan</label>

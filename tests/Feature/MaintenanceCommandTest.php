@@ -20,6 +20,10 @@ class MaintenanceCommandTest extends TestCase
 {
     use RefreshDatabase;
 
+    /**
+     * Pengujian: command pembatalan otomatis booking yang melewati batas pembayaran.
+     * Hasil yang diharapkan: hanya booking yang payment window-nya sudah mulai dan kedaluwarsa yang dibatalkan.
+     */
     public function test_cancel_expired_bookings_command_cancels_only_started_expired_payment_windows(): void
     {
         $client = User::factory()->create(['role' => Role::CLIENT]);
@@ -71,6 +75,10 @@ class MaintenanceCommandTest extends TestCase
         $this->assertSame(Booking::STATUS_WAITING_PAYMENT, $notStarted->fresh()->status);
     }
 
+    /**
+     * Pengujian: command pembersihan aset media yang sudah kedaluwarsa.
+     * Hasil yang diharapkan: hanya file dan record yang melewati masa berlaku yang dihapus.
+     */
     public function test_cleanup_expired_media_command_deletes_expired_files_and_records_only(): void
     {
         Storage::fake('public');
@@ -100,6 +108,10 @@ class MaintenanceCommandTest extends TestCase
         $this->assertDatabaseHas('media_assets', ['id' => $current->id]);
     }
 
+    /**
+     * Pengujian: command pemrosesan akun klien tidak aktif.
+     * Hasil yang diharapkan: hanya klien tanpa transaksi terbaru yang diberi notifikasi dan dihapus.
+     */
     public function test_cleanup_inactive_clients_notifies_and_deletes_only_clients_without_recent_transactions(): void
     {
         Notification::fake();

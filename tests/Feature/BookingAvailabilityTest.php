@@ -16,6 +16,11 @@ class BookingAvailabilityTest extends TestCase
 {
     use RefreshDatabase;
 
+    /**
+     * Fokus 3 - Mengecek ketersediaan slot pemesanan.
+     * Menguji ketersediaan slot pada cabang yang sama ketika sudah ada booking.
+     * Hasil yang diharapkan: slot yang bentrok dengan jadwal booking dan jeda antar sesi tidak ditampilkan.
+     */
     public function test_availability_endpoint_hides_booked_slot_on_same_location(): void
     {
         config()->set('studio.closed_weekdays', []);
@@ -61,6 +66,11 @@ class BookingAvailabilityTest extends TestCase
         $this->assertContains('15:15', $times);
     }
 
+    /**
+     * Fokus 3 - Mengecek ketersediaan slot pemesanan.
+     * Menguji perhitungan kapasitas ruangan aktif pada cabang yang dipilih.
+     * Hasil yang diharapkan: slot masih tersedia jika masih ada ruangan kosong, lalu hilang jika semua ruangan terpakai.
+     */
     public function test_availability_uses_active_room_capacity_inside_selected_location(): void
     {
         config()->set('studio.closed_weekdays', []);
@@ -116,6 +126,11 @@ class BookingAvailabilityTest extends TestCase
         $this->assertNotContains('14:00', collect($response->json('available_times'))->pluck('value')->all());
     }
 
+    /**
+     * Fokus 3 - Mengecek ketersediaan slot pemesanan.
+     * Menguji pengaruh add-on tambah waktu terhadap durasi booking dan ketersediaan slot.
+     * Hasil yang diharapkan: durasi bertambah 10 menit dan slot yang menjadi bentrok tidak ditampilkan.
+     */
     public function test_extra_time_addon_extends_duration_for_availability(): void
     {
         config()->set('studio.closed_weekdays', []);
@@ -174,6 +189,11 @@ class BookingAvailabilityTest extends TestCase
         $this->assertNotContains('13:00', collect($response->json('available_times'))->pluck('value')->all());
     }
 
+    /**
+     * Fokus 3 - Mengecek ketersediaan slot pemesanan.
+     * Menguji aturan booking hari-H agar slot waktu yang sudah lewat tidak dapat dipilih.
+     * Hasil yang diharapkan: sistem hanya menampilkan slot setelah waktu saat ini.
+     */
     public function test_availability_endpoint_hides_today_slots_that_have_already_passed(): void
     {
         Carbon::setTestNow(Carbon::parse('2026-05-04 15:00:00'));
@@ -222,6 +242,11 @@ class BookingAvailabilityTest extends TestCase
         }
     }
 
+    /**
+     * Fokus 6 - Menolak slot waktu yang tidak tersedia.
+     * Menguji validasi penyimpanan booking ketika klien memilih jam yang sudah lewat pada hari yang sama.
+     * Hasil yang diharapkan: sistem menolak booking dan mengembalikan error pada field booking_time.
+     */
     public function test_store_rejects_today_booking_time_that_has_already_passed(): void
     {
         Carbon::setTestNow(Carbon::parse('2026-05-04 15:00:00'));
@@ -262,6 +287,11 @@ class BookingAvailabilityTest extends TestCase
         }
     }
 
+    /**
+     * Pendukung Fokus 3 - Mengecek ketersediaan slot pemesanan.
+     * Menguji respons ketersediaan ketika tanggal berada di luar hari operasional yang dikonfigurasi.
+     * Hasil yang diharapkan: endpoint availability menandai tanggal tersebut sebagai tutup.
+     */
     public function test_availability_endpoint_marks_weekend_as_closed(): void
     {
         config()->set('studio.closed_weekdays', [0, 6]);
@@ -286,6 +316,11 @@ class BookingAvailabilityTest extends TestCase
             ->assertJsonPath('is_closed', true);
     }
 
+    /**
+     * Fokus 4 - Menolak tanggal booking yang tidak sesuai aturan.
+     * Menguji batas maksimal tanggal booking satu bulan ke depan pada pengecekan slot dan penyimpanan booking.
+     * Hasil yang diharapkan: availability dan store sama-sama menolak tanggal yang melewati batas tersebut.
+     */
     public function test_booking_date_cannot_be_more_than_one_month_ahead(): void
     {
         config()->set('studio.closed_weekdays', []);

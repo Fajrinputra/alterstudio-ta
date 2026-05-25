@@ -37,22 +37,22 @@
             @include('layouts.sidebar')
 
             {{-- Main Content Area --}}
-            <div class="flex flex-col min-h-screen lg:ml-72 transition-all duration-300">
+            <div class="flex flex-col min-h-screen lg:ml-64 transition-all duration-300">
                 
                 @include('layouts.navigation')
 
                 {{-- Header Slot --}}
                 @isset($header)
-                    <header class="bg-white/80 backdrop-blur-xl border-b border-[#EDE0D0] sticky top-16 z-30 shadow-sm">
-                        <div class="max-w-7xl mx-auto py-6 px-6 lg:px-8">
+                    <header class="bg-white/80 backdrop-blur-xl border-b border-[#EDE0D0] sticky top-14 z-30 shadow-sm">
+                        <div class="max-w-[1180px] mx-auto py-4 px-4 sm:px-5 lg:px-6">
                             {{ $header }}
                         </div>
                     </header>
                 @endisset
 
                 {{-- Main Content --}}
-                <main class="flex-1 pb-12">
-                    <div class="max-w-7xl mx-auto px-6 lg:px-8">
+                <main class="flex-1 pb-8">
+                    <div class="max-w-[1180px] mx-auto px-4 sm:px-5 lg:px-6">
                         {{ $slot }}
                     </div>
                 </main>
@@ -66,15 +66,15 @@
             @include('layouts.navigation')
 
             @isset($header)
-                <header class="bg-white/80 backdrop-blur-xl border-b border-[#EDE0D0] sticky top-16 z-30 shadow-sm">
-                    <div class="max-w-7xl mx-auto py-6 px-6 lg:px-8">
+                <header class="bg-white/80 backdrop-blur-xl border-b border-[#EDE0D0] sticky top-14 z-30 shadow-sm">
+                    <div class="max-w-[1180px] mx-auto py-4 px-4 sm:px-5 lg:px-6">
                         {{ $header }}
                     </div>
                 </header>
             @endisset
 
-            <main class="pb-12">
-                <div class="max-w-7xl mx-auto px-6 lg:px-8">
+            <main class="pb-8">
+                <div class="max-w-[1180px] mx-auto px-4 sm:px-5 lg:px-6">
                     {{ $slot }}
                 </div>
             </main>
@@ -87,8 +87,8 @@
             <button type="button"
                     @click="faqOpen = true"
                     aria-label="Buka rules pemesanan"
-                    class="fixed bottom-28 right-8 z-50 flex h-16 w-16 items-center justify-center rounded-3xl bg-gradient-to-br from-[#D4A017] via-[#E0912F] to-[#E07A5F] text-white shadow-2xl ring-4 ring-white/50 transition-all duration-300 hover:scale-110 active:scale-95">
-                <i class="fa-solid fa-circle-question text-3xl"></i>
+                    class="fixed bottom-24 right-4 z-50 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#D4A017] via-[#E0912F] to-[#E07A5F] text-white shadow-xl ring-4 ring-white/50 transition-all duration-300 hover:scale-105 active:scale-95 sm:right-6 sm:h-14 sm:w-14">
+                <i class="fa-solid fa-circle-question text-xl sm:text-2xl"></i>
             </button>
 
             <div x-cloak x-show="faqOpen" x-transition.opacity class="fixed inset-0 z-[60] flex items-center justify-center px-4 py-6">
@@ -99,10 +99,10 @@
 
                 <section x-show="faqOpen"
                          x-transition
-                         class="relative max-h-[88vh] w-full max-w-2xl overflow-y-auto rounded-3xl border border-[#EDE0D0] bg-white p-6 shadow-2xl shadow-[#3F2B1B]/25 sm:p-8">
+                         class="relative max-h-[88vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-[#EDE0D0] bg-white p-5 shadow-2xl shadow-[#3F2B1B]/25 sm:p-6">
                     <button type="button"
                             @click="faqOpen = false"
-                            class="absolute right-5 top-5 flex h-10 w-10 items-center justify-center rounded-2xl text-[#8B7359] transition hover:bg-[#FAF6F0] hover:text-[#3F2B1B]"
+                            class="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-xl text-[#8B7359] transition hover:bg-[#FAF6F0] hover:text-[#3F2B1B]"
                             aria-label="Tutup rules">
                         <i class="fa-solid fa-xmark text-lg"></i>
                     </button>
@@ -112,35 +112,35 @@
                             <i class="fa-solid fa-circle-info text-[#D4A017]"></i>
                             Rules
                         </p>
-                        <h2 class="mt-4 font-display text-3xl font-semibold text-[#3F2B1B]">Panduan Pemesanan Alter Studio</h2>
+                        <h2 class="mt-4 font-display text-2xl font-semibold text-[#3F2B1B]">Panduan Pemesanan Alter Studio</h2>
                         <p class="mt-3 text-sm leading-6 text-[#7A5B3A]">
                             Pemesanan akan masuk sebagai pengajuan terlebih dahulu dan perlu dikonfirmasi admin sebelum pembayaran dibuka. Setelah dikonfirmasi, klien dapat memilih pembayaran DP sebesar 10% dari total pemesanan atau langsung lunas. Jika memilih DP, sisa pembayaran wajib dilunasi sebelum proses pasca-produksi dapat berjalan.
                         </p>
                     </div>
 
                     <div class="mt-6 space-y-4 text-sm leading-6 text-[#5C432C]">
-                        <div class="rounded-3xl border border-[#EDE0D0] bg-[#FAF6F0] p-5">
+                        <div class="rounded-2xl border border-[#EDE0D0] bg-[#FAF6F0] p-4">
                             <p class="font-semibold text-[#3F2B1B]">Aturan Jadwal</p>
                             <p class="mt-2">
                                 Pilihan jam mengikuti durasi paket, add-on tambah waktu, jeda antar sesi, kapasitas ruangan cabang, dan jam operasional studio. Untuk pemesanan di hari yang sama, jam yang sudah lewat tidak dapat dipilih.
                             </p>
                         </div>
 
-                        <div class="rounded-3xl border border-[#EDE0D0] bg-[#FAF6F0] p-5">
+                        <div class="rounded-2xl border border-[#EDE0D0] bg-[#FAF6F0] p-4">
                             <p class="font-semibold text-[#3F2B1B]">Aturan Pembayaran</p>
                             <p class="mt-2">
                                 Pembayaran DP menandakan pemesanan sudah diamankan, tetapi belum dianggap lunas. Admin dapat menandai pelunasan jika sisa pembayaran dibayar di lokasi. Pemesanan yang sudah DP tidak dapat dibatalkan dari aksi admin biasa.
                             </p>
                         </div>
 
-                        <div class="rounded-3xl border border-[#EDE0D0] bg-[#FAF6F0] p-5">
+                        <div class="rounded-2xl border border-[#EDE0D0] bg-[#FAF6F0] p-4">
                             <p class="font-semibold text-[#3F2B1B]">Aturan Pasca-Produksi</p>
                             <p class="mt-2">
                                 Fotografer baru dapat membagikan link Google Drive foto mentah setelah pemesanan terjadwal dan pembayaran sudah lunas. Link Drive berlaku selama 7 hari, sehingga klien disarankan segera membuka folder dan mencatat kode foto yang ingin diedit.
                             </p>
                         </div>
 
-                        <div class="rounded-3xl border border-[#EDE0D0] bg-[#FAF6F0] p-5">
+                        <div class="rounded-2xl border border-[#EDE0D0] bg-[#FAF6F0] p-4">
                             <p class="font-semibold text-[#3F2B1B]">Aturan Edit</p>
                             <p class="mt-2">
                                 Klien dapat mengirim maksimal 10 kode foto beserta deskripsi permintaan edit. Pastikan kode foto dan deskripsi edit ditulis dengan jelas karena permintaan akan diproses sebagai acuan hasil final.
@@ -154,8 +154,8 @@
                target="_blank" 
                rel="noopener noreferrer"
                aria-label="Hubungi admin melalui WhatsApp"
-               class="fixed bottom-8 right-8 z-50 flex h-16 w-16 items-center justify-center rounded-3xl bg-gradient-to-br from-[#25D366] via-[#128C7E] to-[#0E7C6B] text-white shadow-2xl ring-4 ring-white/50 transition-all duration-300 hover:scale-110 active:scale-95">
-                <i class="fa-brands fa-whatsapp text-3xl"></i>
+               class="fixed bottom-6 right-4 z-50 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#25D366] via-[#128C7E] to-[#0E7C6B] text-white shadow-xl ring-4 ring-white/50 transition-all duration-300 hover:scale-105 active:scale-95 sm:right-6 sm:h-14 sm:w-14">
+                <i class="fa-brands fa-whatsapp text-xl sm:text-2xl"></i>
             </a>
         </div>
     @endif

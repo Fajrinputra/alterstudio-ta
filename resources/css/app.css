@@ -1,3 +1,86 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer utilities {
+    .max-w-7xl {
+        max-width: 1180px;
+    }
+
+    .rounded-3xl {
+        border-radius: 1rem;
+    }
+
+    .shadow-2xl {
+        box-shadow: 0 18px 40px -24px rgb(63 43 27 / 0.38);
+    }
+
+    .text-4xl {
+        font-size: 2rem;
+        line-height: 1.15;
+    }
+
+    .text-5xl {
+        font-size: 2.45rem;
+        line-height: 1.08;
+    }
+
+    .p-8 {
+        padding: 1.5rem;
+    }
+
+    .px-8 {
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
+    }
+
+    .py-8 {
+        padding-top: 1.5rem;
+        padding-bottom: 1.5rem;
+    }
+
+    .py-10,
+    .py-12 {
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+    }
+
+    .gap-8 {
+        gap: 1.5rem;
+    }
+
+    .space-y-8 > :not([hidden]) ~ :not([hidden]) {
+        --tw-space-y-reverse: 0;
+        margin-top: calc(1.5rem * calc(1 - var(--tw-space-y-reverse)));
+        margin-bottom: calc(1.5rem * var(--tw-space-y-reverse));
+    }
+
+    @media (min-width: 768px) {
+        .md\:text-5xl {
+            font-size: 2.5rem;
+            line-height: 1.08;
+        }
+    }
+
+    @media (min-width: 1024px) {
+        .lg\:text-6xl {
+            font-size: 3rem;
+            line-height: 1.05;
+        }
+
+        .lg\:text-7xl {
+            font-size: 3.4rem;
+            line-height: 1.04;
+        }
+
+        .lg\:p-10,
+        .lg\:p-12 {
+            padding: 2rem;
+        }
+
+        .lg\:px-8 {
+            padding-left: 1.5rem;
+            padding-right: 1.5rem;
+        }
+    }
+}

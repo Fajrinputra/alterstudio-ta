@@ -47,7 +47,6 @@
                                 <option value="">Semua Akun</option>
                                 <option value="photographer" @selected(($roleFilter ?? null) === 'photographer')>Akun Fotografer</option>
                                 <option value="editor" @selected(($roleFilter ?? null) === 'editor')>Akun Editor</option>
-                                <option value="dual_crew" @selected(($roleFilter ?? null) === 'dual_crew')>Kru Ganda (Fotografer + Editor)</option>
                             </select>
                         </div>
                         
@@ -83,7 +82,6 @@
                     <div class="space-y-4 p-4 lg:hidden">
                         @foreach($users as $user)
                             @php
-                                $effectiveRoles = $user->effectiveRoles();
                                 $primaryRole = $user->role instanceof Role ? $user->role->value : $user->role;
                                 $isOwner = $user->role === \App\Enums\Role::OWNER;
                             @endphp
@@ -124,17 +122,6 @@
                                     </div>
                                 </dl>
 
-                                <div class="mt-4">
-                                    <p class="mb-2 text-[11px] uppercase tracking-wide text-[#8B7359]">Akses Tambahan</p>
-                                    <div class="flex flex-wrap gap-2">
-                                        @foreach($effectiveRoles as $accessRole)
-                                            <span class="rounded-3xl border border-[#E1D3C5] bg-[#FAF6F0] px-3 py-1 text-[11px] font-medium text-[#7A5B3A]">
-                                                {{ ucfirst($accessRole) }}
-                                            </span>
-                                        @endforeach
-                                    </div>
-                                </div>
-
                                 <div class="mt-4 flex items-center gap-2">
                                     <a href="{{ route('admin.users.edit', $user) }}"
                                        class="inline-flex items-center gap-2 rounded-3xl border border-[#E1D3C5] px-3 py-2 text-[11px] font-medium text-[#5C432C] transition hover:border-[#D4A017] hover:bg-white">
@@ -156,19 +143,17 @@
                     <div class="hidden overflow-x-auto lg:block">
                         <table class="min-w-full table-fixed">
                             <colgroup>
-                                <col class="w-[27%]">
-                                <col class="w-[13%]">
-                                <col class="w-[13%]">
-                                <col class="w-[21%]">
-                                <col class="w-[12%]">
-                                <col class="w-[14%]">
+                                <col class="w-[32%]">
+                                <col class="w-[18%]">
+                                <col class="w-[18%]">
+                                <col class="w-[15%]">
+                                <col class="w-[17%]">
                             </colgroup>
                             <thead>
                                 <tr class="bg-gradient-to-r from-[#FAF6F0] to-white border-b border-[#EDE0D0]">
                                     <th class="px-3 py-4 text-center text-xs font-semibold tracking-widest text-[#3F2B1B] uppercase">Nama</th>
                                     <th class="px-3 py-4 text-center text-xs font-semibold tracking-widest text-[#3F2B1B] uppercase">Kontak</th>
-                                    <th class="px-3 py-4 text-center text-xs font-semibold tracking-widest text-[#3F2B1B] uppercase">Role Utama</th>
-                                    <th class="px-3 py-4 text-center text-xs font-semibold tracking-widest text-[#3F2B1B] uppercase">Akses Tambahan</th>
+                                    <th class="px-3 py-4 text-center text-xs font-semibold tracking-widest text-[#3F2B1B] uppercase">Role</th>
                                     <th class="px-3 py-4 text-center text-xs font-semibold tracking-widest text-[#3F2B1B] uppercase">Status</th>
                                     <th class="px-3 py-4 text-center text-xs font-semibold tracking-widest text-[#3F2B1B] uppercase">Aksi</th>
                                 </tr>
@@ -176,7 +161,6 @@
                             <tbody class="divide-y divide-[#EDE0D0]">
                                 @foreach($users as $user)
                                     @php
-                                        $effectiveRoles = $user->effectiveRoles();
                                         $primaryRole = $user->role instanceof Role ? $user->role->value : $user->role;
                                         $isOwner = $user->role === \App\Enums\Role::OWNER;
                                     @endphp
@@ -199,15 +183,6 @@
                                             <span class="inline-flex min-h-[34px] items-center rounded-3xl bg-[#F4EDE4] px-3 py-1.5 text-[11px] font-medium text-[#5C432C]">
                                                 {{ ucfirst($primaryRole) }}
                                             </span>
-                                        </td>
-                                        <td class="px-3 py-4 align-middle">
-                                            <div class="flex flex-wrap justify-center gap-1.5">
-                                                @foreach($effectiveRoles as $accessRole)
-                                                    <span class="rounded-3xl border border-[#E1D3C5] bg-white px-2.5 py-1 text-[11px] font-medium text-[#7A5B3A]">
-                                                        {{ ucfirst($accessRole) }}
-                                                    </span>
-                                                @endforeach
-                                            </div>
                                         </td>
                                         <td class="px-3 py-4 align-middle text-center">
                                             <form method="POST" action="{{ route('admin.users.toggle', $user) }}" class="mx-auto w-fit">

@@ -16,6 +16,10 @@ class ScheduleManagementSafetyTest extends TestCase
 {
     use RefreshDatabase;
 
+    /**
+     * Pengujian: admin memperbarui jadwal project yang belum berjalan.
+     * Hasil yang diharapkan: fotografer dan editor baru tersimpan pada project.
+     */
     public function test_admin_can_update_schedule_when_project_not_started(): void
     {
         $admin = User::factory()->create(['role' => Role::ADMIN]);
@@ -64,6 +68,10 @@ class ScheduleManagementSafetyTest extends TestCase
         ]);
     }
 
+    /**
+     * Pengujian: endpoint hapus jadwal project.
+     * Hasil yang diharapkan: penghapusan jadwal tidak tersedia dan data penugasan tetap tersimpan.
+     */
     public function test_schedule_delete_endpoint_is_not_available(): void
     {
         $admin = User::factory()->create(['role' => Role::ADMIN]);

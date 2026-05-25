@@ -20,12 +20,8 @@ class StudioLocation extends Model
         'description',
         'map_url',
         'is_active',
-        'city',
         'phone',
         'email',
-        'latitude',
-        'longitude',
-        'facilities',
         'photo_gallery',
     ];
 

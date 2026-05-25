@@ -7,6 +7,10 @@ use Tests\TestCase;
 
 class PaymentModelTest extends TestCase
 {
+    /**
+     * Pengujian: pemetaan label status pembayaran.
+     * Hasil yang diharapkan: setiap status pembayaran memiliki label yang sesuai untuk ditampilkan.
+     */
     public function test_status_label_maps_known_payment_statuses(): void
     {
         $cases = [
