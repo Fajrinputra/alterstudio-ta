@@ -1,0 +1,51 @@
+@startuml
+title SD-B14 Edit Kategori Layanan
+
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam BoxPadding 4
+skinparam sequence {
+    ArrowColor #333333
+    LifeLineBorderColor #999999
+    LifeLineBackgroundColor white
+    ParticipantBorderColor #999999
+    ParticipantBackgroundColor #ECEEF8
+    ParticipantFontColor #111111
+    ActorBorderColor #999999
+    ActorFontColor #111111
+    GroupBorderColor #111111
+    GroupBackgroundColor transparent
+}
+
+actor "Admin" as Admin
+boundary "Halaman Kategori Layanan" as HalamanKategori
+boundary "Form Edit Kategori" as FormEdit
+control "ServiceCategoryController" as CategoryController
+entity "ServiceCategories Model" as ServiceCategory
+
+Admin -> HalamanKategori : Pilih kategori
+Admin -> HalamanKategori : Klik edit data
+HalamanKategori -> CategoryController : edit(categoryId)
+CategoryController -> ServiceCategory : ambil data kategori
+ServiceCategory --> CategoryController : data kategori
+CategoryController --> FormEdit : tampilkan form edit
+FormEdit --> Admin : form edit tampil
+Admin -> FormEdit : Melakukan perubahan
+Admin -> FormEdit : Klik simpan perubahan
+FormEdit -> CategoryController : update(categoryId, data)
+CategoryController -> CategoryController : validasi data dan otorisasi
+
+alt Data valid
+    CategoryController -> ServiceCategory : update kategori layanan
+    ServiceCategory --> CategoryController : kategori diperbarui
+    CategoryController --> HalamanKategori : redirect dengan pesan berhasil
+    HalamanKategori --> Admin : kategori diperbarui
+else Field wajib kosong
+    CategoryController --> FormEdit : tampilkan error validasi
+    FormEdit --> Admin : update ditolak
+else Gagal menyimpan
+    CategoryController --> FormEdit : tampilkan pesan gagal
+    FormEdit --> Admin : perubahan tidak diterapkan
+end
+
+@enduml

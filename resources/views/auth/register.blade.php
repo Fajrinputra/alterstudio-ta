@@ -1,171 +1,183 @@
 <x-guest-layout>
-    <div class="relative bg-[#FAF6F0] min-h-screen flex items-center justify-center p-4 overflow-hidden">
+    <div class="relative flex h-screen w-full min-h-0 items-center justify-center overflow-hidden bg-cover bg-center p-3 sm:p-4"
+         style="background-image: url('{{ asset('images/auth/bg-register.jpg') }}');">
         
-        <!-- Background subtle pattern -->
-        <div class="absolute inset-0 pointer-events-none opacity-30 bg-[radial-gradient(circle_at_20%_30%,rgba(212,160,23,0.08),transparent_50%),radial-gradient(circle_at_80%_70%,rgba(224,122,95,0.08),transparent_50%)]"></div>
+        <!-- Dark overlay for readability -->
+        <div class="absolute inset-0 bg-black/35 pointer-events-none"></div>
 
-        <div class="w-full max-w-lg">
-            
-            <!-- Header -->
-            <div class="text-center mb-10">
-                <div class="mx-auto mb-6 flex items-center justify-center">
-                    <div class="relative">
-                        <div class="absolute inset-0 bg-gradient-to-br from-[#D4A017] to-[#E07A5F] rounded-3xl blur-xl opacity-40"></div>
-                        <div class="relative h-20 w-20 rounded-3xl bg-gradient-to-br from-[#D4A017] to-[#E07A5F] flex items-center justify-center text-white shadow-2xl">
-                            <i class="fa-solid fa-user-plus text-4xl"></i>
+        <div class="relative z-10 w-full max-w-4xl">
+            <div class="grid items-center gap-4 md:grid-cols-[0.85fr_1fr]">
+
+                <!-- Info Side -->
+                <div class="hidden md:flex h-full flex-col justify-center rounded-3xl border border-[#EDE0D0] bg-white p-5 text-center shadow-2xl">
+                    <div class="mb-4 flex flex-col items-center gap-3">
+                        <div>
+                            <p class="font-display text-3xl font-bold tracking-tight text-[#3F2B1B]">Alter Studio</p>
+                            <span class="mx-auto mt-2 block h-1 w-16 rounded-full bg-gradient-to-r from-[#D4A017] to-[#E07A5F]"></span>
+                            <p class="text-xs text-[#8B7359]">Premium Photography</p>
                         </div>
                     </div>
-                </div>
-                
-                <h2 class="font-display text-4xl font-bold tracking-tight text-[#3F2B1B] mb-2">
-                    Buat Akun Baru
-                </h2>
-                <p class="text-[#7A5B3A] text-lg">
-                    Bergabunglah dan abadikan momen berharga bersama Alter Studio
-                </p>
-                
-                <a href="/" 
-                   class="inline-flex items-center gap-2 mt-6 px-5 py-2.5 rounded-2xl border border-[#E1D3C5] text-[#5C432C] hover:border-[#D4A017] hover:text-[#D4A017] transition-all text-sm font-medium">
-                    <i class="fa-solid fa-arrow-left"></i>
-                    Kembali ke Beranda
-                </a>
-            </div>
 
-            <!-- Form Card -->
-            <div class="bg-white rounded-3xl shadow-2xl border border-[#EDE0D0] p-8 sm:p-10 backdrop-blur-xl">
-                <form method="POST" action="{{ route('register') }}" class="space-y-6">
-                    @csrf
-
-                    <!-- Name -->
-                    <div class="space-y-2">
-                        <label for="name" class="block text-sm font-medium text-[#5C432C]">Nama Lengkap</label>
-                        <div class="relative">
-                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-[#D4A017]">
-                                <i class="fa-solid fa-user"></i>
-                            </span>
-                            <x-text-input id="name"
-                                class="block w-full pl-11 pr-4 py-3.5 bg-[#FAF6F0] border border-[#E1D3C5] rounded-2xl text-[#3F2B1B] placeholder:text-[#9C7C5E] focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/30 transition-all"
-                                type="text"
-                                name="name"
-                                :value="old('name')"
-                                required autofocus
-                                placeholder="Masukkan nama lengkap Anda" />
-                        </div>
-                        <x-input-error :messages="$errors->get('name')" class="text-rose-500 text-sm" />
-                    </div>
-
-                    <!-- Email -->
-                    <div class="space-y-2">
-                        <label for="email" class="block text-sm font-medium text-[#5C432C]">Email Address</label>
-                        <div class="relative">
-                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-[#D4A017]">
-                                <i class="fa-solid fa-envelope"></i>
-                            </span>
-                            <x-text-input id="email"
-                                class="block w-full pl-11 pr-4 py-3.5 bg-[#FAF6F0] border border-[#E1D3C5] rounded-2xl text-[#3F2B1B] placeholder:text-[#9C7C5E] focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/30 transition-all"
-                                type="email"
-                                name="email"
-                                :value="old('email')"
-                                required
-                                placeholder="nama@email.com" />
-                        </div>
-                        <x-input-error :messages="$errors->get('email')" class="text-rose-500 text-sm" />
-                    </div>
-
-                    <!-- Password -->
-                    <div class="space-y-2">
-                        <label for="password" class="block text-sm font-medium text-[#5C432C]">Password</label>
-                        <div class="relative">
-                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-[#D4A017]">
-                                <i class="fa-solid fa-lock"></i>
-                            </span>
-                            <x-text-input id="password"
-                                class="block w-full pl-11 pr-12 py-3.5 bg-[#FAF6F0] border border-[#E1D3C5] rounded-2xl text-[#3F2B1B] placeholder:text-[#9C7C5E] focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/30 transition-all"
-                                type="password"
-                                name="password"
-                                required autocomplete="new-password"
-                                placeholder="Minimal 8 karakter" />
-                            <button type="button" id="toggle-password"
-                                class="absolute right-4 top-1/2 -translate-y-1/2 text-[#8B7359] hover:text-[#5C432C] transition-colors">
-                                <i id="toggle-password-icon" class="fa-solid fa-eye"></i>
-                            </button>
-                        </div>
-                        <x-input-error :messages="$errors->get('password')" class="text-rose-500 text-sm" />
-                    </div>
-
-                    <!-- Confirm Password -->
-                    <div class="space-y-2">
-                        <label for="password_confirmation" class="block text-sm font-medium text-[#5C432C]">Konfirmasi Password</label>
-                        <div class="relative">
-                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-[#D4A017]">
-                                <i class="fa-solid fa-lock"></i>
-                            </span>
-                            <x-text-input id="password_confirmation"
-                                class="block w-full pl-11 pr-12 py-3.5 bg-[#FAF6F0] border border-[#E1D3C5] rounded-2xl text-[#3F2B1B] placeholder:text-[#9C7C5E] focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/30 transition-all"
-                                type="password"
-                                name="password_confirmation"
-                                required
-                                placeholder="Ketik ulang password" />
-                            <button type="button" id="toggle-password-confirmation"
-                                class="absolute right-4 top-1/2 -translate-y-1/2 text-[#8B7359] hover:text-[#5C432C] transition-colors">
-                                <i id="toggle-password-confirmation-icon" class="fa-solid fa-eye"></i>
-                            </button>
-                        </div>
-                        <x-input-error :messages="$errors->get('password_confirmation')" class="text-rose-500 text-sm" />
-                    </div>
-
-                    <!-- Terms -->
-                    <div class="flex items-start gap-3 mt-2">
-                        <input type="checkbox" id="terms" 
-                               class="mt-1 w-5 h-5 rounded-lg border-[#E1D3C5] text-[#D4A017] focus:ring-[#D4A017]" required>
-                        <label for="terms" class="text-sm text-[#6F5134] leading-relaxed">
-                            Saya menyetujui 
-                            <a href="#" class="text-[#D4A017] hover:underline font-medium">Syarat & Ketentuan</a> 
-                            dan 
-                            <a href="#" class="text-[#D4A017] hover:underline font-medium">Kebijakan Privasi</a> 
-                            Alter Studio
-                        </label>
-                    </div>
-
-                    <!-- Submit Button -->
-                    <button type="submit"
-                            class="w-full mt-6 py-4 rounded-2xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] text-white font-semibold text-lg shadow-lg shadow-[#D4A017]/30 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center gap-3">
-                        <i class="fa-solid fa-user-plus"></i>
-                        Daftar Sekarang
-                    </button>
-
-                    <!-- Login Link -->
-                    <p class="text-center text-sm text-[#7A5B3A] mt-6">
-                        Sudah punya akun? 
-                        <a href="{{ route('login') }}" 
-                           class="text-[#D4A017] font-semibold hover:text-[#E07A5F] inline-flex items-center gap-1 transition-colors">
-                            Masuk sekarang
-                            <i class="fa-solid fa-arrow-right text-xs"></i>
-                        </a>
+                    <h1 class="mb-3 font-display text-2xl font-semibold leading-tight text-[#3F2B1B]">
+                        Buat Akun Baru
+                    </h1>
+                    <p class="mb-4 text-sm leading-6 text-[#5C432C]">
+                        Daftar untuk memesan jadwal studio, memantau pembayaran, dan mengunduh hasil foto Anda.
                     </p>
-                </form>
-            </div>
 
-            <!-- Features -->
-            <div class="grid grid-cols-2 gap-4 mt-10">
-                <div class="bg-white/70 backdrop-blur-sm border border-[#EDE0D0] rounded-2xl p-5 text-center">
-                    <i class="fa-solid fa-calendar-check text-2xl text-[#D4A017] mb-3"></i>
-                    <p class="font-medium text-[#3F2B1B]">Pemesanan Mudah</p>
+                    <a href="/" 
+                       class="mx-auto mb-4 inline-flex items-center gap-2 rounded-2xl border border-[#E1D3C5] px-4 py-2 text-xs font-medium text-[#5C432C] transition-all hover:border-[#D4A017] hover:text-[#D4A017]">
+                        <i class="fa-solid fa-arrow-left"></i>
+                        <span>Kembali ke Landing Page</span>
+                    </a>
+
+                    <div class="grid grid-cols-2 gap-2 text-left">
+                        <div class="rounded-2xl border border-[#EDE0D0] bg-[#FAF6F0] p-3">
+                            <i class="fa-solid fa-calendar-check mb-1.5 text-base text-[#D4A017]"></i>
+                            <p class="text-xs font-medium text-[#3F2B1B]">Pemesanan Mudah</p>
+                        </div>
+                        <div class="rounded-2xl border border-[#EDE0D0] bg-[#FAF6F0] p-3">
+                            <i class="fa-solid fa-shield-halved mb-1.5 text-base text-[#D4A017]"></i>
+                            <p class="text-xs font-medium text-[#3F2B1B]">Pembayaran Aman</p>
+                        </div>
+                        <div class="rounded-2xl border border-[#EDE0D0] bg-[#FAF6F0] p-3">
+                            <i class="fa-solid fa-camera mb-1.5 text-base text-[#D4A017]"></i>
+                            <p class="text-xs font-medium text-[#3F2B1B]">Hasil Profesional</p>
+                        </div>
+                        <div class="rounded-2xl border border-[#EDE0D0] bg-[#FAF6F0] p-3">
+                            <i class="fa-solid fa-download mb-1.5 text-base text-[#D4A017]"></i>
+                            <p class="text-xs font-medium text-[#3F2B1B]">Download Instan</p>
+                        </div>
+                    </div>
                 </div>
-                <div class="bg-white/70 backdrop-blur-sm border border-[#EDE0D0] rounded-2xl p-5 text-center">
-                    <i class="fa-solid fa-shield-halved text-2xl text-[#D4A017] mb-3"></i>
-                    <p class="font-medium text-[#3F2B1B]">Pembayaran Aman</p>
-                </div>
-                <div class="bg-white/70 backdrop-blur-sm border border-[#EDE0D0] rounded-2xl p-5 text-center">
-                    <i class="fa-solid fa-camera text-2xl text-[#D4A017] mb-3"></i>
-                    <p class="font-medium text-[#3F2B1B]">Hasil Profesional</p>
-                </div>
-                <div class="bg-white/70 backdrop-blur-sm border border-[#EDE0D0] rounded-2xl p-5 text-center">
-                    <i class="fa-solid fa-download text-2xl text-[#D4A017] mb-3"></i>
-                    <p class="font-medium text-[#3F2B1B]">Download Instant</p>
+
+                <!-- Form Card -->
+                <div class="rounded-3xl border border-[#EDE0D0] bg-white p-3.5 shadow-2xl sm:p-5">
+                    <div class="mb-3 text-center">
+                        <div class="flex min-w-0 items-center justify-center gap-3 text-center">
+                            <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#D4A017] to-[#E07A5F] text-white shadow-lg">
+                                <i class="fa-solid fa-user-plus text-base"></i>
+                            </div>
+                            <div class="min-w-0">
+                                <h2 class="font-display text-xl font-bold leading-tight tracking-tight text-[#3F2B1B]">Buat Akun Baru</h2>
+                                <p class="mt-0.5 text-xs text-[#7A5B3A]">Bergabung bersama Alter Studio</p>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <form method="POST" action="{{ route('register') }}" class="space-y-1.5 sm:space-y-2">
+                        @csrf
+
+                        <!-- Name -->
+                        <div class="space-y-1">
+                            <label for="name" class="block text-xs font-medium text-[#5C432C]">Nama Lengkap</label>
+                            <div class="relative">
+                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-[#D4A017]">
+                                    <i class="fa-solid fa-user"></i>
+                                </span>
+                                <x-text-input id="name"
+                                    class="block w-full rounded-2xl border border-[#E1D3C5] bg-[#FAF6F0] py-2 pl-11 pr-4 text-sm text-[#3F2B1B] placeholder:text-[#9C7C5E] focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/30"
+                                    type="text"
+                                    name="name"
+                                    :value="old('name')"
+                                    required autofocus
+                                    placeholder="Nama lengkap Anda" />
+                            </div>
+                            <x-input-error :messages="$errors->get('name')" class="text-rose-500 text-xs" />
+                        </div>
+
+                        <!-- Email -->
+                        <div class="space-y-1">
+                            <label for="email" class="block text-xs font-medium text-[#5C432C]">Email</label>
+                            <div class="relative">
+                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-[#D4A017]">
+                                    <i class="fa-solid fa-envelope"></i>
+                                </span>
+                                <x-text-input id="email"
+                                    class="block w-full rounded-2xl border border-[#E1D3C5] bg-[#FAF6F0] py-2 pl-11 pr-4 text-sm text-[#3F2B1B] placeholder:text-[#9C7C5E] focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/30"
+                                    type="email"
+                                    name="email"
+                                    :value="old('email')"
+                                    required
+                                    placeholder="nama@email.com" />
+                            </div>
+                            <x-input-error :messages="$errors->get('email')" class="text-rose-500 text-xs" />
+                        </div>
+
+                        <!-- Password -->
+                        <div class="space-y-1">
+                            <label for="password" class="block text-xs font-medium text-[#5C432C]">Password</label>
+                            <div class="relative">
+                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-[#D4A017]">
+                                    <i class="fa-solid fa-lock"></i>
+                                </span>
+                                <x-text-input id="password"
+                                    class="block w-full rounded-2xl border border-[#E1D3C5] bg-[#FAF6F0] py-2 pl-11 pr-12 text-sm text-[#3F2B1B] placeholder:text-[#9C7C5E] focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/30"
+                                    type="password"
+                                    name="password"
+                                    required autocomplete="new-password"
+                                    placeholder="Minimal 8 karakter" />
+                                <button type="button" id="toggle-password"
+                                    class="absolute right-4 top-1/2 -translate-y-1/2 text-[#8B7359] transition-colors hover:text-[#5C432C]">
+                                    <i id="toggle-password-icon" class="fa-solid fa-eye"></i>
+                                </button>
+                            </div>
+                            <x-input-error :messages="$errors->get('password')" class="text-rose-500 text-xs" />
+                        </div>
+
+                        <!-- Confirm Password -->
+                        <div class="space-y-1">
+                            <label for="password_confirmation" class="block text-xs font-medium text-[#5C432C]">Konfirmasi Password</label>
+                            <div class="relative">
+                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-[#D4A017]">
+                                    <i class="fa-solid fa-lock"></i>
+                                </span>
+                                <x-text-input id="password_confirmation"
+                                    class="block w-full rounded-2xl border border-[#E1D3C5] bg-[#FAF6F0] py-2 pl-11 pr-12 text-sm text-[#3F2B1B] placeholder:text-[#9C7C5E] focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/30"
+                                    type="password"
+                                    name="password_confirmation"
+                                    required
+                                    placeholder="Ketik ulang password" />
+                                <button type="button" id="toggle-password-confirmation"
+                                    class="absolute right-4 top-1/2 -translate-y-1/2 text-[#8B7359] transition-colors hover:text-[#5C432C]">
+                                    <i id="toggle-password-confirmation-icon" class="fa-solid fa-eye"></i>
+                                </button>
+                            </div>
+                            <x-input-error :messages="$errors->get('password_confirmation')" class="text-rose-500 text-xs" />
+                        </div>
+
+                        <!-- Terms -->
+                        <div class="flex items-start gap-2">
+                            <input type="checkbox" id="terms" 
+                                   class="mt-0.5 h-4 w-4 rounded-lg border-[#E1D3C5] text-[#D4A017] focus:ring-[#D4A017]" required>
+                            <label for="terms" class="text-xs leading-4 text-[#6F5134]">
+                                Saya menyetujui 
+                                <a href="#" class="font-medium text-[#D4A017] hover:underline">Syarat & Ketentuan</a> 
+                                dan 
+                                <a href="#" class="font-medium text-[#D4A017] hover:underline">Kebijakan Privasi</a>.
+                            </label>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <button type="submit"
+                                class="flex w-full items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] py-2 text-sm font-semibold text-white shadow-lg shadow-[#D4A017]/30 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl">
+                            <i class="fa-solid fa-user-plus"></i>
+                            Daftar Sekarang
+                        </button>
+
+                        <!-- Login Link -->
+                        <p class="text-center text-xs text-[#7A5B3A]">
+                            Sudah punya akun? 
+                            <a href="{{ route('login') }}" 
+                               class="inline-flex items-center gap-1 font-semibold text-[#D4A017] transition-colors hover:text-[#E07A5F]">
+                                Masuk sekarang
+                                <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                            </a>
+                        </p>
+                    </form>
                 </div>
             </div>
-
         </div>
     </div>
 

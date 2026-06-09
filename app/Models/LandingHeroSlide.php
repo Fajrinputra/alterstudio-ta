@@ -20,6 +20,7 @@ class LandingHeroSlide extends Model
         'image_path',
         'sort_order',
         'is_active',
+        'user_id',
         'created_by',
         'updated_by',
     ];
@@ -29,15 +30,29 @@ class LandingHeroSlide extends Model
         'is_active' => 'boolean',
     ];
 
-    /** User pembuat data slide (audit trail). */
-    public function creator(): BelongsTo
+    /** User pengelola slide hero. */
+    public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'created_by');
+        return $this->belongsTo(User::class);
     }
 
-    /** User terakhir yang memperbarui slide. */
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
     public function updater(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'updated_by');
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function setCreatedByAttribute($value): void
+    {
+        $this->attributes['user_id'] = $value;
+    }
+
+    public function setUpdatedByAttribute($value): void
+    {
+        $this->attributes['user_id'] = $value;
     }
 }

@@ -1,4 +1,8 @@
 <x-app-layout>
+    @php
+        $usedOrders = collect($usedOrders ?? $slides->pluck('sort_order')->all())->map(fn ($value) => (int) $value)->all();
+    @endphp
+
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <div>
@@ -20,6 +24,17 @@
                 <div class="p-5 rounded-3xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm flex items-center gap-3 shadow-sm">
                     <i class="fa-solid fa-circle-check text-xl"></i>
                     {{ session('success') }}
+                </div>
+            @endif
+
+            @if($errors->any())
+                <div class="p-5 rounded-3xl bg-rose-50 border border-rose-200 text-rose-700 text-sm shadow-sm">
+                    <p class="font-semibold">Data slide belum bisa disimpan.</p>
+                    <ul class="mt-2 list-disc pl-5">
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
                 </div>
             @endif
 
@@ -58,14 +73,20 @@
                                               placeholder="Sentuhan profesional dari pemesanan hingga hasil akhir...">{{ old('subtitle') }}</textarea>
                                 </div>
                                 
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div>
+                                <div class="flex flex-wrap items-end gap-4">
+                                    <div class="w-28">
                                         <label class="text-xs font-medium text-[#7A5B3A] tracking-widest block mb-2">URUTAN</label>
-                                        <input type="number" name="sort_order" min="1" value="{{ old('sort_order', 1) }}" required
-                                               class="w-full px-5 py-4 rounded-3xl border border-[#E1D3C5] bg-white/70 backdrop-blur-md focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20 transition-all text-[#3F2B1B]">
+                                        <select name="sort_order" required
+                                                class="h-11 w-full rounded-2xl border border-[#E1D3C5] bg-white/70 px-4 backdrop-blur-md focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20 transition-all text-[#3F2B1B]">
+                                            @for($order = 1; $order <= 10; $order++)
+                                                <option value="{{ $order }}" @selected((int) old('sort_order', 1) === $order) @disabled(in_array($order, $usedOrders, true))>
+                                                    {{ $order }}
+                                                </option>
+                                            @endfor
+                                        </select>
                                     </div>
-                                    <div class="flex items-end">
-                                        <label class="inline-flex items-center gap-3 text-sm text-[#7A5B3A]">
+                                    <div class="flex h-11 items-center">
+                                        <label class="inline-flex items-center gap-2 text-sm text-[#7A5B3A]">
                                             <input type="checkbox" name="is_active" value="1" checked 
                                                    class="w-5 h-5 rounded-xl border-[#E1D3C5] text-[#D4A017] focus:ring-[#D4A017]">
                                             <span class="font-medium">Aktif di Slider</span>
@@ -81,7 +102,7 @@
                                         <label for="hero-image" class="cursor-pointer block">
                                             <i class="fa-solid fa-cloud-arrow-up text-4xl text-[#D4A017] mb-3"></i>
                                             <p class="text-sm font-medium text-[#3F2B1B]">Klik untuk upload foto</p>
-                                            <p class="text-xs text-[#8B7359] mt-1">Rasio 16:9 • Minimal 1600×900px</p>
+                                            <p class="text-xs text-[#8B7359] mt-1">Format gambar bebas, sistem akan menyesuaikan tampilan hero.</p>
                                         </label>
                                     </div>
                                 </div>
@@ -107,61 +128,82 @@
                         <div class="space-y-6">
                             @forelse($slides as $slide)
                                 <div class="group bg-white border border-[#EDE0D0] rounded-3xl overflow-hidden hover:shadow-xl transition-all duration-300">
-                                    <div class="grid md:grid-cols-[200px_1fr] gap-6 p-6">
+                                    <div class="grid gap-6 p-6 xl:grid-cols-[220px_minmax(0,1fr)]">
                                         <!-- Preview Image -->
                                         <div class="relative">
-                                            <img src="{{ Storage::url($slide->image_path) }}" alt="{{ $slide->title }}"
-                                                 class="w-full h-52 object-cover rounded-3xl border border-[#EDE0D0] shadow-inner">
-                                            @if($slide->is_active)
-                                                <div class="absolute top-4 left-4 px-4 py-1 bg-emerald-500 text-white text-xs font-semibold rounded-3xl shadow">AKTIF</div>
-                                            @endif
+                                            <img src="{{ Storage::url($slide->image_path) }}" alt=""
+                                                 class="w-full h-52 object-cover rounded-3xl border border-[#EDE0D0] shadow-inner"
+                                                 onerror="this.style.display='none'">
                                         </div>
                                         
                                         <!-- Form Edit -->
-                                        <div class="space-y-5">
+                                        <div class="min-w-0 space-y-5">
                                             <form method="POST" action="{{ route('admin.landing.hero.update', $slide) }}" enctype="multipart/form-data" class="space-y-5">
                                                 @csrf
                                                 @method('PUT')
                                                 
-                                                <div class="grid md:grid-cols-2 gap-4">
-                                                    <div>
+                                                <div class="grid gap-4 md:grid-cols-2">
+                                                    <div class="min-w-0">
                                                         <label class="text-xs font-medium text-[#7A5B3A] tracking-widest block mb-2">EYEBROW</label>
                                                         <input type="text" name="eyebrow" value="{{ $slide->eyebrow }}"
-                                                               class="w-full px-5 py-3.5 rounded-3xl border border-[#E1D3C5] bg-white focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20 transition-all"
+                                                               class="min-w-0 w-full px-5 py-3.5 rounded-3xl border border-[#E1D3C5] bg-white focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20 transition-all"
                                                                placeholder="Judul kecil">
                                                     </div>
-                                                    <div>
+                                                    <div class="min-w-0">
                                                         <label class="text-xs font-medium text-[#7A5B3A] tracking-widest block mb-2">JUDUL BESAR</label>
                                                         <input type="text" name="title" value="{{ $slide->title }}" required
-                                                               class="w-full px-5 py-3.5 rounded-3xl border border-[#E1D3C5] bg-white focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20 transition-all"
+                                                               class="min-w-0 w-full px-5 py-3.5 rounded-3xl border border-[#E1D3C5] bg-white focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20 transition-all"
                                                                placeholder="Judul besar">
                                                     </div>
                                                 </div>
                                                 
-                                                <div>
+                                                <div class="min-w-0">
                                                     <label class="text-xs font-medium text-[#7A5B3A] tracking-widest block mb-2">SUBJUDUL</label>
                                                     <textarea name="subtitle" rows="2"
-                                                              class="w-full px-5 py-3.5 rounded-3xl border border-[#E1D3C5] bg-white focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20 transition-all resize-y"
+                                                              class="min-w-0 w-full px-5 py-3.5 rounded-3xl border border-[#E1D3C5] bg-white focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20 transition-all resize-y"
                                                               placeholder="Deskripsi singkat...">{{ $slide->subtitle }}</textarea>
                                                 </div>
                                                 
-                                                <div class="grid md:grid-cols-3 gap-4 items-end">
-                                                    <div>
+                                                <div class="flex flex-wrap items-end gap-4">
+                                                    <div class="w-28">
                                                         <label class="text-xs font-medium text-[#7A5B3A] tracking-widest block mb-2">URUTAN</label>
-                                                        <input type="number" name="sort_order" min="1" value="{{ $slide->sort_order }}" required
-                                                               class="w-full px-5 py-3.5 rounded-3xl border border-[#E1D3C5] bg-white focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20 transition-all">
+                                                        <select name="sort_order" required
+                                                                class="h-11 w-full rounded-2xl border border-[#E1D3C5] bg-white px-4 focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20 transition-all">
+                                                            @for($order = 1; $order <= 10; $order++)
+                                                                @php
+                                                                    $isUsedByOtherSlide = in_array($order, $usedOrders, true) && (int) $slide->sort_order !== $order;
+                                                                @endphp
+                                                                <option value="{{ $order }}" @selected((int) $slide->sort_order === $order) @disabled($isUsedByOtherSlide)>
+                                                                    {{ $order }}
+                                                                </option>
+                                                            @endfor
+                                                        </select>
                                                     </div>
                                                     
-                                                    <label class="inline-flex items-center gap-3 text-sm text-[#7A5B3A] md:col-span-1">
-                                                        <input type="checkbox" name="is_active" value="1" {{ $slide->is_active ? 'checked' : '' }}
-                                                               class="w-5 h-5 rounded-xl border-[#E1D3C5] text-[#D4A017]">
-                                                        <span class="font-medium">Tampilkan di Hero</span>
-                                                    </label>
-                                                    
-                                                    <div>
+                                                    <div x-data="{ active: {{ $slide->is_active ? 'true' : 'false' }} }" class="w-28">
+                                                        <label class="text-xs font-medium text-[#7A5B3A] tracking-widest block mb-2">STATUS HERO</label>
+                                                        <input type="hidden" name="is_active" :value="active ? 1 : 0">
+                                                        <label for="slide-active-{{ $slide->id }}"
+                                                               class="inline-flex h-11 w-full cursor-pointer items-center justify-center rounded-2xl border border-[#E1D3C5] bg-white px-3 transition-all hover:border-[#D4A017]">
+                                                            <input id="slide-active-{{ $slide->id }}" type="checkbox" x-model="active" class="sr-only">
+                                                            <span class="relative h-6 w-11 flex-shrink-0 rounded-full transition" :class="active ? 'bg-[#D4A017]' : 'bg-[#E1D3C5]'">
+                                                                <span class="absolute left-1 top-1 h-4 w-4 rounded-full bg-white shadow transition" :class="active ? 'translate-x-5' : 'translate-x-0'"></span>
+                                                            </span>
+                                                        </label>
+                                                    </div>
+                                                     
+                                                    <div x-data="{ fileName: '' }" class="w-40">
                                                         <label class="text-xs font-medium text-[#7A5B3A] tracking-widest block mb-2">GANTI FOTO</label>
                                                         <input type="file" name="image" accept="image/*"
-                                                               class="block w-full text-sm text-[#6f5134] file:mr-4 file:px-6 file:py-3 file:rounded-3xl file:border-0 file:bg-[#FAF6F0] file:text-[#3F2B1B] file:font-medium">
+                                                               class="hidden"
+                                                               id="slide-image-{{ $slide->id }}"
+                                                               @change="fileName = $event.target.files[0]?.name || ''">
+                                                        <label for="slide-image-{{ $slide->id }}"
+                                                               class="inline-flex h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-2xl border border-[#E1D3C5] bg-[#FAF6F0] px-4 text-sm font-semibold text-[#3F2B1B] transition-all hover:border-[#D4A017] hover:bg-white">
+                                                            <i class="fa-solid fa-image text-[#D4A017]"></i>
+                                                            Pilih Foto
+                                                        </label>
+                                                        <p x-show="fileName" x-text="fileName" class="mt-2 truncate text-xs text-[#8B7359]"></p>
                                                     </div>
                                                 </div>
                                                 

@@ -162,32 +162,6 @@
                                         @endif
                                     </div>
 
-                                    @if($addonCollection->isNotEmpty())
-                                        <div class="mt-3 flex flex-wrap gap-1.5">
-                                            @foreach($addonPreview as $addon)
-                                                <span class="inline-flex items-center gap-1 rounded-3xl border border-[#EDE0D0] bg-[#FAF6F0] px-2.5 py-1 text-[11px] text-[#7A5B3A]">
-                                                    {{ $addon['label'] ?? '-' }}
-                                                    @if(!empty($addon['quantity']))
-                                                        <span class="font-mono">x{{ (int) $addon['quantity'] }}</span>
-                                                    @endif
-                                                </span>
-                                            @endforeach
-                                            @if($remainingAddonCount > 0)
-                                                <details class="text-[11px] text-[#7A5B3A]">
-                                                    <summary class="cursor-pointer list-none rounded-3xl border border-[#EDE0D0] bg-[#FAF6F0] px-2.5 py-1">+{{ $remainingAddonCount }} add-on</summary>
-                                                    <div class="mt-2 space-y-1 rounded-2xl border border-[#EDE0D0] bg-white p-2.5">
-                                                        @foreach($addonCollection->slice(2) as $addon)
-                                                            <div class="flex items-center justify-between gap-3">
-                                                                <span>{{ $addon['label'] ?? '-' }}</span>
-                                                                <span class="text-[#D4A017]">+Rp {{ number_format((int) ($addon['subtotal'] ?? $addon['price'] ?? 0), 0, ',', '.') }}</span>
-                                                            </div>
-                                                        @endforeach
-                                                    </div>
-                                                </details>
-                                            @endif
-                                        </div>
-                                    @endif
-
                                     <dl class="mt-4 grid grid-cols-2 gap-3 text-sm">
                                         <div class="rounded-2xl bg-[#FAF6F0] px-3 py-2.5">
                                             <dt class="text-[11px] uppercase tracking-wide text-[#8B7359]">Tanggal</dt>
@@ -196,9 +170,6 @@
                                         <div class="rounded-2xl bg-[#FAF6F0] px-3 py-2.5">
                                             <dt class="text-[11px] uppercase tracking-wide text-[#8B7359]">Studio</dt>
                                             <dd class="mt-1 font-medium text-[#3F2B1B]">{{ $b->studioLocation->name ?? '-' }}</dd>
-                                            @if($b->studioRoom)
-                                                <div class="text-xs text-[#8B7359]">{{ $b->studioRoom->name }}</div>
-                                            @endif
                                         </div>
                                     </dl>
 
@@ -329,42 +300,10 @@
                                                 <span class="font-mono text-sm font-semibold text-[#D4A017]">#{{ $b->id }}</span>
                                             </td>
                                             <td class="px-3 py-4 align-middle text-left">
-                                                <div class="flex items-center justify-start gap-3">
-                                                    <div class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#D4A017]/10 to-[#E07A5F]/10 text-sm font-semibold text-[#3F2B1B]">
-                                                        {{ substr($b->client->name ?? 'U', 0, 1) }}
-                                                    </div>
-                                                    <div class="min-w-0 text-left">
-                                                        <p class="truncate text-sm font-semibold text-[#3F2B1B]">{{ $b->client->name ?? '-' }}</p>
-                                                    </div>
-                                                </div>
+                                                <p class="truncate text-sm font-semibold text-[#3F2B1B]">{{ $b->client->name ?? '-' }}</p>
                                             </td>
                                             <td class="px-3 py-4 align-middle">
                                                 <p class="text-sm font-medium text-[#3F2B1B]">{{ $b->package->name ?? '-' }}</p>
-                                                @if($addonCollection->isNotEmpty())
-                                                    <div class="mt-2 flex flex-wrap gap-1.5">
-                                                        @foreach($addonPreview as $addon)
-                                                            <span class="inline-flex items-center gap-1 rounded-3xl border border-[#EDE0D0] bg-white px-2 py-1 text-[11px] text-[#7A5B3A]">
-                                                                {{ $addon['label'] ?? '-' }}
-                                                                @if(!empty($addon['quantity']))
-                                                                    <span class="font-mono">x{{ (int) $addon['quantity'] }}</span>
-                                                                @endif
-                                                            </span>
-                                                        @endforeach
-                                                        @if($remainingAddonCount > 0)
-                                                            <details class="text-[11px] text-[#7A5B3A]">
-                                                                <summary class="cursor-pointer list-none rounded-3xl border border-[#EDE0D0] bg-white px-2 py-1">+{{ $remainingAddonCount }} add-on</summary>
-                                                                <div class="mt-2 min-w-[220px] space-y-1 rounded-2xl border border-[#EDE0D0] bg-white p-2.5 shadow-lg">
-                                                                    @foreach($addonCollection->slice(2) as $addon)
-                                                                        <div class="flex items-center justify-between gap-3">
-                                                                            <span>{{ $addon['label'] ?? '-' }}</span>
-                                                                            <span class="text-[#D4A017]">+Rp {{ number_format((int) ($addon['subtotal'] ?? $addon['price'] ?? 0), 0, ',', '.') }}</span>
-                                                                        </div>
-                                                                    @endforeach
-                                                                </div>
-                                                            </details>
-                                                        @endif
-                                                    </div>
-                                                @endif
                                             </td>
                                             <td class="px-3 py-4 align-middle text-center">
                                                 <span class="whitespace-nowrap text-sm font-medium text-[#7A5B3A]">
@@ -373,9 +312,6 @@
                                             </td>
                                             <td class="px-3 py-4 align-middle text-center text-sm text-[#7A5B3A]">
                                                 <div>{{ $b->studioLocation->name ?? '-' }}</div>
-                                                @if($b->studioRoom)
-                                                    <div class="mt-1 text-xs text-[#8B7359]">{{ $b->studioRoom->name }}</div>
-                                                @endif
                                             </td>
                                             <td class="px-3 py-4 align-middle text-center">
                                                 <span class="inline-flex min-h-[34px] items-center gap-2 rounded-3xl px-3 py-1.5 text-[11px] font-semibold {{ $scheduleBadge['bg'] }} {{ $scheduleBadge['text'] }}">

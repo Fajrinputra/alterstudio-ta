@@ -68,12 +68,43 @@
                     $remainingAmount = $booking->remainingAmount();
                     $rawDriveUrl = $project?->raw_drive_url;
                     $finalDriveUrl = $project?->final_drive_url ?: $rawDriveUrl;
-                    $rawDriveExpiresAt = $project?->raw_drive_uploaded_at?->copy()->addDays(7);
-                    $finalDriveExpiresAt = $project?->final_drive_uploaded_at?->copy()->addDays(7);
+                    $rawDriveExpiresAt = $project?->raw_drive_uploaded_at?->copy()->addDays(3);
+                    $finalDriveExpiresAt = $project?->final_drive_uploaded_at?->copy()->addDays(3);
                     $productionBlockMessage = $project?->productionBlockMessage();
                     $canContinueProduction = $project && $productionBlockMessage === null;
                     
                     $bookingStatus = $booking->statusLabel();
+                    $processLabel = 'Pengajuan Ditinjau';
+                    $processColor = 'bg-amber-100 text-amber-700';
+
+                    if ($booking->status === 'CANCELLED') {
+                        $processLabel = 'Pemesanan Dibatalkan';
+                        $processColor = 'bg-rose-100 text-rose-700';
+                    } elseif ($booking->isSubmitted()) {
+                        $processLabel = 'Pengajuan Ditinjau';
+                        $processColor = 'bg-amber-100 text-amber-700';
+                    } elseif ($booking->isConfirmedAwaitingPayment()) {
+                        $processLabel = 'Menunggu Pembayaran';
+                        $processColor = 'bg-blue-100 text-blue-700';
+                    } elseif ($project?->status === 'FINAL') {
+                        $processLabel = 'Hasil Final Siap';
+                        $processColor = 'bg-emerald-100 text-emerald-700';
+                    } elseif ($project?->status === 'EDITING') {
+                        $processLabel = 'Proses Editing';
+                        $processColor = 'bg-orange-100 text-orange-700';
+                    } elseif ($project?->status === 'SHOOT_DONE') {
+                        $processLabel = 'Foto Mentah Tersedia';
+                        $processColor = 'bg-purple-100 text-purple-700';
+                    } elseif ($project?->status === 'SCHEDULED') {
+                        $processLabel = 'Sesi Terjadwal';
+                        $processColor = 'bg-sky-100 text-sky-700';
+                    } elseif ($booking->status === 'DP_PAID') {
+                        $processLabel = 'DP Dibayar, Menunggu Jadwal';
+                        $processColor = 'bg-indigo-100 text-indigo-700';
+                    } elseif ($booking->status === 'PAID') {
+                        $processLabel = 'Lunas, Menunggu Jadwal';
+                        $processColor = 'bg-emerald-100 text-emerald-700';
+                    }
                 @endphp
 
                 <div class="bg-white rounded-2xl border border-[#EDE0D0] shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden">
@@ -119,12 +150,13 @@
                             </div>
 
                             <div class="w-full sm:w-auto sm:text-right">
-                                <x-status-badge :status="$booking->status" :confirmed-at="$booking->confirmed_at" />
-                                @if($project)
-                                    <div class="mt-2">
-                                        <x-status-badge :status="$project->status" :label="$statusText" />
-                                    </div>
-                                @endif
+                                <div class="flex flex-wrap items-center gap-2 sm:justify-end">
+                                    <x-status-badge :status="$booking->status" :confirmed-at="$booking->confirmed_at" />
+                                    <span class="inline-flex items-center gap-1.5 rounded-2xl px-3 py-1.5 text-xs font-medium {{ $processColor }}">
+                                        <i class="fa-solid fa-route"></i>
+                                        {{ $processLabel }}
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -162,7 +194,7 @@
                                             <div class="mt-3 flex flex-wrap gap-2 text-xs font-medium">
                                                 <span class="inline-flex items-center gap-2 rounded-xl bg-white/80 px-3 py-1.5 text-amber-700 ring-1 ring-amber-200">
                                                     <i class="fa-solid fa-calendar-day"></i>
-                                                    Link Drive berlaku 7 hari
+                                                    Link Drive berlaku 3 hari
                                                 </span>
                                                 <span class="inline-flex items-center gap-2 rounded-xl bg-white/80 px-3 py-1.5 text-amber-700 ring-1 ring-amber-200">
                                                     <i class="fa-solid fa-images"></i>
@@ -227,7 +259,7 @@
                                             <div class="mt-3 flex flex-wrap gap-2 text-xs font-medium">
                                                 <span class="inline-flex items-center gap-2 rounded-xl bg-white px-3 py-1.5 text-[#7A5B3A] ring-1 ring-[#EDE0D0]">
                                                     <i class="fa-solid fa-calendar-day text-[#D4A017]"></i>
-                                                    Link Drive berlaku 7 hari
+                                                    Link Drive berlaku 3 hari
                                                     @if($rawDriveExpiresAt)
                                                         sampai {{ $rawDriveExpiresAt->translatedFormat('d M Y') }}
                                                     @endif
@@ -309,7 +341,7 @@
                                             @endif
                                             <p class="mt-2 text-xs font-medium text-emerald-700">
                                                 <i class="fa-solid fa-calendar-day mr-1"></i>
-                                                Link Drive hasil berlaku 7 hari
+                                                Link Drive hasil berlaku 3 hari
                                                 @if($finalDriveExpiresAt)
                                                     sampai {{ $finalDriveExpiresAt->translatedFormat('d M Y') }}
                                                 @endif

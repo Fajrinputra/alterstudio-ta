@@ -6,12 +6,6 @@
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <div class="flex items-center gap-4">
-                <div class="relative">
-                    <div class="absolute inset-0 bg-gradient-to-br from-[#D4A017] via-[#E07A5F] to-[#B56D3E] rounded-2xl blur-xl opacity-30"></div>
-                    <div class="relative h-10 w-10 rounded-2xl bg-gradient-to-br from-[#D4A017] to-[#E07A5F] flex items-center justify-center text-white font-black text-3xl shadow-inner">
-                        A
-                    </div>
-                </div>
                 <div>
                     <p class="text-sm text-[#8B7359] tracking-[1.5px] uppercase flex items-center gap-2 font-medium">
                         <i class="fa-solid fa-box text-[#D4A017]"></i>

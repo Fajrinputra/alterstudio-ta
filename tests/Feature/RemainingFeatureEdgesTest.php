@@ -507,15 +507,14 @@ class RemainingFeatureEdgesTest extends TestCase
     public function test_final_remaining_controller_branches_are_covered(): void
     {
         $user = User::factory()->create(['email' => 'reset-success@example.test']);
-        \Illuminate\Support\Facades\Schema::table('password_reset_tokens', function (\Illuminate\Database\Schema\Blueprint $table) {
-            $table->unsignedBigInteger('user_id')->nullable();
-        });
-        \Illuminate\Support\Facades\Password::shouldReceive('sendResetLink')
-            ->once()
-            ->andReturn(\Illuminate\Support\Facades\Password::RESET_LINK_SENT);
+        \Illuminate\Support\Facades\Notification::fake();
 
         $this->post(route('password.email'), ['email' => $user->email])
             ->assertSessionHas('status');
+        \Illuminate\Support\Facades\Notification::assertSentTo(
+            $user,
+            \Illuminate\Auth\Notifications\ResetPassword::class
+        );
 
         config([
             'services.midtrans.server_key' => 'server-key',
@@ -598,9 +597,6 @@ class RemainingFeatureEdgesTest extends TestCase
 
         $this->assertDatabaseCount('users', 1);
 
-        \Illuminate\Support\Facades\Schema::table('password_reset_tokens', function (\Illuminate\Database\Schema\Blueprint $table) {
-            $table->unsignedBigInteger('user_id')->nullable();
-        });
         \Illuminate\Support\Facades\DB::table('password_reset_tokens')->insert([
             'email' => 'different@example.test',
             'user_id' => $client->id,

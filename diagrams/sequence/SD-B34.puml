@@ -1,0 +1,31 @@
+@startuml
+title SD-B34 Lihat Menu Kelola Pengguna
+
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam BoxPadding 4
+skinparam sequence {
+    ArrowColor #333333
+    LifeLineBorderColor #999999
+    LifeLineBackgroundColor white
+    ParticipantBorderColor #999999
+    ParticipantBackgroundColor #ECEEF8
+    ParticipantFontColor #111111
+    ActorBorderColor #999999
+    ActorFontColor #111111
+}
+
+actor "Owner" as Owner
+boundary "Menu Kelola Pengguna" as MenuPengguna
+boundary "Halaman Kelola Pengguna" as HalamanPengguna
+control "UserManagementController" as UserManagementController
+entity "Users Model" as User
+
+Owner -> MenuPengguna : Memilih menu kelola pengguna
+MenuPengguna -> UserManagementController : index()
+UserManagementController -> User : SELECT users
+User --> UserManagementController : data pengguna
+UserManagementController --> HalamanPengguna : tampilkan daftar pengguna
+HalamanPengguna --> Owner : menu kelola pengguna tampil
+
+@enduml

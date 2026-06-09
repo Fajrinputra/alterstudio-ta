@@ -1,0 +1,76 @@
+@startuml
+title SD-B25 Edit Jadwal
+
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam BoxPadding 4
+skinparam sequence {
+    ArrowColor #333333
+    LifeLineBorderColor #999999
+    LifeLineBackgroundColor white
+    ParticipantBorderColor #999999
+    ParticipantBackgroundColor #ECEEF8
+    ParticipantFontColor #111111
+    ActorBorderColor #999999
+    ActorFontColor #111111
+    GroupBorderColor #111111
+    GroupBackgroundColor transparent
+}
+
+actor "Admin" as Admin
+boundary "Halaman Jadwal" as HalamanJadwal
+boundary "Form Jadwal Kru" as FormJadwal
+control "ScheduleController" as ScheduleController
+control "NotificationService" as NotificationService
+entity "Bookings Model" as Booking
+entity "Projects Model" as Project
+entity "ProjectSchedule" as ProjectSchedule
+entity "Users Model" as User
+entity "StudioRooms Model" as StudioRoom
+
+Admin -> HalamanJadwal : Pilih menu jadwal
+HalamanJadwal -> ScheduleController : index()
+ScheduleController -> ProjectSchedule : ambil daftar jadwal/project
+ProjectSchedule --> ScheduleController : data jadwal
+ScheduleController --> HalamanJadwal : tampilkan daftar jadwal
+
+Admin -> HalamanJadwal : Pilih project
+HalamanJadwal -> FormJadwal : tampilkan form jadwal
+Admin -> FormJadwal : Memilih fotografer, editor, dan ruangan
+Admin -> FormJadwal : Klik simpan jadwal
+FormJadwal -> ScheduleController : update(projectId, data)
+ScheduleController -> Booking : ambil booking
+ScheduleController -> Project : ambil project
+ScheduleController -> User : ambil kru
+ScheduleController -> StudioRoom : ambil ruangan
+Booking --> ScheduleController : data booking
+Project --> ScheduleController : data project
+User --> ScheduleController : data kru
+StudioRoom --> ScheduleController : data ruangan
+ScheduleController -> ScheduleController : validasi pembayaran DP/PAID
+ScheduleController -> ScheduleController : validasi ruangan sesuai cabang
+ScheduleController -> ScheduleController : cek bentrok fotografer/editor/ruangan
+ScheduleController -> ScheduleController : cek project belum berjalan/pasca-produksi
+
+alt Jadwal valid
+    ScheduleController -> ProjectSchedule : update project schedule dan crew
+    ProjectSchedule --> ScheduleController : jadwal diperbarui
+    ScheduleController -> NotificationService : kirim notifikasi tugas
+    NotificationService --> ScheduleController : notifikasi terkirim
+    ScheduleController --> HalamanJadwal : tampilkan pesan berhasil
+    HalamanJadwal --> Admin : jadwal diperbarui
+else Booking belum DP/PAID
+    ScheduleController --> FormJadwal : jadwal tidak bisa dibuat
+    FormJadwal --> Admin : pembayaran belum memenuhi syarat
+else Kru atau ruangan bentrok
+    ScheduleController --> FormJadwal : tampilkan konflik jadwal
+    FormJadwal --> Admin : pilih kru/ruangan lain
+else Ruangan tidak valid
+    ScheduleController --> FormJadwal : tampilkan pesan ruangan tidak sesuai cabang
+    FormJadwal --> Admin : pilih ruangan lain
+else Project sudah berjalan
+    ScheduleController --> FormJadwal : perubahan jadwal ditolak
+    FormJadwal --> Admin : jadwal tidak bisa diubah
+end
+
+@enduml

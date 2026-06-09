@@ -1,0 +1,59 @@
+@startuml
+title SD-B29 Lihat Detail Project
+
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam BoxPadding 4
+skinparam sequence {
+    ArrowColor #333333
+    LifeLineBorderColor #999999
+    LifeLineBackgroundColor white
+    ParticipantBorderColor #999999
+    ParticipantBackgroundColor #ECEEF8
+    ParticipantFontColor #111111
+    ActorBorderColor #999999
+    ActorFontColor #111111
+    GroupBorderColor #111111
+    GroupBackgroundColor transparent
+}
+
+actor "Admin/Manajer/Fotografer/Editor" as Pengguna
+boundary "Halaman Daftar Project/Pemesanan" as HalamanDaftar
+boundary "Detail Project" as DetailProject
+control "ProjectController" as ProjectController
+entity "Projects Model" as Project
+entity "Bookings Model" as Booking
+entity "Payments Model" as Payment
+entity "Users Model" as User
+
+Pengguna -> HalamanDaftar : Membuka daftar pemesanan/project
+HalamanDaftar -> ProjectController : index()
+ProjectController -> Project : ambil daftar project sesuai hak akses
+Project --> ProjectController : data project
+ProjectController --> HalamanDaftar : tampilkan daftar project
+
+Pengguna -> HalamanDaftar : Klik detail project
+HalamanDaftar -> DetailProject : buka detail project
+DetailProject -> ProjectController : show(projectId)
+ProjectController -> Project : ambil detail project
+Project -> Booking : ambil booking
+Booking --> Project : data booking
+Project -> Payment : ambil pembayaran
+Payment --> Project : data pembayaran
+Project -> User : ambil klien dan kru
+User --> Project : data user
+Project --> ProjectController : data detail project
+ProjectController -> ProjectController : validasi hak akses user
+
+alt Data ditemukan dan user berhak
+    ProjectController --> DetailProject : tampilkan detail project
+    DetailProject --> Pengguna : detail project tampil
+else Project tidak ditemukan
+    ProjectController --> DetailProject : tampilkan error
+    DetailProject --> Pengguna : data project tidak ditemukan
+else User tidak berhak
+    ProjectController --> DetailProject : tolak akses
+    DetailProject --> Pengguna : akses ditolak
+end
+
+@enduml

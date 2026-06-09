@@ -14,6 +14,22 @@ class Booking extends Model
 {
     use HasFactory;
 
+    protected static function booted(): void
+    {
+        static::creating(function (Booking $booking) {
+            if ($booking->studio_location_id && ! $booking->studio_room_id) {
+                $room = StudioRoom::where('studio_location_id', $booking->studio_location_id)->first()
+                    ?? StudioRoom::create([
+                        'studio_location_id' => $booking->studio_location_id,
+                        'name' => 'Studio Utama',
+                        'is_active' => true,
+                    ]);
+
+                $booking->studio_room_id = $room->id;
+            }
+        });
+    }
+
     protected $fillable = [
         'client_id',
         'package_id',

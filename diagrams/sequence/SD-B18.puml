@@ -1,0 +1,61 @@
+@startuml
+title SD-B18 Edit Paket Layanan
+
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam BoxPadding 4
+skinparam sequence {
+    ArrowColor #333333
+    LifeLineBorderColor #999999
+    LifeLineBackgroundColor white
+    ParticipantBorderColor #999999
+    ParticipantBackgroundColor #ECEEF8
+    ParticipantFontColor #111111
+    ActorBorderColor #999999
+    ActorFontColor #111111
+    GroupBorderColor #111111
+    GroupBackgroundColor transparent
+}
+
+actor "Admin" as Admin
+boundary "Halaman Detail Paket" as HalamanDetail
+boundary "Form Edit Paket" as FormEdit
+control "ServicePackageController" as PackageController
+control "StorageService" as StorageService
+entity "ServicePackages Model" as ServicePackage
+
+Admin -> HalamanDetail : Pilih paket
+Admin -> HalamanDetail : Klik edit data
+HalamanDetail -> PackageController : edit(packageId)
+PackageController -> ServicePackage : ambil data paket
+ServicePackage --> PackageController : data paket
+PackageController --> FormEdit : tampilkan form edit
+FormEdit --> Admin : form edit tampil
+Admin -> FormEdit : Melakukan perubahan
+Admin -> FormEdit : Klik simpan perubahan
+FormEdit -> PackageController : update(packageId, data)
+PackageController -> PackageController : validasi data dan otorisasi
+
+alt Data valid
+    opt File cover/galeri berubah
+        PackageController -> StorageService : simpan/hapus file gambar
+        StorageService -> StorageService : STORE/DELETE image files
+        StorageService --> StorageService : hasil file
+        StorageService --> PackageController : path file
+    end
+    PackageController -> ServicePackage : update paket layanan
+    ServicePackage --> PackageController : paket diperbarui
+    PackageController --> HalamanDetail : redirect dengan pesan berhasil
+    HalamanDetail --> Admin : paket diperbarui
+else Field tidak valid
+    PackageController --> FormEdit : tampilkan error validasi
+    FormEdit --> Admin : update ditolak
+else File gambar/galeri tidak valid
+    PackageController --> FormEdit : tampilkan error file
+    FormEdit --> Admin : update ditolak
+else Gagal menyimpan
+    PackageController --> FormEdit : tampilkan pesan gagal
+    FormEdit --> Admin : perubahan tidak diterapkan
+end
+
+@enduml

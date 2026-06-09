@@ -23,16 +23,23 @@ class ProjectController extends Controller
             abort(403);
         }
 
-        if ($isCrewOnly && ! in_array($user->id, [$project->photographer_id, $project->editor_id], true)) {
+        $schedule = $project->schedule;
+        $assignedCrewIds = array_filter([
+            $schedule?->photographer_id,
+            $schedule?->editor_id,
+        ]);
+
+        if ($isCrewOnly && ! in_array($user->id, $assignedCrewIds, true)) {
             abort(403);
         }
 
         $project->load([
             'booking.package',
+            'booking.client',
             'booking.studioLocation',
             'booking.studioRoom',
-            'photographer',
-            'editor',
+            'scheduleRecord.photographerAssignment.user',
+            'scheduleRecord.editorAssignment.user',
         ]);
 
         return view('projects.show', compact('project'));

@@ -1,0 +1,52 @@
+@startuml
+title SD-B42 Edit Hero Landing Page
+
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam BoxPadding 4
+skinparam sequence {
+    ArrowColor #333333
+    LifeLineBorderColor #999999
+    LifeLineBackgroundColor white
+    ParticipantBorderColor #999999
+    ParticipantBackgroundColor #ECEEF8
+    ParticipantFontColor #111111
+    ActorBorderColor #999999
+    ActorFontColor #111111
+    GroupBorderColor #111111
+    GroupBackgroundColor transparent
+}
+
+actor "Admin" as Admin
+boundary "Halaman Kelola Hero" as HalamanHero
+boundary "Form Edit Slide Hero" as FormEdit
+control "LandingHeroController" as LandingHeroController
+control "StorageService" as StorageService
+entity "LandingHeroSlides Model" as LandingHeroSlide
+
+Admin -> HalamanHero : Klik edit pada slide hero
+HalamanHero -> LandingHeroController : edit(slideId)
+LandingHeroController -> LandingHeroSlide : SELECT landing_hero_slides
+LandingHeroSlide --> LandingHeroController : data slide
+LandingHeroController --> FormEdit : tampilkan form edit slide
+Admin -> FormEdit : Submit perubahan slide hero
+FormEdit -> LandingHeroController : update(slideId, data)
+LandingHeroController -> LandingHeroController : validasi data perubahan
+
+alt Validasi berhasil
+    opt Gambar baru diunggah
+        LandingHeroController -> StorageService : hapus gambar lama dan simpan gambar baru
+        StorageService -> StorageService : DELETE old image + STORE new image
+        StorageService --> StorageService : image path baru
+        StorageService --> LandingHeroController : image path baru
+    end
+    LandingHeroController -> LandingHeroSlide : UPDATE landing_hero_slides
+    LandingHeroSlide --> LandingHeroController : slide diperbarui
+    LandingHeroController --> HalamanHero : redirect dengan pesan berhasil
+    HalamanHero --> Admin : slide hero terbaru tampil
+else Validasi gagal
+    LandingHeroController --> FormEdit : tampilkan pesan error
+    FormEdit --> Admin : perubahan tidak disimpan
+end
+
+@enduml

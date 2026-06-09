@@ -294,4 +294,34 @@ class AdminMasterDataTest extends TestCase
         Storage::disk('public')->assertMissing($currentImage);
         $this->assertDatabaseMissing('landing_hero_slides', ['id' => $slide->id]);
     }
+
+    /**
+     * Pengujian: batas maksimal slide hero.
+     * Hasil yang diharapkan: sistem menolak pembuatan slide ke-11.
+     */
+    public function test_admin_cannot_create_more_than_ten_landing_hero_slides(): void
+    {
+        $admin = User::factory()->create(['role' => Role::ADMIN]);
+
+        foreach (range(1, 10) as $order) {
+            LandingHeroSlide::create([
+                'user_id' => $admin->id,
+                'title' => "Slide {$order}",
+                'image_path' => "landing/hero/slide-{$order}.jpg",
+                'sort_order' => $order,
+                'is_active' => true,
+            ]);
+        }
+
+        $this->actingAs($admin)
+            ->from(route('admin.landing.hero'))
+            ->post(route('admin.landing.hero.store'), [
+                'title' => 'Slide 11',
+                'sort_order' => 11,
+            ])
+            ->assertRedirect(route('admin.landing.hero'))
+            ->assertSessionHasErrors('sort_order');
+
+        $this->assertSame(10, LandingHeroSlide::count());
+    }
 }

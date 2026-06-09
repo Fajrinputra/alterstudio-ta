@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\ServiceCategory;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * Endpoint CRUD kategori layanan.
@@ -25,6 +26,7 @@ class ServiceCategoryController extends Controller
         ]);
 
         $category = ServiceCategory::create($data);
+        Cache::forget('landing.page.data.v2');
 
         if ($request->wantsJson()) {
             return response()->json($category, 201);
@@ -40,6 +42,7 @@ class ServiceCategoryController extends Controller
         ]);
 
         $serviceCategory->update($data);
+        Cache::forget('landing.page.data.v2');
 
         if ($request->wantsJson()) {
             return response()->json($serviceCategory);
@@ -61,6 +64,7 @@ class ServiceCategoryController extends Controller
         }
 
         $serviceCategory->delete();
+        Cache::forget('landing.page.data.v2');
 
         if (request()->wantsJson()) {
             return response()->json(['message' => 'Kategori berhasil dihapus.']);

@@ -1,0 +1,51 @@
+@startuml
+title SD-B36 Edit Akun Pengguna
+
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam BoxPadding 4
+skinparam sequence {
+    ArrowColor #333333
+    LifeLineBorderColor #999999
+    LifeLineBackgroundColor white
+    ParticipantBorderColor #999999
+    ParticipantBackgroundColor #ECEEF8
+    ParticipantFontColor #111111
+    ActorBorderColor #999999
+    ActorFontColor #111111
+    GroupBorderColor #111111
+    GroupBackgroundColor transparent
+}
+
+actor "Owner" as Owner
+boundary "Halaman Kelola Pengguna" as HalamanPengguna
+boundary "Form Edit Pengguna" as FormEdit
+control "UserManagementController" as UserManagementController
+entity "Users Model" as User
+
+Owner -> HalamanPengguna : Klik edit pada akun pengguna
+HalamanPengguna -> UserManagementController : edit(userId)
+UserManagementController -> User : SELECT user by id
+User --> UserManagementController : data pengguna
+UserManagementController --> FormEdit : tampilkan form edit
+Owner -> FormEdit : Ubah data pengguna
+FormEdit -> UserManagementController : update(userId, data)
+UserManagementController -> UserManagementController : validasi data dan batasan akun owner
+
+alt Akun owner
+    UserManagementController -> UserManagementController : role dan status owner dikunci
+else Akun biasa
+    UserManagementController -> UserManagementController : role dan status dapat diperbarui
+end
+
+alt Data valid
+    UserManagementController -> User : UPDATE users
+    User --> UserManagementController : user diperbarui
+    UserManagementController --> HalamanPengguna : redirect pesan sukses
+    HalamanPengguna --> Owner : data pengguna terbaru tampil
+else Data tidak valid
+    UserManagementController --> FormEdit : tampilkan pesan error
+    FormEdit --> Owner : perubahan ditolak
+end
+
+@enduml

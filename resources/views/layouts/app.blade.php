@@ -37,14 +37,14 @@
             @include('layouts.sidebar')
 
             {{-- Main Content Area --}}
-            <div class="flex flex-col min-h-screen lg:ml-64 transition-all duration-300">
+            <div class="flex flex-col min-h-screen lg:ml-56 transition-all duration-300">
                 
                 @include('layouts.navigation')
 
                 {{-- Header Slot --}}
                 @isset($header)
-                    <header class="bg-white/80 backdrop-blur-xl border-b border-[#EDE0D0] sticky top-14 z-30 shadow-sm">
-                        <div class="max-w-[1180px] mx-auto py-4 px-4 sm:px-5 lg:px-6">
+                    <header class="bg-white/80 backdrop-blur-xl border-b border-[#EDE0D0] sticky top-12 z-30 shadow-sm">
+                        <div class="max-w-[1360px] mx-auto py-2.5 px-4 sm:px-5 lg:px-6 [&_h2]:!text-2xl [&_h2]:md:!text-3xl [&_h2]:!leading-tight [&_p]:!text-xs [&_p]:!leading-5">
                             {{ $header }}
                         </div>
                     </header>
@@ -52,7 +52,7 @@
 
                 {{-- Main Content --}}
                 <main class="flex-1 pb-8">
-                    <div class="max-w-[1180px] mx-auto px-4 sm:px-5 lg:px-6">
+                    <div class="max-w-[1360px] mx-auto px-4 sm:px-5 lg:px-6">
                         {{ $slot }}
                     </div>
                 </main>
@@ -66,15 +66,15 @@
             @include('layouts.navigation')
 
             @isset($header)
-                <header class="bg-white/80 backdrop-blur-xl border-b border-[#EDE0D0] sticky top-14 z-30 shadow-sm">
-                    <div class="max-w-[1180px] mx-auto py-4 px-4 sm:px-5 lg:px-6">
+                <header class="bg-white/80 backdrop-blur-xl border-b border-[#EDE0D0] sticky top-12 z-30 shadow-sm">
+                    <div class="max-w-[1360px] mx-auto py-2.5 px-4 sm:px-5 lg:px-6 [&_h2]:!text-2xl [&_h2]:md:!text-3xl [&_h2]:!leading-tight [&_p]:!text-xs [&_p]:!leading-5">
                         {{ $header }}
                     </div>
                 </header>
             @endisset
 
             <main class="pb-8">
-                <div class="max-w-[1180px] mx-auto px-4 sm:px-5 lg:px-6">
+                <div class="max-w-[1360px] mx-auto px-4 sm:px-5 lg:px-6">
                     {{ $slot }}
                 </div>
             </main>
@@ -136,7 +136,7 @@
                         <div class="rounded-2xl border border-[#EDE0D0] bg-[#FAF6F0] p-4">
                             <p class="font-semibold text-[#3F2B1B]">Aturan Pasca-Produksi</p>
                             <p class="mt-2">
-                                Fotografer baru dapat membagikan link Google Drive foto mentah setelah pemesanan terjadwal dan pembayaran sudah lunas. Link Drive berlaku selama 7 hari, sehingga klien disarankan segera membuka folder dan mencatat kode foto yang ingin diedit.
+                                Fotografer baru dapat membagikan link Google Drive foto mentah setelah pemesanan terjadwal dan pembayaran sudah lunas. Link Drive berlaku selama 3 hari, sehingga klien disarankan segera membuka folder dan mencatat kode foto yang ingin diedit.
                             </p>
                         </div>
 

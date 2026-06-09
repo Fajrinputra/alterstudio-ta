@@ -1,0 +1,43 @@
+@startuml
+title SD-B12 Lihat Kategori Layanan
+
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam BoxPadding 4
+skinparam sequence {
+    ArrowColor #333333
+    LifeLineBorderColor #999999
+    LifeLineBackgroundColor white
+    ParticipantBorderColor #999999
+    ParticipantBackgroundColor #ECEEF8
+    ParticipantFontColor #111111
+    ActorBorderColor #999999
+    ActorFontColor #111111
+    GroupBorderColor #111111
+    GroupBackgroundColor transparent
+}
+
+actor "Klien/Admin/Manajer" as Pengguna
+boundary "Menu Katalog" as MenuKatalog
+boundary "Halaman Kategori Layanan" as HalamanKategori
+control "CatalogController" as CatalogController
+entity "ServiceCategories Model" as ServiceCategory
+
+Pengguna -> MenuKatalog : Membuka menu katalog
+MenuKatalog -> HalamanKategori : akses halaman kategori
+HalamanKategori -> CatalogController : index()
+CatalogController -> ServiceCategory : ambil daftar kategori layanan
+ServiceCategory --> CatalogController : data kategori
+
+alt Data tersedia
+    CatalogController --> HalamanKategori : tampilkan daftar kategori
+    HalamanKategori --> Pengguna : kategori layanan tampil
+else Data kosong
+    CatalogController --> HalamanKategori : tampilkan katalog kosong
+    HalamanKategori --> Pengguna : daftar kategori kosong
+else Gagal load data
+    CatalogController --> HalamanKategori : tampilkan pesan error
+    HalamanKategori --> Pengguna : error load kategori
+end
+
+@enduml

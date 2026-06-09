@@ -185,6 +185,8 @@ class UserManagementWorkflowTest extends TestCase
             'booking_id' => $booking->id,
             'photographer_id' => $photographer->id,
             'status' => Project::STATUS_SCHEDULED,
+            'start_at' => now()->addDay()->setTime(11, 0),
+            'end_at' => now()->addDay()->setTime(12, 0),
         ]);
 
         $this->actingAs($owner)

@@ -1,0 +1,57 @@
+@startuml
+title SD-B45 Mengakses Link Drive Klien
+
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam BoxPadding 4
+skinparam sequence {
+    ArrowColor #333333
+    LifeLineBorderColor #999999
+    LifeLineBackgroundColor white
+    ParticipantBorderColor #999999
+    ParticipantBackgroundColor #ECEEF8
+    ParticipantFontColor #111111
+    ActorBorderColor #999999
+    ActorFontColor #111111
+    GroupBorderColor #111111
+    GroupBackgroundColor transparent
+}
+
+actor "Klien" as Klien
+boundary "Halaman Project Klien" as HalamanProject
+boundary "Detail Project" as DetailProject
+control "ProjectController" as ProjectController
+entity "Projects Model" as Project
+entity "Bookings Model" as Booking
+
+Klien -> HalamanProject : Membuka menu pemesanan/project
+HalamanProject -> ProjectController : index()
+ProjectController -> Project : ambil project milik klien
+Project --> ProjectController : data project
+ProjectController --> HalamanProject : tampilkan daftar project
+Klien -> HalamanProject : Membuka detail project
+HalamanProject -> DetailProject : tampilkan detail project
+DetailProject -> ProjectController : show(projectId)
+ProjectController -> Project : ambil project dan link RAW/FINAL
+Project --> ProjectController : data project
+ProjectController -> Booking : ambil status booking
+Booking --> ProjectController : data booking
+ProjectController -> ProjectController : validasi akses klien dan status booking
+
+alt Link tersedia dan akses valid
+    ProjectController --> DetailProject : tampilkan link Drive
+    DetailProject --> Klien : link Drive tampil
+    Klien -> Klien : membuka link Google Drive
+    Klien -> Klien : file/folder Drive tampil
+else Link belum tersedia
+    ProjectController --> DetailProject : sembunyikan link Drive
+    DetailProject --> Klien : link belum tersedia
+else Akses tidak valid / booking dibatalkan
+    ProjectController --> DetailProject : tampilkan pesan akses ditolak
+    DetailProject --> Klien : link tidak dapat diakses
+else Link kedaluwarsa
+    ProjectController --> DetailProject : tampilkan pesan link kedaluwarsa
+    DetailProject --> Klien : akses link ditolak
+end
+
+@enduml

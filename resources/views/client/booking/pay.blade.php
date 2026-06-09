@@ -14,32 +14,32 @@
                     <i class="fa-solid fa-credit-card text-[#D4A017]"></i>
                     Pembayaran
                 </p>
-                <h2 class="font-display font-bold text-4xl tracking-tighter text-[#3F2B1B]">
+                <h2 class="font-display font-bold text-2xl tracking-tight text-[#3F2B1B] sm:text-4xl sm:tracking-tighter">
                     Pemesanan #{{ $booking->id }}
                 </h2>
             </div>
             <a href="{{ route('bookings.index') }}"
-               class="inline-flex items-center gap-3 px-6 py-3 rounded-3xl border border-[#E1D3C5] text-[#5C432C] hover:bg-white hover:shadow-md transition-all">
+               class="inline-flex w-full items-center justify-center gap-3 rounded-3xl border border-[#E1D3C5] px-5 py-3 text-[#5C432C] transition-all hover:bg-white hover:shadow-md sm:w-auto sm:px-6">
                 <i class="fa-solid fa-arrow-left"></i>
                 Kembali ke Riwayat
             </a>
         </div>
     </x-slot>
 
-    <div class="max-w-3xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-3xl mx-auto py-5 sm:py-8 lg:py-12 px-0 sm:px-6 lg:px-8">
         <div class="bg-white rounded-3xl border border-[#EDE0D0] shadow-2xl overflow-hidden">
-            <div class="bg-gradient-to-br from-[#D4A017] to-[#E07A5F] px-8 py-10 text-white text-center">
-                <div class="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-white/20 backdrop-blur-md mb-6">
-                    <i class="fa-solid fa-receipt text-4xl"></i>
+            <div class="bg-gradient-to-br from-[#D4A017] to-[#E07A5F] px-5 py-7 text-center text-white sm:px-8 sm:py-10">
+                <div class="mb-4 inline-flex h-14 w-14 items-center justify-center rounded-3xl bg-white/20 backdrop-blur-md sm:mb-6 sm:h-20 sm:w-20">
+                    <i class="fa-solid fa-receipt text-2xl sm:text-4xl"></i>
                 </div>
-                <h3 class="font-display text-3xl font-semibold">Ringkasan Pembayaran</h3>
+                <h3 class="font-display text-2xl font-semibold sm:text-3xl">Ringkasan Pembayaran</h3>
                 <p class="text-white/90 mt-2">
                     {{ $isSettlement ? 'Selesaikan pelunasan untuk menuntaskan pemesanan Anda' : 'Selesaikan pembayaran untuk mengonfirmasi pemesanan Anda' }}
                 </p>
             </div>
 
-            <div class="p-8">
-                <div class="bg-[#FAF6F0] rounded-3xl p-8 space-y-6">
+            <div class="p-4 sm:p-8">
+                <div class="bg-[#FAF6F0] rounded-3xl p-4 space-y-5 sm:p-8 sm:space-y-6">
                     <div class="flex flex-col gap-2 border-b border-[#EDE0D0] pb-4 sm:flex-row sm:items-center sm:justify-between">
                         <span class="text-[#5C432C]">Paket</span>
                         <span class="font-semibold text-[#3F2B1B] text-right">{{ $booking->package->name ?? '-' }}</span>
@@ -104,7 +104,7 @@
 
                     <div class="flex flex-col gap-3 pt-4 sm:flex-row sm:items-center sm:justify-between">
                         <span class="text-lg font-semibold text-[#3F2B1B]">{{ $isSettlement ? 'Sisa yang harus dibayar' : 'Total yang harus dibayar' }}</span>
-                        <span class="text-3xl font-bold text-[#D4A017] sm:text-4xl">Rp {{ number_format($payableAmount) }}</span>
+                        <span class="text-2xl font-bold text-[#D4A017] sm:text-4xl">Rp {{ number_format($payableAmount) }}</span>
                     </div>
                 </div>
 
@@ -138,7 +138,7 @@
                     @endif
 
                     <button id="btn-pay"
-                            class="inline-flex items-center justify-center gap-4 w-full sm:w-auto px-12 py-5 rounded-3xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] text-white font-semibold text-lg shadow-2xl shadow-[#D4A017]/40 hover:shadow-3xl hover:-translate-y-1 transition-all duration-300">
+                            class="inline-flex w-full items-center justify-center gap-3 rounded-3xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] px-8 py-4 text-base font-semibold text-white shadow-2xl shadow-[#D4A017]/40 transition-all duration-300 hover:-translate-y-1 hover:shadow-3xl sm:w-auto sm:gap-4 sm:px-12 sm:py-5 sm:text-lg">
                         <i class="fa-solid fa-credit-card text-2xl"></i>
                         <span>{{ $isSettlement ? 'Lunasi Sekarang' : 'Bayar Sekarang' }}</span>
                     </button>

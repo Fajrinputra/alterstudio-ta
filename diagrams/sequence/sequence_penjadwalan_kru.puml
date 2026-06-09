@@ -1,0 +1,95 @@
+@startuml
+title Sequence Diagram Penjadwalan Kru
+
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam BoxPadding 4
+skinparam sequence {
+    ArrowColor #333333
+    LifeLineBorderColor #999999
+    LifeLineBackgroundColor white
+    ParticipantBorderColor #999999
+    ParticipantBackgroundColor #ECEEF8
+    ParticipantFontColor #111111
+    ActorBorderColor #999999
+    ActorFontColor #111111
+    BoxBorderColor #111111
+    GroupBorderColor #111111
+    GroupBackgroundColor transparent
+    DividerBorderColor #999999
+    DividerFontColor #111111
+}
+
+actor "Admin" as Admin
+boundary "Halaman Penjadwalan" as HalamanJadwal
+boundary "Form Penjadwalan" as FormJadwal
+control "ScheduleController" as ScheduleController
+control "NotificationService" as NotificationService
+entity "Projects Model" as Project
+entity "Bookings Model" as Booking
+entity "Users Model" as User
+entity "StudioRooms Model" as StudioRoom
+
+Admin -> HalamanJadwal : Membuka menu jadwal
+HalamanJadwal -> ScheduleController : request daftar project
+ScheduleController -> Project : ambil project yang perlu dijadwalkan
+Project --> ScheduleController : data project
+ScheduleController -> User : ambil fotografer dan editor aktif
+User --> ScheduleController : data kru aktif
+ScheduleController -> StudioRoom : ambil ruangan aktif
+StudioRoom --> ScheduleController : data ruangan
+ScheduleController --> HalamanJadwal : tampilkan daftar project dan pilihan kru
+HalamanJadwal --> Admin : Menampilkan halaman jadwal
+
+Admin -> HalamanJadwal : Memilih salah satu project
+HalamanJadwal -> FormJadwal : buka form penjadwalan
+FormJadwal -> ScheduleController : request detail project
+ScheduleController -> Project : ambil detail project
+Project -> Booking : ambil booking, cabang, dan ruangan
+Booking --> Project : data booking
+Project --> ScheduleController : data detail project
+ScheduleController --> FormJadwal : tampilkan detail dan pilihan jadwal
+FormJadwal --> Admin : Form penjadwalan ditampilkan
+
+Admin -> FormJadwal : Memilih ruangan, fotografer, dan editor
+Admin -> FormJadwal : Klik simpan jadwal
+FormJadwal -> ScheduleController : store(data jadwal)
+
+ScheduleController -> Booking : validasi status booking
+Booking --> ScheduleController : hasil validasi booking
+ScheduleController -> User : validasi fotografer dan editor aktif
+User --> ScheduleController : hasil validasi kru
+ScheduleController -> StudioRoom : validasi ruangan sesuai cabang booking
+StudioRoom --> ScheduleController : hasil validasi ruangan
+ScheduleController -> Project : cek bentrok jadwal kru dan ruangan
+Project --> ScheduleController : hasil validasi bentrok
+
+alt Jadwal valid
+    ScheduleController -> Booking : simpan ruangan booking
+    Booking -> Booking : update studio_room_id
+    Booking --> ScheduleController : data booking
+    ScheduleController -> Project : simpan jadwal project
+    Project -> Project : update fotografer, editor,\nstart_at, end_at, status TERJADWAL
+    Project --> ScheduleController : data project
+    ScheduleController -> NotificationService : kirim notifikasi tugas
+    NotificationService --> ScheduleController : notifikasi tugas terkirim ke kru
+    ScheduleController --> FormJadwal : redirect dengan pesan berhasil
+    FormJadwal --> Admin : Jadwal produksi berhasil disimpan
+else Booking belum DP / lunas
+    ScheduleController --> FormJadwal : tampilkan pesan booking belum dapat dijadwalkan
+    FormJadwal --> Admin : Jadwal tidak tersimpan
+else Pemesanan dibatalkan
+    ScheduleController --> FormJadwal : tampilkan pesan pemesanan dibatalkan
+    FormJadwal --> Admin : Jadwal tidak tersimpan
+else Ruangan tidak sesuai cabang booking
+    ScheduleController --> FormJadwal : tampilkan pesan ruangan tidak valid
+    FormJadwal --> Admin : Admin memilih ruangan lain
+else Fotografer, editor, atau ruangan bentrok
+    ScheduleController --> FormJadwal : tampilkan pesan jadwal bentrok
+    FormJadwal --> Admin : Admin memilih kru atau ruangan lain
+else Project sudah masuk pasca-produksi
+    ScheduleController --> FormJadwal : tampilkan pesan jadwal tidak dapat diubah
+    FormJadwal --> Admin : Perubahan jadwal ditolak
+end
+
+@enduml

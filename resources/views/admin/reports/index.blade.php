@@ -82,76 +82,67 @@
             </div>
 
             {{-- Summary Cards Premium --}}
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 {{-- Total Pemesanan --}}
-                <div class="relative group">
+                <div class="relative group min-w-0">
                     <div class="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 rounded-3xl blur-2xl"></div>
-                    <div class="relative bg-white/80 backdrop-blur-2xl border border-[#EDE0D0] rounded-3xl p-7 shadow-xl">
-                        <div class="flex items-center justify-between mb-6">
-                            <div class="w-14 h-14 rounded-3xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
-                                <i class="fa-solid fa-receipt text-white text-2xl"></i>
-                            </div>
-                            <span class="text-4xl font-light tabular-nums text-[#3F2B1B]">{{ $totalOrders }}</span>
+                    <div class="relative flex min-w-0 items-center gap-4 rounded-2xl border border-[#EDE0D0] bg-white/80 p-5 shadow-lg backdrop-blur-2xl">
+                        <div class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500">
+                            <i class="fa-solid fa-receipt text-base text-white"></i>
                         </div>
-                        <p class="text-[#7A5B3A]">Total Pemesanan</p>
+                        <p class="min-w-0 flex-1 text-xs font-medium uppercase tracking-[0.16em] text-[#7A5B3A]">Total Pemesanan</p>
+                        <span class="flex-shrink-0 text-right text-2xl font-light tabular-nums text-[#3F2B1B]">{{ $totalOrders }}</span>
                     </div>
                 </div>
 
                 {{-- Pendapatan Diterima --}}
-                <div class="relative group sm:col-span-2 lg:col-span-2">
+                <div class="relative group min-w-0">
                     <div class="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-teal-500/10 rounded-3xl blur-2xl"></div>
-                    <div class="relative bg-white/80 backdrop-blur-2xl border border-[#EDE0D0] rounded-3xl p-7 shadow-xl">
-                        <div class="flex items-center justify-between mb-6">
-                            <div class="w-14 h-14 rounded-3xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center">
-                                <i class="fa-solid fa-wallet text-white text-2xl"></i>
-                            </div>
-                            <div class="text-right">
-                                <span class="text-4xl font-light tabular-nums text-[#3F2B1B]">Rp {{ number_format($revenueTotal, 0, ',', '.') }}</span>
-                            </div>
+                    <div class="relative flex min-w-0 items-center gap-4 rounded-2xl border border-[#EDE0D0] bg-white/80 p-5 shadow-lg backdrop-blur-2xl">
+                        <div class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-500">
+                            <i class="fa-solid fa-wallet text-base text-white"></i>
                         </div>
-                        <p class="text-[#7A5B3A]">Pendapatan Diterima</p>
+                        <p class="min-w-0 flex-1 text-xs font-medium uppercase tracking-[0.16em] text-[#7A5B3A]">Pendapatan Diterima</p>
+                        <div class="flex-shrink-0 text-right font-light leading-tight tabular-nums text-[#3F2B1B]">
+                            <span class="block text-xs">Rp</span>
+                            <span class="block text-[clamp(1.15rem,1.5vw,1.55rem)]">{{ number_format($revenueTotal, 0, ',', '.') }}</span>
+                        </div>
                     </div>
                 </div>
 
                 {{-- Editor Bertugas --}}
-                <div class="relative group">
+                <div class="relative group min-w-0">
                     <div class="absolute inset-0 bg-gradient-to-br from-amber-500/10 to-orange-500/10 rounded-3xl blur-2xl"></div>
-                    <div class="relative bg-white/80 backdrop-blur-2xl border border-[#EDE0D0] rounded-3xl p-7 shadow-xl">
-                        <div class="flex items-center justify-between mb-6">
-                            <div class="w-14 h-14 rounded-3xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center">
-                                <i class="fa-solid fa-pen-ruler text-white text-2xl"></i>
-                            </div>
-                            <span class="text-4xl font-light tabular-nums text-[#3F2B1B]">{{ $assignedEditors }}</span>
+                    <div class="relative flex min-w-0 items-center gap-4 rounded-2xl border border-[#EDE0D0] bg-white/80 p-5 shadow-lg backdrop-blur-2xl">
+                        <div class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500 to-orange-500">
+                            <i class="fa-solid fa-pen-ruler text-base text-white"></i>
                         </div>
-                        <p class="text-[#7A5B3A]">Editor Bertugas</p>
+                        <p class="min-w-0 flex-1 text-xs font-medium uppercase tracking-[0.16em] text-[#7A5B3A]">Editor Bertugas</p>
+                        <span class="flex-shrink-0 text-right text-2xl font-light tabular-nums text-[#3F2B1B]">{{ $assignedEditors }}</span>
                     </div>
                 </div>
 
                 {{-- Fotografer Bertugas --}}
-                <div class="relative group">
+                <div class="relative group min-w-0">
                     <div class="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-pink-500/10 rounded-3xl blur-2xl"></div>
-                    <div class="relative bg-white/80 backdrop-blur-2xl border border-[#EDE0D0] rounded-3xl p-7 shadow-xl">
-                        <div class="flex items-center justify-between mb-6">
-                            <div class="w-14 h-14 rounded-3xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                                <i class="fa-solid fa-camera text-white text-2xl"></i>
-                            </div>
-                            <span class="text-4xl font-light tabular-nums text-[#3F2B1B]">{{ $assignedPhotographers }}</span>
+                    <div class="relative flex min-w-0 items-center gap-4 rounded-2xl border border-[#EDE0D0] bg-white/80 p-5 shadow-lg backdrop-blur-2xl">
+                        <div class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500">
+                            <i class="fa-solid fa-camera text-base text-white"></i>
                         </div>
-                        <p class="text-[#7A5B3A]">Fotografer Bertugas</p>
+                        <p class="min-w-0 flex-1 text-xs font-medium uppercase tracking-[0.16em] text-[#7A5B3A]">Fotografer Bertugas</p>
+                        <span class="flex-shrink-0 text-right text-2xl font-light tabular-nums text-[#3F2B1B]">{{ $assignedPhotographers }}</span>
                     </div>
                 </div>
 
                 {{-- Klien Aktif --}}
-                <div class="relative group">
+                <div class="relative group min-w-0">
                     <div class="absolute inset-0 bg-gradient-to-br from-sky-500/10 to-indigo-500/10 rounded-3xl blur-2xl"></div>
-                    <div class="relative bg-white/80 backdrop-blur-2xl border border-[#EDE0D0] rounded-3xl p-7 shadow-xl">
-                        <div class="flex items-center justify-between mb-6">
-                            <div class="w-14 h-14 rounded-3xl bg-gradient-to-br from-sky-500 to-indigo-500 flex items-center justify-center">
-                                <i class="fa-solid fa-users text-white text-2xl"></i>
-                            </div>
-                            <span class="text-4xl font-light tabular-nums text-[#3F2B1B]">{{ $activeClients }}</span>
+                    <div class="relative flex min-w-0 items-center gap-4 rounded-2xl border border-[#EDE0D0] bg-white/80 p-5 shadow-lg backdrop-blur-2xl">
+                        <div class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-indigo-500">
+                            <i class="fa-solid fa-users text-base text-white"></i>
                         </div>
-                        <p class="text-[#7A5B3A]">Klien Aktif</p>
+                        <p class="min-w-0 flex-1 text-xs font-medium uppercase tracking-[0.16em] text-[#7A5B3A]">Klien Aktif</p>
+                        <span class="flex-shrink-0 text-right text-2xl font-light tabular-nums text-[#3F2B1B]">{{ $activeClients }}</span>
                     </div>
                 </div>
             </div>

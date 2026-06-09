@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\ServicePackage;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 
 /**
@@ -30,6 +31,7 @@ class ServicePackageController extends Controller
         $this->syncAddons($package, $data['addons'] ?? []);
         $this->handleOverviewImage($request, $package);
         $this->syncGallery($request, $package);
+        Cache::forget('landing.page.data.v2');
 
         if ($request->wantsJson()) {
             return response()->json($package->fresh()->load('category'), 201);
@@ -65,6 +67,7 @@ class ServicePackageController extends Controller
         $this->removeSelectedGallery($request, $servicePackage);
         $this->handleOverviewImage($request, $servicePackage);
         $this->syncGallery($request, $servicePackage);
+        Cache::forget('landing.page.data.v2');
 
         if ($request->wantsJson()) {
             return response()->json($servicePackage->fresh()->load('category'));
@@ -89,6 +92,7 @@ class ServicePackageController extends Controller
 
         if ($activeUsageExists) {
             $servicePackage->update(['is_active' => false]);
+            Cache::forget('landing.page.data.v2');
             $message = 'Paket sedang dipakai pada pemesanan aktif, paket dinonaktifkan otomatis dan tidak dapat dihapus.';
 
             if (request()->wantsJson()) {
@@ -99,6 +103,7 @@ class ServicePackageController extends Controller
         }
 
         $servicePackage->delete();
+        Cache::forget('landing.page.data.v2');
 
         if (request()->wantsJson()) {
             return response()->json(['message' => 'Paket berhasil dihapus.']);

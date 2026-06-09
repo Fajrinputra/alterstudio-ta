@@ -6,21 +6,21 @@
                     <i class="fa-solid fa-pen-to-square text-[#D4A017]"></i>
                     Pemesanan Baru
                 </p>
-                <h2 class="font-display font-bold text-4xl tracking-tighter text-[#3F2B1B]">
+                <h2 class="font-display font-bold text-2xl tracking-tight text-[#3F2B1B] sm:text-4xl sm:tracking-tighter">
                     Buat Pemesanan Layanan
                 </h2>
             </div>
             <a href="{{ route('catalog.public') }}"
-               class="inline-flex items-center gap-3 px-6 py-3 rounded-3xl border border-[#E1D3C5] text-[#5C432C] hover:bg-white hover:shadow-md transition-all">
+               class="inline-flex w-full items-center justify-center gap-3 rounded-3xl border border-[#E1D3C5] px-5 py-3 text-[#5C432C] transition-all hover:bg-white hover:shadow-md sm:w-auto sm:px-6">
                 <i class="fa-solid fa-arrow-left"></i>
                 Kembali ke Katalog
             </a>
         </div>
     </x-slot>
 
-    <div class="max-w-5xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
-        <div class="bg-white rounded-3xl border border-[#EDE0D0] shadow-2xl p-6 sm:p-8 lg:p-10">
-            <div class="mb-12 grid gap-4 sm:grid-cols-3">
+    <div class="max-w-5xl mx-auto py-5 sm:py-8 lg:py-10 px-0 sm:px-6 lg:px-8">
+        <div class="bg-white rounded-3xl border border-[#EDE0D0] shadow-2xl p-4 sm:p-8 lg:p-10">
+            <div class="mb-8 grid gap-3 sm:grid-cols-3 sm:mb-12 sm:gap-4">
                 <div class="flex items-center gap-3 rounded-3xl border border-[#EDE0D0] bg-[#FAF6F0] px-4 py-3">
                     <div class="flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-[#D4A017] to-[#E07A5F] text-lg font-bold text-white shadow-inner">1</div>
                     <span class="font-medium text-[#3F2B1B]">Pilih Paket</span>
@@ -36,12 +36,12 @@
             </div>
 
             @if(!$selectedPackage)
-                <div class="rounded-3xl border border-[#EDE0D0] bg-[#FAF6F0] p-10 text-center">
-                    <i class="fa-solid fa-box-open text-6xl text-[#D4A017] mb-6 opacity-70"></i>
+                    <div class="rounded-3xl border border-[#EDE0D0] bg-[#FAF6F0] p-6 text-center sm:p-10">
+                    <i class="fa-solid fa-box-open mb-4 text-4xl text-[#D4A017] opacity-70 sm:mb-6 sm:text-6xl"></i>
                     <p class="font-semibold text-[#3F2B1B] text-xl mb-2">Belum ada paket yang dipilih</p>
                     <p class="text-[#7A5B3A] mb-8">Silakan pilih paket dari katalog terlebih dahulu</p>
                     <a href="{{ route('catalog.public') }}"
-                       class="inline-flex items-center gap-3 px-8 py-4 rounded-3xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] text-white font-semibold shadow-lg">
+                       class="inline-flex items-center gap-3 rounded-3xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] px-6 py-3 text-sm font-semibold text-white shadow-lg sm:px-8 sm:py-4 sm:text-base">
                         <i class="fa-solid fa-camera"></i>
                         Buka Katalog Paket
                     </a>
@@ -73,7 +73,7 @@
 
                     <div class="rounded-3xl border border-[#EDE0D0] bg-white p-6 sm:p-8">
                         <p class="uppercase tracking-widest text-xs text-[#8B7359] mb-3">Paket Terpilih</p>
-                        <div class="flex flex-col gap-6 md:flex-row md:items-start">
+                        <div class="flex flex-col gap-4 md:flex-row md:items-start md:gap-6">
                             @if($selectedPackage->overview_image)
                                 <img src="{{ Storage::url($selectedPackage->overview_image) }}"
                                      class="w-full md:w-40 h-40 rounded-2xl object-cover border border-[#EDE0D0] shadow-sm"
@@ -84,10 +84,10 @@
                                 </div>
                             @endif
                             <div class="flex-1">
-                                <h3 class="font-display text-3xl font-semibold text-[#3F2B1B]">{{ $selectedPackage->name }}</h3>
+                                <h3 class="font-display text-2xl font-semibold text-[#3F2B1B] sm:text-3xl">{{ $selectedPackage->name }}</h3>
                                 <p class="text-[#7A5B3A] mt-2 leading-relaxed">{{ $selectedPackage->description }}</p>
                                 <div class="mt-6 inline-block bg-gradient-to-r from-[#D4A017]/10 to-[#E07A5F]/10 px-6 py-3 rounded-2xl">
-                                    <p class="text-3xl font-bold text-[#D4A017]">Rp {{ number_format($basePrice) }}</p>
+                                    <p class="text-2xl font-bold text-[#D4A017] sm:text-3xl">Rp {{ number_format($basePrice) }}</p>
                                 </div>
                             </div>
                         </div>
@@ -104,7 +104,7 @@
                                         $oldQuantities = old('addon_quantities', []);
                                         $quantity = max(1, (int) (is_array($oldQuantities) ? ($oldQuantities[$addonKey] ?? 1) : 1));
                                     @endphp
-                                    <div class="addon-card rounded-3xl border border-[#EDE0D0] bg-white p-6 transition-all hover:border-[#D4A017]">
+                                    <div class="addon-card rounded-3xl border border-[#EDE0D0] bg-white p-4 transition-all hover:border-[#D4A017] sm:p-6">
                                         <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                                             <label class="flex items-start gap-4 cursor-pointer flex-1">
                                                 <input type="checkbox"
@@ -147,7 +147,7 @@
                                    id="booking-date"
                                    name="booking_date"
                                    required
-                                   class="w-full px-5 py-4 rounded-3xl border border-[#E1D3C5] bg-white focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20 transition-all"
+                                   class="w-full rounded-3xl border border-[#E1D3C5] bg-white px-4 py-3 text-sm transition-all focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20 sm:px-5 sm:py-4 sm:text-base"
                                    min="{{ date('Y-m-d') }}"
                                    max="{{ $maxBookingDate }}"
                                    data-min-date="{{ date('Y-m-d') }}"
@@ -163,7 +163,7 @@
                                     id="booking-time"
                                     required
                                     disabled
-                                    class="w-full px-5 py-4 rounded-3xl border border-[#E1D3C5] bg-white focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20 transition-all disabled:bg-[#F3ECE3] disabled:text-[#8B7359]">
+                                    class="w-full rounded-3xl border border-[#E1D3C5] bg-white px-4 py-3 text-sm transition-all focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20 disabled:bg-[#F3ECE3] disabled:text-[#8B7359] sm:px-5 sm:py-4 sm:text-base">
                                 <option value="">Pilih tanggal dan cabang terlebih dahulu</option>
                             </select>
                             <p class="text-xs text-[#8B7359]">
@@ -177,7 +177,7 @@
                         <select name="studio_location_id"
                                 id="studio-location-id"
                                 required
-                                class="w-full px-5 py-4 rounded-3xl border border-[#E1D3C5] bg-white focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20 transition-all">
+                                class="w-full rounded-3xl border border-[#E1D3C5] bg-white px-4 py-3 text-sm transition-all focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20 sm:px-5 sm:py-4 sm:text-base">
                             <option value="">Pilih cabang studio</option>
                             @foreach($locations as $loc)
                                 <option value="{{ $loc->id }}" @selected($oldLocationId == $loc->id)>
@@ -192,14 +192,14 @@
                     <div class="space-y-3">
                         <label class="block text-sm font-medium text-[#5C432C]">Jenis Pembayaran</label>
                         <div class="grid sm:grid-cols-2 gap-4">
-                            <label class="payment-option flex items-center gap-4 p-6 border border-[#EDE0D0] rounded-3xl cursor-pointer hover:border-[#D4A017] transition-all">
+                            <label class="payment-option flex items-center gap-4 rounded-3xl border border-[#EDE0D0] p-4 cursor-pointer transition-all hover:border-[#D4A017] sm:p-6">
                                 <input type="radio" name="payment_type" value="DP" checked class="w-5 h-5 text-[#D4A017]">
                                 <div>
                                     <span class="font-semibold text-[#3F2B1B]">Bayar DP</span>
                                     <p class="text-xs text-[#7A5B3A]">DP 10% dari total harga pemesanan. Estimasi: Rp <span id="dp-estimate">{{ number_format((int) ceil($basePrice * 0.1)) }}</span></p>
                                 </div>
                             </label>
-                            <label class="payment-option flex items-center gap-4 p-6 border border-[#EDE0D0] rounded-3xl cursor-pointer hover:border-[#D4A017] transition-all">
+                            <label class="payment-option flex items-center gap-4 rounded-3xl border border-[#EDE0D0] p-4 cursor-pointer transition-all hover:border-[#D4A017] sm:p-6">
                                 <input type="radio" name="payment_type" value="FULL" class="w-5 h-5 text-[#D4A017]">
                                 <div>
                                     <span class="font-semibold text-[#3F2B1B]">Bayar Lunas</span>
@@ -212,7 +212,7 @@
                     <div class="space-y-2">
                         <label class="block text-sm font-medium text-[#5C432C]">Catatan Tambahan (Opsional)</label>
                         <textarea name="notes" rows="4"
-                                  class="w-full px-5 py-4 rounded-3xl border border-[#E1D3C5] bg-white focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20 resize-none"
+                                  class="w-full resize-none rounded-3xl border border-[#E1D3C5] bg-white px-4 py-3 text-sm focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20 sm:px-5 sm:py-4 sm:text-base"
                                   placeholder="Permintaan khusus, tema foto, atau catatan lain...">{{ old('notes') }}</textarea>
                     </div>
 
@@ -225,9 +225,9 @@
                             <span>Total Add-on</span>
                             <span class="font-medium">Rp <span id="addon-total">0</span></span>
                         </div>
-                        <div class="flex flex-col gap-2 border-t border-[#EDE0D0] pt-4 text-lg sm:flex-row sm:items-center sm:justify-between">
+                        <div class="flex flex-col gap-2 border-t border-[#EDE0D0] pt-4 text-base sm:flex-row sm:items-center sm:justify-between sm:text-lg">
                             <span class="font-semibold text-[#3F2B1B]">Total Keseluruhan</span>
-                            <span class="text-2xl font-bold text-[#D4A017]">Rp <span id="grand-total">{{ number_format($basePrice) }}</span></span>
+                            <span class="text-xl font-bold text-[#D4A017] sm:text-2xl">Rp <span id="grand-total">{{ number_format($basePrice) }}</span></span>
                         </div>
                         <div class="pt-4 border-t border-[#EDE0D0] text-sm text-[#7A5B3A]">
                             Setelah formulir dikirim, pemesanan akan masuk ke admin untuk ditinjau. Pembayaran baru dibuka setelah admin mengonfirmasi pemesanan.
@@ -236,12 +236,12 @@
 
                     <div class="flex flex-col sm:flex-row gap-4 pt-6">
                         <a href="{{ route('catalog.public') }}"
-                           class="flex-1 text-center py-4 rounded-3xl border border-[#E1D3C5] text-[#5C432C] hover:bg-white transition-all">
+                           class="flex-1 rounded-3xl border border-[#E1D3C5] py-3 text-center text-sm text-[#5C432C] transition-all hover:bg-white sm:py-4 sm:text-base">
                             Batal
                         </a>
                         <button type="submit"
                                 id="booking-submit"
-                                class="flex-1 flex items-center justify-center gap-3 py-4 rounded-3xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] text-white font-semibold shadow-lg shadow-[#D4A017]/30 hover:shadow-xl hover:-translate-y-0.5 transition-all">
+                                class="flex flex-1 items-center justify-center gap-3 rounded-3xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] py-3 text-sm font-semibold text-white shadow-lg shadow-[#D4A017]/30 transition-all hover:-translate-y-0.5 hover:shadow-xl sm:py-4 sm:text-base">
                             <i class="fa-solid fa-paper-plane"></i>
                             Simpan dan Kirim Pemesanan
                         </button>

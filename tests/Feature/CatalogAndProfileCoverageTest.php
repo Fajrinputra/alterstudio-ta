@@ -149,7 +149,6 @@ class CatalogAndProfileCoverageTest extends TestCase
     public function test_simple_model_relationships_are_covered(): void
     {
         $creator = User::factory()->create(['role' => Role::ADMIN]);
-        $updater = User::factory()->create(['role' => Role::ADMIN]);
         $slide = LandingHeroSlide::create([
             'eyebrow' => 'Alter',
             'title' => 'Hero',
@@ -157,8 +156,7 @@ class CatalogAndProfileCoverageTest extends TestCase
             'image_path' => 'hero.jpg',
             'sort_order' => '2',
             'is_active' => 1,
-            'created_by' => $creator->id,
-            'updated_by' => $updater->id,
+            'user_id' => $creator->id,
         ]);
 
         $location = StudioLocation::create(['name' => 'Cabang Relasi', 'slug' => 'relasi', 'is_active' => true]);
@@ -188,8 +186,7 @@ class CatalogAndProfileCoverageTest extends TestCase
 
         $this->assertTrue($slide->is_active);
         $this->assertSame(2, $slide->sort_order);
-        $this->assertTrue($slide->creator->is($creator));
-        $this->assertTrue($slide->updater->is($updater));
+        $this->assertTrue($slide->user->is($creator));
         $this->assertSame([MediaAsset::TYPE_RAW, MediaAsset::TYPE_FINAL], MediaAsset::TYPES);
         $this->assertSame(3, $media->version);
         $this->assertTrue($media->project->is($project));

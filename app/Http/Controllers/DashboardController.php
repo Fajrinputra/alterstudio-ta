@@ -69,21 +69,23 @@ class DashboardController extends Controller
         // Metrics global untuk admin/manager.
         $statusCounts = Booking::selectRaw('status, COUNT(*) as total')->groupBy('status')->pluck('total', 'status');
 
+        $bookingMetrics = Booking::query()
+            ->selectRaw('COUNT(*) as bookings')
+            ->selectRaw('SUM(CASE WHEN status = ? AND confirmed_at IS NULL THEN 1 ELSE 0 END) as submitted', [Booking::STATUS_WAITING_PAYMENT])
+            ->selectRaw('SUM(CASE WHEN status = ? AND confirmed_at IS NOT NULL THEN 1 ELSE 0 END) as waiting_payment', [Booking::STATUS_WAITING_PAYMENT])
+            ->first();
+
         $metrics = [
-            'bookings' => Booking::count(),
-            'submitted' => Booking::where('status', Booking::STATUS_WAITING_PAYMENT)
-                ->whereNull('confirmed_at')
-                ->count(),
-            'waiting_payment' => Booking::where('status', Booking::STATUS_WAITING_PAYMENT)
-                ->whereNotNull('confirmed_at')
-                ->count(),
+            'bookings' => (int) ($bookingMetrics->bookings ?? 0),
+            'submitted' => (int) ($bookingMetrics->submitted ?? 0),
+            'waiting_payment' => (int) ($bookingMetrics->waiting_payment ?? 0),
             'projects_final' => Project::where('status', Project::STATUS_FINAL)->count(),
             'unscheduled' => Project::whereNull('start_at')
                 ->whereHas('booking', fn ($booking) => $booking->whereIn('status', [Booking::STATUS_DP_PAID, Booking::STATUS_PAID]))
                 ->count(),
         ];
 
-        $schedules = Project::with(['booking', 'photographer', 'editor'])
+        $schedules = Project::with(['booking', 'scheduleRecord.photographerAssignment.user', 'scheduleRecord.editorAssignment.user'])
             ->whereNotNull('start_at')
             ->where('start_at', '>=', Carbon::now()->subDay())
             ->orderBy('start_at')
@@ -98,14 +100,16 @@ class DashboardController extends Controller
         // Dashboard manager fokus ke ringkasan bisnis dan komposisi role aktif.
         $statusCounts = Booking::selectRaw('status, COUNT(*) as total')->groupBy('status')->pluck('total', 'status');
 
+        $bookingMetrics = Booking::query()
+            ->selectRaw('COUNT(*) as bookings')
+            ->selectRaw('SUM(CASE WHEN status = ? AND confirmed_at IS NULL THEN 1 ELSE 0 END) as submitted', [Booking::STATUS_WAITING_PAYMENT])
+            ->selectRaw('SUM(CASE WHEN status = ? AND confirmed_at IS NOT NULL THEN 1 ELSE 0 END) as waiting_payment', [Booking::STATUS_WAITING_PAYMENT])
+            ->first();
+
         $metrics = [
-            'bookings' => Booking::count(),
-            'submitted' => Booking::where('status', Booking::STATUS_WAITING_PAYMENT)
-                ->whereNull('confirmed_at')
-                ->count(),
-            'waiting_payment' => Booking::where('status', Booking::STATUS_WAITING_PAYMENT)
-                ->whereNotNull('confirmed_at')
-                ->count(),
+            'bookings' => (int) ($bookingMetrics->bookings ?? 0),
+            'submitted' => (int) ($bookingMetrics->submitted ?? 0),
+            'waiting_payment' => (int) ($bookingMetrics->waiting_payment ?? 0),
             'projects_final' => Project::where('status', Project::STATUS_FINAL)->count(),
             'unscheduled' => Project::whereNull('start_at')
                 ->whereHas('booking', fn ($booking) => $booking->whereIn('status', [Booking::STATUS_DP_PAID, Booking::STATUS_PAID]))
@@ -125,9 +129,9 @@ class DashboardController extends Controller
     {
         $data = $this->managerData();
 
-        $data['metrics']['active_users'] = User::where('is_active', true)->count();
-        $data['metrics']['managers'] = User::where('role', Role::MANAGER)->count();
-        $data['metrics']['admins'] = User::where('role', Role::ADMIN)->count();
+        $data['metrics']['active_users'] = (int) collect($data['roleCounts'])->sum();
+        $data['metrics']['managers'] = (int) ($data['roleCounts'][Role::MANAGER->value] ?? 0);
+        $data['metrics']['admins'] = (int) ($data['roleCounts'][Role::ADMIN->value] ?? 0);
         $data['metrics']['revenue_received'] = (int) Payment::query()
             ->where('status', Payment::STATUS_PAID)
             ->whereHas('booking', fn ($booking) => $booking->where('status', '!=', Booking::STATUS_CANCELLED))
@@ -140,14 +144,18 @@ class DashboardController extends Controller
     {
         // Antrian fotografer hanya project yang masih SCHEDULED.
         $upcoming = Project::with(['booking'])
-            ->where('photographer_id', $userId)
+            ->whereHas('scheduleRecord.users', fn ($q) => $q
+                ->where('user_id', $userId)
+                ->where('role', Role::PHOTOGRAPHER->value))
             ->where('status', Project::STATUS_SCHEDULED)
             ->whereHas('booking', fn ($booking) => $booking->whereIn('status', [Booking::STATUS_DP_PAID, Booking::STATUS_PAID]))
             ->whereNotNull('start_at')
             ->orderBy('start_at')
             ->get();
 
-        $completed = Project::where('photographer_id', $userId)
+        $completed = Project::whereHas('scheduleRecord.users', fn ($q) => $q
+                ->where('user_id', $userId)
+                ->where('role', Role::PHOTOGRAPHER->value))
             ->where('status', Project::STATUS_FINAL)
             ->count();
 
@@ -161,7 +169,9 @@ class DashboardController extends Controller
     {
         // Antrian editor hanya project yang sudah memiliki permintaan edit.
         $queue = Project::with(['booking'])
-            ->where('editor_id', $userId)
+            ->whereHas('scheduleRecord.users', fn ($q) => $q
+                ->where('user_id', $userId)
+                ->where('role', Role::EDITOR->value))
             ->where('status', Project::STATUS_EDITING)
             ->whereHas('booking', fn ($booking) => $booking->whereIn('status', [Booking::STATUS_DP_PAID, Booking::STATUS_PAID]))
             ->whereNotNull('edit_requested_at')
@@ -169,7 +179,9 @@ class DashboardController extends Controller
             ->orderBy('start_at')
             ->get();
 
-        $finalized = Project::where('editor_id', $userId)
+        $finalized = Project::whereHas('scheduleRecord.users', fn ($q) => $q
+                ->where('user_id', $userId)
+                ->where('role', Role::EDITOR->value))
             ->where('status', Project::STATUS_FINAL)
             ->count();
 
@@ -180,4 +192,3 @@ class DashboardController extends Controller
     }
 
 }
-

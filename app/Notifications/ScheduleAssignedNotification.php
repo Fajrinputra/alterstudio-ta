@@ -26,7 +26,7 @@ class ScheduleAssignedNotification extends Notification implements ShouldQueue
 
     public function toMail(object $notifiable): MailMessage
     {
-        $project = Project::with(['booking.package', 'booking.studioLocation', 'booking.studioRoom', 'photographer', 'editor'])->find($this->projectId);
+        $project = Project::with(['booking.package', 'booking.studioLocation', 'booking.studioRoom'])->find($this->projectId);
         $booking = $project?->booking;
         $packageName = $booking?->package?->name ?? 'Paket';
         $start = optional($project?->start_at)->format('d M Y H:i');

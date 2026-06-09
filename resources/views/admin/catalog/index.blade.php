@@ -6,34 +6,34 @@
                     <i class="fa-solid fa-store text-[#D4A017]"></i>
                     Katalog Layanan
                 </p>
-                <h2 class="font-display font-bold text-4xl tracking-tighter text-[#3F2B1B]">
+                <h2 class="font-display text-2xl font-bold tracking-tight text-[#3F2B1B] sm:text-4xl sm:tracking-tighter">
                     Kategori & Paket Foto
                 </h2>
             </div>
             @if(auth()->check() && (auth()->user()->role === \App\Enums\Role::ADMIN || auth()->user()->role === \App\Enums\Role::MANAGER || auth()->user()->role === \App\Enums\Role::OWNER))
                 <a href="{{ route('admin.catalog.create') }}" 
-                   class="inline-flex w-full sm:w-auto items-center justify-center gap-3 px-8 py-4 rounded-3xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] text-white font-semibold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all">
-                    <i class="fa-solid fa-plus"></i>
+                   class="inline-flex w-full sm:w-auto items-center justify-center gap-2.5 rounded-2xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-[#D4A017]/25 transition-all hover:-translate-y-0.5 hover:shadow-xl">
+                    <i class="fa-solid fa-plus text-xs"></i>
                     Tambah Kategori
                 </a>
             @endif
         </div>
     </x-slot>
 
-    <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8 space-y-12">
+    <div class="max-w-7xl mx-auto space-y-6 py-5 px-0 sm:px-6 sm:py-10 lg:px-8 sm:space-y-10">
         @forelse($categories as $category)
             <div class="bg-white rounded-3xl border border-[#EDE0D0] shadow-xl overflow-hidden"
                  x-data="{ editCategory: {{ (string) ((string) old('category_id') === (string) $category->id ? 'true' : 'false') }}, confirmDeleteCategory: false }">
                 
                 <!-- Category Header -->
-                <div class="px-8 py-7 border-b border-[#EDE0D0] bg-gradient-to-r from-[#FAF6F0] to-white">
-                    <div class="flex items-start justify-between gap-6">
-                        <div class="flex items-start gap-5">
-                            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#D4A017]/10 to-[#E07A5F]/10 flex items-center justify-center flex-shrink-0">
-                                <i class="fa-solid fa-layer-group text-[#D4A017] text-3xl"></i>
+                <div class="border-b border-[#EDE0D0] bg-gradient-to-r from-[#FAF6F0] to-white px-4 py-4 sm:px-8 sm:py-7">
+                    <div class="flex flex-col items-start justify-between gap-4 sm:flex-row sm:gap-6">
+                        <div class="flex items-start gap-3 sm:gap-5">
+                            <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#D4A017]/10 to-[#E07A5F]/10 sm:h-14 sm:w-14">
+                                <i class="fa-solid fa-layer-group text-xl text-[#D4A017] sm:text-3xl"></i>
                             </div>
                             <div>
-                                <h3 class="font-display text-3xl font-semibold text-[#3F2B1B]">{{ $category->name }}</h3>
+                                <h3 class="font-display text-2xl font-semibold text-[#3F2B1B] sm:text-3xl">{{ $category->name }}</h3>
                                 @if($category->description)
                                     <p class="text-[#7A5B3A] mt-2 leading-relaxed">{{ $category->description }}</p>
                                 @endif
@@ -59,11 +59,11 @@
                 </div>
 
                 <!-- Packages Grid -->
-                <div class="p-8">
+                <div class="p-4 sm:p-8">
                     @if($category->packages->count() > 0)
-                        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div class="grid gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
                             @foreach($category->packages as $pkg)
-                                <div class="group relative bg-white border border-[#EDE0D0] rounded-3xl overflow-hidden hover:shadow-2xl hover:-translate-y-2 transition-all duration-300">
+                                <div class="group relative overflow-hidden rounded-3xl border border-[#EDE0D0] bg-white shadow-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl">
                                     
                                     <!-- Popular Badge -->
                                     @if($pkg->is_popular ?? false)
@@ -75,26 +75,26 @@
 
                                     <!-- Image -->
                                     @if($pkg->overview_image)
-                                        <div class="h-52 w-full overflow-hidden">
+                                        <div class="h-36 w-full overflow-hidden sm:h-52">
                                             <img src="{{ Storage::url($pkg->overview_image) }}" 
                                                  alt="{{ $pkg->name }}" 
                                                  class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
                                         </div>
                                     @else
-                                        <div class="h-52 w-full bg-gradient-to-br from-[#FAF6F0] to-[#F4EDE4] flex items-center justify-center">
-                                            <i class="fa-solid fa-image text-[#8B7359] text-5xl"></i>
+                                        <div class="flex h-36 w-full items-center justify-center bg-gradient-to-br from-[#FAF6F0] to-[#F4EDE4] sm:h-52">
+                                            <i class="fa-solid fa-image text-3xl text-[#8B7359] sm:text-5xl"></i>
                                         </div>
                                     @endif
 
-                                    <div class="p-6">
-                                        <h4 class="font-display font-semibold text-xl text-[#3F2B1B] line-clamp-2 mb-2">{{ $pkg->name }}</h4>
-                                        <p class="text-3xl font-bold text-[#D4A017] mb-4">Rp {{ number_format($pkg->price) }}</p>
+                                    <div class="p-4 sm:p-6">
+                                        <h4 class="mb-2 line-clamp-2 font-display text-lg font-semibold leading-tight text-[#3F2B1B] sm:text-xl">{{ $pkg->name }}</h4>
+                                        <p class="mb-3 text-2xl font-bold text-[#D4A017] sm:mb-4 sm:text-3xl">Rp {{ number_format($pkg->price) }}</p>
                                         
-                                        <p class="text-sm text-[#7A5B3A] line-clamp-3 mb-6">{{ $pkg->description }}</p>
+                                        <p class="mb-4 line-clamp-2 text-sm text-[#7A5B3A] sm:mb-6 sm:line-clamp-3">{{ $pkg->description }}</p>
 
                                         <!-- Quick Features -->
                                         @if($pkg->features && count($pkg->features) > 0)
-                                            <div class="space-y-2 mb-6">
+                                            <div class="mb-4 space-y-1.5 sm:mb-6 sm:space-y-2">
                                                 @foreach(array_slice($pkg->features, 0, 3) as $feature)
                                                     <div class="flex items-start gap-2 text-xs text-[#5C432C]">
                                                         <i class="fa-solid fa-circle-check text-[#D4A017] mt-0.5"></i>
@@ -108,7 +108,7 @@
                                         @endif
 
                                         <!-- Action -->
-                                        <div class="flex items-center justify-between pt-4 border-t border-[#EDE0D0]">
+                                        <div class="flex items-center justify-between gap-3 border-t border-[#EDE0D0] pt-3 sm:pt-4">
                                             <a href="{{ route('catalog.package.show', $pkg) }}" 
                                                class="text-[#D4A017] hover:text-[#E07A5F] font-medium flex items-center gap-1 text-sm">
                                                 Lihat Detail
@@ -116,7 +116,7 @@
                                             
                                             @if(auth()->check() && auth()->user()->role === \App\Enums\Role::CLIENT)
                                                 <a href="{{ route('bookings.create', ['package_id' => $pkg->id]) }}" 
-                                                   class="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] text-white text-sm font-semibold hover:brightness-110 transition-all">
+                                                   class="rounded-2xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] px-4 py-2 text-sm font-semibold text-white transition-all hover:brightness-110 sm:px-6 sm:py-2.5">
                                                     Pesan
                                                 </a>
                                             @endif
@@ -131,7 +131,7 @@
                             <p class="text-[#7A5B3A]">Belum ada paket dalam kategori ini.</p>
                             @if(auth()->check() && (auth()->user()->role === \App\Enums\Role::ADMIN || auth()->user()->role === \App\Enums\Role::MANAGER || auth()->user()->role === \App\Enums\Role::OWNER))
                                 <a href="{{ route('admin.catalog.packages', $category) }}" 
-                                   class="inline-block mt-6 px-8 py-3 rounded-3xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] text-white font-medium">
+                                   class="mt-6 inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-[#D4A017]/25">
                                     Tambah Paket Baru
                                 </a>
                             @endif

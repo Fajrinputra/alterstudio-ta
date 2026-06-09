@@ -16,8 +16,8 @@
             </div>
             <div class="flex flex-wrap gap-3">
                 <a href="{{ route('admin.locations.create') }}"
-                   class="inline-flex items-center justify-center gap-3 px-7 py-3 rounded-3xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] text-white font-semibold shadow-xl hover:shadow-2xl hover:-translate-y-0.5 transition-all">
-                    <i class="fa-solid fa-plus"></i>
+                   class="inline-flex items-center justify-center gap-2.5 rounded-2xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-[#D4A017]/25 transition-all hover:-translate-y-0.5 hover:shadow-xl">
+                    <i class="fa-solid fa-plus text-xs"></i>
                     Tambah Cabang
                 </a>
             </div>

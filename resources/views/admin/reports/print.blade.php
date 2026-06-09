@@ -34,16 +34,12 @@
             background: linear-gradient(135deg, #3f2b1b 0%, #8f5f2d 48%, #d4a017 100%);
         }
         .brand { display: flex; align-items: center; gap: 16px; }
-        .brand-mark {
-            width: 58px;
-            height: 58px;
-            border-radius: 18px;
-            display: grid;
-            place-items: center;
-            background: rgba(255,255,255,.18);
-            border: 1px solid rgba(255,255,255,.35);
-            font-size: 28px;
-            font-weight: 800;
+        .brand-line {
+            width: 72px;
+            height: 4px;
+            margin: 8px 0 0;
+            border-radius: 999px;
+            background: rgba(255,255,255,.75);
         }
         h1, h2, h3, p { margin: 0; }
         h1 { font-size: 27px; letter-spacing: .2px; }
@@ -199,9 +195,9 @@
     <main class="sheet">
         <header class="letterhead">
             <div class="brand">
-                <div class="brand-mark">A</div>
                 <div>
                     <h1>{{ $reportTitle }}</h1>
+                    <div class="brand-line"></div>
                     <p class="subtitle">Alter Studio - Rekap operasional, pemasukan, dan kinerja kru</p>
                 </div>
             </div>

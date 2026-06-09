@@ -1,0 +1,344 @@
+<mxfile host="app.diagrams.net" modified="2026-06-05T03:22:00.000Z" agent="Codex" version="24.7.17" type="device">
+  <diagram id="CD-MASTER-PENDUKUNG" name="CD - Master dan Pendukung">
+    <mxGraphModel dx="2274" dy="1320" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2400" pageHeight="1500" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="p1-controller-base" value="&lt;b&gt;Controller&lt;/b&gt;&lt;hr&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1120" y="20" width="170" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-model-base" value="&lt;b&gt;Model&lt;/b&gt;&lt;hr&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1120" y="1320" width="170" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-controller-trunk" value="" style="endArrow=block;endFill=0;html=1;rounded=0;strokeColor=#000000;" edge="1" parent="1" target="p1-controller-base">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1205" y="145" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p1-controller-line" value="" style="endArrow=none;html=1;rounded=0;strokeColor=#000000;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="160" y="145" as="sourcePoint" />
+            <mxPoint x="2200" y="145" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p1-model-trunk" value="" style="endArrow=block;endFill=0;html=1;rounded=0;strokeColor=#000000;" edge="1" parent="1" target="p1-model-base">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1205" y="1250" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p1-model-line" value="" style="endArrow=none;html=1;rounded=0;strokeColor=#000000;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="110" y="1250" as="sourcePoint" />
+            <mxPoint x="2310" y="1250" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="p1-c-auth-session" value="&lt;b&gt;AuthenticatedSessionController&lt;/b&gt;&lt;hr&gt;+ create()&lt;br&gt;+ store()&lt;br&gt;+ destroy()" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=12;align=left;spacingLeft=6;" vertex="1" parent="1">
+          <mxGeometry x="80" y="205" width="210" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-c-register" value="&lt;b&gt;RegisteredUserController&lt;/b&gt;&lt;hr&gt;+ create()&lt;br&gt;+ store()" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=12;align=left;spacingLeft=6;" vertex="1" parent="1">
+          <mxGeometry x="350" y="205" width="200" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-c-password-link" value="&lt;b&gt;PasswordResetLinkController&lt;/b&gt;&lt;hr&gt;+ create()&lt;br&gt;+ store()" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=12;align=left;spacingLeft=6;" vertex="1" parent="1">
+          <mxGeometry x="610" y="205" width="220" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-c-new-password" value="&lt;b&gt;NewPasswordController&lt;/b&gt;&lt;hr&gt;+ create()&lt;br&gt;+ store()" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=12;align=left;spacingLeft=6;" vertex="1" parent="1">
+          <mxGeometry x="890" y="205" width="190" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-c-email-verification" value="&lt;b&gt;EmailVerificationController&lt;/b&gt;&lt;hr&gt;+ __invoke()&lt;br&gt;+ store()" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=12;align=left;spacingLeft=6;" vertex="1" parent="1">
+          <mxGeometry x="1140" y="205" width="210" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-c-profile" value="&lt;b&gt;ProfileController&lt;/b&gt;&lt;hr&gt;+ show()&lt;br&gt;+ edit()&lt;br&gt;+ update()&lt;br&gt;+ destroy()" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=12;align=left;spacingLeft=6;" vertex="1" parent="1">
+          <mxGeometry x="1410" y="205" width="180" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-c-user-management" value="&lt;b&gt;UserManagementController&lt;/b&gt;&lt;hr&gt;+ index()&lt;br&gt;+ create()&lt;br&gt;+ store()&lt;br&gt;+ edit()&lt;br&gt;+ update()&lt;br&gt;+ toggle()&lt;br&gt;+ destroy()" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=12;align=left;spacingLeft=6;" vertex="1" parent="1">
+          <mxGeometry x="1650" y="205" width="220" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-c-landing" value="&lt;b&gt;LandingController&lt;/b&gt;&lt;hr&gt;+ __invoke()&lt;br&gt;- landingData()" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=12;align=left;spacingLeft=6;" vertex="1" parent="1">
+          <mxGeometry x="1930" y="205" width="180" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-c-landing-hero" value="&lt;b&gt;LandingHeroController&lt;/b&gt;&lt;hr&gt;+ index()&lt;br&gt;+ store()&lt;br&gt;+ update()&lt;br&gt;+ destroy()" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=12;align=left;spacingLeft=6;" vertex="1" parent="1">
+          <mxGeometry x="2160" y="205" width="190" height="120" as="geometry" />
+        </mxCell>
+
+        <mxCell id="p1-c-catalog" value="&lt;b&gt;CatalogController&lt;/b&gt;&lt;hr&gt;+ index()&lt;br&gt;+ publicIndex()&lt;br&gt;+ publicShow()&lt;br&gt;+ store()&lt;br&gt;+ packages()&lt;br&gt;+ storePackage()" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=12;align=left;spacingLeft=6;" vertex="1" parent="1">
+          <mxGeometry x="180" y="430" width="190" height="150" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-c-service-category" value="&lt;b&gt;ServiceCategoryController&lt;/b&gt;&lt;hr&gt;+ index()&lt;br&gt;+ store()&lt;br&gt;+ update()&lt;br&gt;+ destroy()" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=12;align=left;spacingLeft=6;" vertex="1" parent="1">
+          <mxGeometry x="470" y="430" width="220" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-c-service-package" value="&lt;b&gt;ServicePackageController&lt;/b&gt;&lt;hr&gt;+ index()&lt;br&gt;+ store()&lt;br&gt;+ show()&lt;br&gt;+ edit()&lt;br&gt;+ update()&lt;br&gt;+ destroy()" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=12;align=left;spacingLeft=6;" vertex="1" parent="1">
+          <mxGeometry x="790" y="430" width="210" height="150" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-c-studio-location" value="&lt;b&gt;StudioLocationController&lt;/b&gt;&lt;hr&gt;+ index()&lt;br&gt;+ manage()&lt;br&gt;+ store()&lt;br&gt;+ update()&lt;br&gt;+ destroy()&lt;br&gt;+ storeRoom()&lt;br&gt;+ updateRoom()&lt;br&gt;+ destroyRoom()" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=12;align=left;spacingLeft=6;" vertex="1" parent="1">
+          <mxGeometry x="1110" y="430" width="230" height="190" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-c-studio-room" value="&lt;b&gt;StudioRoomController&lt;/b&gt;&lt;hr&gt;+ index()&lt;br&gt;+ create()&lt;br&gt;+ store()&lt;br&gt;+ edit()&lt;br&gt;+ update()&lt;br&gt;+ destroy()" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=12;align=left;spacingLeft=6;" vertex="1" parent="1">
+          <mxGeometry x="1450" y="430" width="200" height="150" as="geometry" />
+        </mxCell>
+
+        <mxCell id="p1-m-user" value="&lt;b&gt;User Model&lt;/b&gt;&lt;hr&gt;+ isRole()&lt;br&gt;+ effectiveRoles()&lt;br&gt;+ bookings()&lt;br&gt;+ schedulesAsPhotographer()&lt;br&gt;+ schedulesAsEditor()" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=12;align=left;spacingLeft=6;" vertex="1" parent="1">
+          <mxGeometry x="70" y="900" width="220" height="145" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-m-password-token" value="&lt;b&gt;PasswordResetToken&lt;/b&gt;&lt;hr&gt;+ user()&lt;br&gt;+ token&lt;br&gt;+ created_at" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=12;align=left;spacingLeft=6;" vertex="1" parent="1">
+          <mxGeometry x="360" y="920" width="190" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-m-service-category" value="&lt;b&gt;ServiceCategory Model&lt;/b&gt;&lt;hr&gt;+ packages()" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=12;align=left;spacingLeft=6;" vertex="1" parent="1">
+          <mxGeometry x="640" y="920" width="200" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-m-service-package" value="&lt;b&gt;ServicePackage Model&lt;/b&gt;&lt;hr&gt;+ category()&lt;br&gt;+ bookings()&lt;br&gt;+ features&lt;br&gt;+ addons&lt;br&gt;+ gallery" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=12;align=left;spacingLeft=6;" vertex="1" parent="1">
+          <mxGeometry x="930" y="900" width="210" height="135" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-m-studio-location" value="&lt;b&gt;StudioLocation Model&lt;/b&gt;&lt;hr&gt;+ rooms()&lt;br&gt;+ bookings()&lt;br&gt;+ photo_gallery()" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=12;align=left;spacingLeft=6;" vertex="1" parent="1">
+          <mxGeometry x="1230" y="910" width="210" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-m-studio-room" value="&lt;b&gt;StudioRoom Model&lt;/b&gt;&lt;hr&gt;+ location()&lt;br&gt;+ bookings()&lt;br&gt;+ schedules()" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=12;align=left;spacingLeft=6;" vertex="1" parent="1">
+          <mxGeometry x="1540" y="910" width="190" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-m-hero" value="&lt;b&gt;LandingHeroSlide Model&lt;/b&gt;&lt;hr&gt;+ creator()&lt;br&gt;+ updater()&lt;br&gt;+ active scope&lt;br&gt;+ sort_order" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=12;align=left;spacingLeft=6;" vertex="1" parent="1">
+          <mxGeometry x="1830" y="910" width="210" height="120" as="geometry" />
+        </mxCell>
+
+        <mxCell id="p1-e-user-token" value="1" style="endArrow=none;html=1;rounded=0;strokeColor=#000000;" edge="1" parent="1" source="p1-m-user" target="p1-m-password-token">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-e-cat-package" value="1        0..*" style="endArrow=none;html=1;rounded=0;strokeColor=#000000;" edge="1" parent="1" source="p1-m-service-category" target="p1-m-service-package">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-e-location-room" value="1        0..*" style="endArrow=none;html=1;rounded=0;strokeColor=#000000;" edge="1" parent="1" source="p1-m-studio-location" target="p1-m-studio-room">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-e-user-hero" value="1        0..*" style="endArrow=none;html=1;rounded=0;strokeColor=#000000;" edge="1" parent="1" source="p1-m-user" target="p1-m-hero">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="p1-d-auth-user" value="" style="endArrow=none;dashed=1;dashPattern=6 6;html=1;rounded=0;strokeColor=#ff00aa;" edge="1" parent="1" source="p1-c-auth-session" target="p1-m-user">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-d-register-user" value="" style="endArrow=none;dashed=1;dashPattern=6 6;html=1;rounded=0;strokeColor=#00a000;" edge="1" parent="1" source="p1-c-register" target="p1-m-user">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-d-reset-user" value="" style="endArrow=none;dashed=1;dashPattern=6 6;html=1;rounded=0;strokeColor=#0033ff;" edge="1" parent="1" source="p1-c-password-link" target="p1-m-user">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-d-reset-token" value="" style="endArrow=none;dashed=1;dashPattern=6 6;html=1;rounded=0;strokeColor=#0033ff;" edge="1" parent="1" source="p1-c-password-link" target="p1-m-password-token">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-d-new-password-token" value="" style="endArrow=none;dashed=1;dashPattern=6 6;html=1;rounded=0;strokeColor=#0033ff;" edge="1" parent="1" source="p1-c-new-password" target="p1-m-password-token">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-d-profile-user" value="" style="endArrow=none;dashed=1;dashPattern=6 6;html=1;rounded=0;strokeColor=#ff00aa;" edge="1" parent="1" source="p1-c-profile" target="p1-m-user">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-d-user-management-user" value="" style="endArrow=none;dashed=1;dashPattern=6 6;html=1;rounded=0;strokeColor=#80b060;" edge="1" parent="1" source="p1-c-user-management" target="p1-m-user">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-d-catalog-category" value="" style="endArrow=none;dashed=1;dashPattern=6 6;html=1;rounded=0;strokeColor=#3333ff;" edge="1" parent="1" source="p1-c-catalog" target="p1-m-service-category">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-d-catalog-package" value="" style="endArrow=none;dashed=1;dashPattern=6 6;html=1;rounded=0;strokeColor=#3333ff;" edge="1" parent="1" source="p1-c-catalog" target="p1-m-service-package">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-d-category-model" value="" style="endArrow=none;dashed=1;dashPattern=6 6;html=1;rounded=0;strokeColor=#d40000;" edge="1" parent="1" source="p1-c-service-category" target="p1-m-service-category">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-d-package-model" value="" style="endArrow=none;dashed=1;dashPattern=6 6;html=1;rounded=0;strokeColor=#cc3300;" edge="1" parent="1" source="p1-c-service-package" target="p1-m-service-package">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-d-location-model" value="" style="endArrow=none;dashed=1;dashPattern=6 6;html=1;rounded=0;strokeColor=#7f3300;" edge="1" parent="1" source="p1-c-studio-location" target="p1-m-studio-location">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-d-location-room" value="" style="endArrow=none;dashed=1;dashPattern=6 6;html=1;rounded=0;strokeColor=#7f3300;" edge="1" parent="1" source="p1-c-studio-location" target="p1-m-studio-room">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-d-room-model" value="" style="endArrow=none;dashed=1;dashPattern=6 6;html=1;rounded=0;strokeColor=#7f3300;" edge="1" parent="1" source="p1-c-studio-room" target="p1-m-studio-room">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-d-landing-models" value="" style="endArrow=none;dashed=1;dashPattern=6 6;html=1;rounded=0;strokeColor=#ffff00;" edge="1" parent="1" source="p1-c-landing" target="p1-m-hero">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-d-landing-package" value="" style="endArrow=none;dashed=1;dashPattern=6 6;html=1;rounded=0;strokeColor=#ffff00;" edge="1" parent="1" source="p1-c-landing" target="p1-m-service-package">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-d-landing-location" value="" style="endArrow=none;dashed=1;dashPattern=6 6;html=1;rounded=0;strokeColor=#ffff00;" edge="1" parent="1" source="p1-c-landing" target="p1-m-studio-location">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-d-hero-model" value="" style="endArrow=none;dashed=1;dashPattern=6 6;html=1;rounded=0;strokeColor=#000000;" edge="1" parent="1" source="p1-c-landing-hero" target="p1-m-hero">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="CD-TRANSAKSI-OPERASIONAL" name="CD - Transaksi dan Operasional">
+    <mxGraphModel dx="2274" dy="1320" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2500" pageHeight="1550" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="p2-controller-base" value="&lt;b&gt;Controller&lt;/b&gt;&lt;hr&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1160" y="20" width="170" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-model-base" value="&lt;b&gt;Model&lt;/b&gt;&lt;hr&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1160" y="1360" width="170" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-controller-trunk" value="" style="endArrow=block;endFill=0;html=1;rounded=0;strokeColor=#000000;" edge="1" parent="1" target="p2-controller-base">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1245" y="145" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p2-controller-line" value="" style="endArrow=none;html=1;rounded=0;strokeColor=#000000;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="160" y="145" as="sourcePoint" />
+            <mxPoint x="2340" y="145" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p2-model-trunk" value="" style="endArrow=block;endFill=0;html=1;rounded=0;strokeColor=#000000;" edge="1" parent="1" target="p2-model-base">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1245" y="1290" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p2-model-line" value="" style="endArrow=none;html=1;rounded=0;strokeColor=#000000;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="80" y="1290" as="sourcePoint" />
+            <mxPoint x="2380" y="1290" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="p2-c-booking" value="&lt;b&gt;BookingController&lt;/b&gt;&lt;hr&gt;+ index()&lt;br&gt;+ create()&lt;br&gt;+ availability()&lt;br&gt;+ store()&lt;br&gt;+ show()&lt;br&gt;+ updateStatus()&lt;br&gt;+ reject()&lt;br&gt;+ pay()&lt;br&gt;+ markPaidOnSite()" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=12;align=left;spacingLeft=6;" vertex="1" parent="1">
+          <mxGeometry x="100" y="205" width="210" height="210" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-c-payment" value="&lt;b&gt;PaymentController&lt;/b&gt;&lt;hr&gt;+ createSnap()&lt;br&gt;+ webhook()&lt;br&gt;+ confirm()" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=12;align=left;spacingLeft=6;" vertex="1" parent="1">
+          <mxGeometry x="400" y="205" width="190" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-c-schedule" value="&lt;b&gt;ScheduleController&lt;/b&gt;&lt;hr&gt;+ index()&lt;br&gt;+ store()&lt;br&gt;+ update()&lt;br&gt;+ destroy()" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=12;align=left;spacingLeft=6;" vertex="1" parent="1">
+          <mxGeometry x="680" y="205" width="190" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-c-media" value="&lt;b&gt;MediaAssetController&lt;/b&gt;&lt;hr&gt;+ store()" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=12;align=left;spacingLeft=6;" vertex="1" parent="1">
+          <mxGeometry x="960" y="205" width="190" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-c-photo-selection" value="&lt;b&gt;PhotoSelectionController&lt;/b&gt;&lt;hr&gt;+ store()" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=12;align=left;spacingLeft=6;" vertex="1" parent="1">
+          <mxGeometry x="1240" y="205" width="210" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-c-project" value="&lt;b&gt;ProjectController&lt;/b&gt;&lt;hr&gt;+ index()&lt;br&gt;+ show()&lt;br&gt;+ rawDownload()" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=12;align=left;spacingLeft=6;" vertex="1" parent="1">
+          <mxGeometry x="1540" y="205" width="190" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-c-report" value="&lt;b&gt;ReportController&lt;/b&gt;&lt;hr&gt;+ index()&lt;br&gt;+ export()" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=12;align=left;spacingLeft=6;" vertex="1" parent="1">
+          <mxGeometry x="1810" y="205" width="180" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="p2-m-user" value="&lt;b&gt;User Model&lt;/b&gt;&lt;hr&gt;+ isRole()&lt;br&gt;+ bookings()&lt;br&gt;+ schedulesAsPhotographer()&lt;br&gt;+ schedulesAsEditor()" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=12;align=left;spacingLeft=6;" vertex="1" parent="1">
+          <mxGeometry x="40" y="860" width="220" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-m-booking" value="&lt;b&gt;Booking Model&lt;/b&gt;&lt;hr&gt;+ client()&lt;br&gt;+ payments()&lt;br&gt;+ project()&lt;br&gt;+ package()&lt;br&gt;+ studioLocation()&lt;br&gt;+ studioRoom()&lt;br&gt;+ remainingAmount()&lt;br&gt;+ downPaymentAmount()" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=12;align=left;spacingLeft=6;" vertex="1" parent="1">
+          <mxGeometry x="330" y="820" width="230" height="190" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-m-payment" value="&lt;b&gt;Payment Model&lt;/b&gt;&lt;hr&gt;+ booking()&lt;br&gt;+ statusLabel()" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=12;align=left;spacingLeft=6;" vertex="1" parent="1">
+          <mxGeometry x="640" y="850" width="190" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-m-project" value="&lt;b&gt;Project Model&lt;/b&gt;&lt;hr&gt;+ booking()&lt;br&gt;+ scheduleRecord()&lt;br&gt;+ photographer()&lt;br&gt;+ editor()&lt;br&gt;+ hasSchedule()&lt;br&gt;+ hasRawDriveLink()&lt;br&gt;+ hasEditRequest()&lt;br&gt;+ hasFinalDelivery()&lt;br&gt;+ statusLabel()" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=12;align=left;spacingLeft=6;" vertex="1" parent="1">
+          <mxGeometry x="900" y="790" width="230" height="210" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-m-project-schedule" value="&lt;b&gt;ProjectSchedule Model&lt;/b&gt;&lt;hr&gt;+ project()&lt;br&gt;+ booking()&lt;br&gt;+ studioLocation()&lt;br&gt;+ studioRoom()&lt;br&gt;+ scheduler()&lt;br&gt;+ users()&lt;br&gt;+ photographerAssignment()&lt;br&gt;+ editorAssignment()" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=12;align=left;spacingLeft=6;" vertex="1" parent="1">
+          <mxGeometry x="1210" y="795" width="240" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-m-schedule-user" value="&lt;b&gt;ProjectScheduleUser Model&lt;/b&gt;&lt;hr&gt;+ schedule()&lt;br&gt;+ user()&lt;br&gt;+ role" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=12;align=left;spacingLeft=6;" vertex="1" parent="1">
+          <mxGeometry x="1530" y="845" width="220" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-m-media" value="&lt;b&gt;MediaAsset Model&lt;/b&gt;&lt;hr&gt;+ project()&lt;br&gt;+ uploader()&lt;br&gt;+ selections()" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=12;align=left;spacingLeft=6;" vertex="1" parent="1">
+          <mxGeometry x="1830" y="835" width="200" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-m-photo-selection" value="&lt;b&gt;PhotoSelection Model&lt;/b&gt;&lt;hr&gt;+ project()&lt;br&gt;+ client()&lt;br&gt;+ mediaAsset()" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=12;align=left;spacingLeft=6;" vertex="1" parent="1">
+          <mxGeometry x="2110" y="835" width="210" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-m-service-package" value="&lt;b&gt;ServicePackage Model&lt;/b&gt;&lt;hr&gt;+ category()&lt;br&gt;+ bookings()" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=12;align=left;spacingLeft=6;" vertex="1" parent="1">
+          <mxGeometry x="470" y="1110" width="210" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-m-studio-location" value="&lt;b&gt;StudioLocation Model&lt;/b&gt;&lt;hr&gt;+ rooms()&lt;br&gt;+ bookings()" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=12;align=left;spacingLeft=6;" vertex="1" parent="1">
+          <mxGeometry x="760" y="1110" width="210" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-m-studio-room" value="&lt;b&gt;StudioRoom Model&lt;/b&gt;&lt;hr&gt;+ location()&lt;br&gt;+ bookings()&lt;br&gt;+ schedules()" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=12;align=left;spacingLeft=6;" vertex="1" parent="1">
+          <mxGeometry x="1050" y="1110" width="200" height="110" as="geometry" />
+        </mxCell>
+
+        <mxCell id="p2-e-user-booking" value="1        0..*" style="endArrow=none;html=1;rounded=0;strokeColor=#000000;" edge="1" parent="1" source="p2-m-user" target="p2-m-booking">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-e-booking-payment" value="1        0..*" style="endArrow=none;html=1;rounded=0;strokeColor=#000000;" edge="1" parent="1" source="p2-m-booking" target="p2-m-payment">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-e-booking-project" value="1        1" style="endArrow=none;html=1;rounded=0;strokeColor=#000000;" edge="1" parent="1" source="p2-m-booking" target="p2-m-project">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-e-project-schedule" value="1        0..1" style="endArrow=none;html=1;rounded=0;strokeColor=#000000;" edge="1" parent="1" source="p2-m-project" target="p2-m-project-schedule">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-e-schedule-user" value="1        2" style="endArrow=none;html=1;rounded=0;strokeColor=#000000;" edge="1" parent="1" source="p2-m-project-schedule" target="p2-m-schedule-user">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-e-schedule-user-user" value="1        0..*" style="endArrow=none;html=1;rounded=0;strokeColor=#000000;" edge="1" parent="1" source="p2-m-user" target="p2-m-schedule-user">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-e-project-media" value="1        0..*" style="endArrow=none;html=1;rounded=0;strokeColor=#000000;" edge="1" parent="1" source="p2-m-project" target="p2-m-media">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-e-project-selection" value="1        0..*" style="endArrow=none;html=1;rounded=0;strokeColor=#000000;" edge="1" parent="1" source="p2-m-project" target="p2-m-photo-selection">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-e-media-selection" value="1        0..*" style="endArrow=none;html=1;rounded=0;strokeColor=#000000;" edge="1" parent="1" source="p2-m-media" target="p2-m-photo-selection">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-e-package-booking" value="1        0..*" style="endArrow=none;html=1;rounded=0;strokeColor=#000000;" edge="1" parent="1" source="p2-m-service-package" target="p2-m-booking">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-e-location-booking" value="1        0..*" style="endArrow=none;html=1;rounded=0;strokeColor=#000000;" edge="1" parent="1" source="p2-m-studio-location" target="p2-m-booking">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-e-room-booking" value="1        0..*" style="endArrow=none;html=1;rounded=0;strokeColor=#000000;" edge="1" parent="1" source="p2-m-studio-room" target="p2-m-booking">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-e-location-room" value="1        0..*" style="endArrow=none;html=1;rounded=0;strokeColor=#000000;" edge="1" parent="1" source="p2-m-studio-location" target="p2-m-studio-room">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="p2-d-booking-model" value="" style="endArrow=none;dashed=1;dashPattern=6 6;html=1;rounded=0;strokeColor=#80b060;" edge="1" parent="1" source="p2-c-booking" target="p2-m-booking">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-d-booking-project" value="" style="endArrow=none;dashed=1;dashPattern=6 6;html=1;rounded=0;strokeColor=#80b060;" edge="1" parent="1" source="p2-c-booking" target="p2-m-project">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-d-payment-model" value="" style="endArrow=none;dashed=1;dashPattern=6 6;html=1;rounded=0;strokeColor=#3333ff;" edge="1" parent="1" source="p2-c-payment" target="p2-m-payment">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-d-payment-booking" value="" style="endArrow=none;dashed=1;dashPattern=6 6;html=1;rounded=0;strokeColor=#3333ff;" edge="1" parent="1" source="p2-c-payment" target="p2-m-booking">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-d-schedule-model" value="" style="endArrow=none;dashed=1;dashPattern=6 6;html=1;rounded=0;strokeColor=#d40000;" edge="1" parent="1" source="p2-c-schedule" target="p2-m-project-schedule">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-d-schedule-user" value="" style="endArrow=none;dashed=1;dashPattern=6 6;html=1;rounded=0;strokeColor=#d40000;" edge="1" parent="1" source="p2-c-schedule" target="p2-m-schedule-user">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-d-media-model" value="" style="endArrow=none;dashed=1;dashPattern=6 6;html=1;rounded=0;strokeColor=#7f3300;" edge="1" parent="1" source="p2-c-media" target="p2-m-media">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-d-media-project" value="" style="endArrow=none;dashed=1;dashPattern=6 6;html=1;rounded=0;strokeColor=#7f3300;" edge="1" parent="1" source="p2-c-media" target="p2-m-project">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-d-selection-model" value="" style="endArrow=none;dashed=1;dashPattern=6 6;html=1;rounded=0;strokeColor=#9933ff;" edge="1" parent="1" source="p2-c-photo-selection" target="p2-m-photo-selection">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-d-project-model" value="" style="endArrow=none;dashed=1;dashPattern=6 6;html=1;rounded=0;strokeColor=#ff00aa;" edge="1" parent="1" source="p2-c-project" target="p2-m-project">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-d-report-booking" value="" style="endArrow=none;dashed=1;dashPattern=6 6;html=1;rounded=0;strokeColor=#008040;" edge="1" parent="1" source="p2-c-report" target="p2-m-booking">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-d-report-payment" value="" style="endArrow=none;dashed=1;dashPattern=6 6;html=1;rounded=0;strokeColor=#008040;" edge="1" parent="1" source="p2-c-report" target="p2-m-payment">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-d-report-project" value="" style="endArrow=none;dashed=1;dashPattern=6 6;html=1;rounded=0;strokeColor=#008040;" edge="1" parent="1" source="p2-c-report" target="p2-m-project">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

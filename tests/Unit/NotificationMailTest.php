@@ -120,6 +120,7 @@ class NotificationMailTest extends TestCase
 
         $this->assertSame('[Alter Studio] Link foto mentah telah tersedia', $rawMail->subject);
         $this->assertContains('Paket: '.$package->name, $rawMail->introLines);
+        $this->assertContains('Link Drive ini berlaku selama 3 hari sejak link dibagikan. Silakan segera buka folder Drive dan catat kode foto yang ingin diedit.', $rawMail->introLines);
 
         $this->assertSame('[Alter Studio] Permintaan edit baru dari klien', $editMail->subject);
         $this->assertContains('Klien: '.$client->name, $editMail->introLines);
@@ -127,6 +128,7 @@ class NotificationMailTest extends TestCase
 
         $this->assertSame('[Alter Studio] Foto final Anda sudah siap', $finalMail->subject);
         $this->assertContains('Editor sudah menandai hasil edit final tersedia di folder Drive project.', $finalMail->introLines);
+        $this->assertContains('Link Drive hasil final berlaku selama 3 hari sejak hasil dibagikan. Silakan segera buka dan unduh file Anda.', $finalMail->introLines);
     }
 
     /**

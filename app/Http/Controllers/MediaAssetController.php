@@ -135,7 +135,7 @@ class MediaAssetController extends Controller
         $isCrewOnly = $user->isRole(Role::PHOTOGRAPHER, Role::EDITOR)
             && ! $user->isRole(Role::OWNER, Role::ADMIN, Role::MANAGER, Role::CLIENT);
 
-        if ($isCrewOnly && (! $user->isRole(Role::PHOTOGRAPHER) || $project->photographer_id !== $user->id)) {
+        if ($isCrewOnly && (! $user->isRole(Role::PHOTOGRAPHER) || (int) $project->photographer_id !== (int) $user->id)) {
             abort(403, 'Anda tidak ditugaskan sebagai fotografer pada project ini.');
         }
     }
@@ -146,7 +146,7 @@ class MediaAssetController extends Controller
         $isCrewOnly = $user->isRole(Role::PHOTOGRAPHER, Role::EDITOR)
             && ! $user->isRole(Role::OWNER, Role::ADMIN, Role::MANAGER, Role::CLIENT);
 
-        if ($isCrewOnly && (! $user->isRole(Role::EDITOR) || $project->editor_id !== $user->id)) {
+        if ($isCrewOnly && (! $user->isRole(Role::EDITOR) || (int) $project->editor_id !== (int) $user->id)) {
             abort(403, 'Anda tidak ditugaskan sebagai editor pada project ini.');
         }
     }

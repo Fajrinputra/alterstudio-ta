@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\ServicePackage;
 use App\Models\StudioLocation;
+use App\Models\StudioRoom;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Enums\Role;
@@ -25,7 +26,17 @@ class BookingFactory extends Factory
         // Reuse data existing agar tidak membuat relasi duplikat berlebihan.
         $package = ServicePackage::first() ?? ServicePackage::factory()->create();
         $client = User::first() ?? User::factory()->create(['role' => Role::CLIENT]);
-        $location = StudioLocation::first();
+        $location = StudioLocation::first() ?? StudioLocation::create([
+            'name' => 'Cabang Test',
+            'slug' => 'cabang-test',
+            'is_active' => true,
+        ]);
+        $room = StudioRoom::where('studio_location_id', $location->id)->first()
+            ?? StudioRoom::create([
+                'studio_location_id' => $location->id,
+                'name' => 'Studio Test',
+                'is_active' => true,
+            ]);
 
         return [
             'client_id' => $client->id,
@@ -34,7 +45,8 @@ class BookingFactory extends Factory
             'notes' => fake()->sentence(),
             'status' => 'WAITING_PAYMENT',
             'payment_type' => 'FULL',
-            'studio_location_id' => $location?->id,
+            'studio_location_id' => $location->id,
+            'studio_room_id' => $room->id,
             'total_price' => $package->price,
         ];
     }

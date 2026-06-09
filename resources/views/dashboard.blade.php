@@ -17,32 +17,32 @@
         </div>
     </x-slot>
 
-    <div class="py-10 bg-[#FAF6F0]">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-10">
+    <div class="bg-[#FAF6F0] py-5 sm:py-8">
+        <div class="max-w-7xl mx-auto space-y-6 sm:px-6 lg:px-8 sm:space-y-8">
 
             {{-- ==================== CLIENT ==================== --}}
             @if($role === Role::CLIENT)
                 <!-- Welcome Banner -->
-                <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#D4A017] via-[#E07A5F] to-[#B56D3E] p-10 text-white shadow-2xl">
+                <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#D4A017] via-[#E07A5F] to-[#B56D3E] p-5 text-white shadow-2xl sm:p-8 lg:p-10">
                     <div class="absolute -right-10 -top-10 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
                     <div class="absolute -left-12 bottom-6 w-56 h-56 bg-black/10 rounded-full blur-3xl"></div>
                     
                     <div class="relative z-10 flex flex-col lg:flex-row lg:items-end gap-6">
                         <div class="flex-1">
-                            <div class="inline-flex items-center gap-2 bg-white/20 backdrop-blur-md px-5 py-2 rounded-3xl text-sm mb-4">
+                            <div class="mb-4 inline-flex items-center gap-2 rounded-3xl bg-white/20 px-4 py-2 text-xs backdrop-blur-md sm:px-5 sm:text-sm">
                                 <i class="fa-solid fa-sparkles"></i>
                                 Selamat datang kembali!
                             </div>
-                            <h3 class="font-display text-5xl font-bold leading-none tracking-tighter mb-3">
+                            <h3 class="mb-3 font-display text-3xl font-bold leading-tight tracking-tight sm:text-5xl sm:leading-none sm:tracking-tighter">
                                 Siap abadikan momen berikutnya?
                             </h3>
-                            <p class="text-white/90 text-xl max-w-md">
+                            <p class="max-w-md text-sm text-white/90 sm:text-xl">
                                 Kelola pemesanan, lihat progress foto, dan akses hasil akhir di Drive dengan mudah.
                             </p>
                         </div>
                         <div>
                             <a href="{{ route('bookings.create') }}" 
-                               class="inline-flex items-center gap-3 px-8 py-4 bg-white text-[#3F2B1B] font-semibold rounded-3xl hover:scale-105 transition-transform shadow-xl">
+                               class="inline-flex w-full items-center justify-center gap-3 rounded-3xl bg-white px-6 py-3.5 font-semibold text-[#3F2B1B] shadow-xl transition-transform hover:scale-105 sm:w-auto sm:px-8 sm:py-4">
                                 <i class="fa-solid fa-calendar-plus"></i>
                                 Pemesanan Baru
                             </a>
@@ -52,7 +52,7 @@
 
                 <!-- Stats -->
                 <section>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
                         @php $metrics = $data['metrics'] ?? []; @endphp
                         <x-stat-card label="Total Pemesanan" :value="$metrics['bookings'] ?? 0" />
                         <x-stat-card label="Menunggu Tinjauan / Pembayaran" :value="$metrics['waiting_payment'] ?? 0" color="amber" />
@@ -63,8 +63,8 @@
 
                 <!-- Recent Bookings -->
                 <section class="bg-white rounded-3xl border border-[#EDE0D0] shadow-xl overflow-hidden">
-                    <div class="px-8 py-6 border-b border-[#EDE0D0] bg-gradient-to-r from-[#FAF6F0] to-white">
-                        <h3 class="font-display text-3xl font-semibold text-[#3F2B1B]">Pemesanan Terbaru</h3>
+                    <div class="border-b border-[#EDE0D0] bg-gradient-to-r from-[#FAF6F0] to-white px-5 py-4 sm:px-8 sm:py-6">
+                        <h3 class="font-display text-2xl font-semibold text-[#3F2B1B] sm:text-3xl">Pemesanan Terbaru</h3>
                         <p class="text-[#7A5B3A]">5 pemesanan terakhir Anda</p>
                     </div>
                     
@@ -135,35 +135,40 @@
             {{-- ==================== ADMIN / MANAGER / OWNER ==================== --}}
             @elseif($role === Role::ADMIN || $role === Role::MANAGER || $role === Role::OWNER)
                 <section>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 {{ $role === Role::OWNER ? 'xl:grid-cols-6' : 'xl:grid-cols-5' }} gap-6">
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
                         <x-stat-card label="Total Pemesanan" :value="$data['metrics']['bookings'] ?? 0" icon="receipt" />
                         <x-stat-card label="Data Pengajuan" :value="$data['metrics']['submitted'] ?? 0" color="amber" icon="clipboard-list" />
                         <x-stat-card label="Data Pembayaran" :value="$data['metrics']['waiting_payment'] ?? 0" color="blue" icon="credit-card" />
                         <x-stat-card label="Project Final" :value="$data['metrics']['projects_final'] ?? 0" color="emerald" icon="circle-check" />
                         <x-stat-card label="Belum Terjadwal" :value="$data['metrics']['unscheduled'] ?? 0" color="red" icon="calendar-xmark" />
                         @if($role === Role::OWNER)
-                            <div class="relative overflow-hidden rounded-3xl border border-emerald-200 bg-gradient-to-br from-emerald-500/10 to-teal-600/10 p-6 text-emerald-700 shadow-xl">
-                                <div class="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-emerald-500 opacity-10 blur-2xl"></div>
-                                <div class="relative z-10">
-                                    <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500 text-white shadow-sm">
-                                        <i class="fa-solid fa-wallet text-lg"></i>
+                            @php
+                                $revenueReceived = number_format($data['metrics']['revenue_received'] ?? 0, 0, ',', '.');
+                            @endphp
+                            <div class="relative min-w-0 overflow-hidden rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-500/10 to-teal-600/10 p-5 text-emerald-700 shadow-lg">
+                                <div class="absolute -right-6 -top-6 h-20 w-20 rounded-full bg-emerald-500 opacity-10 blur-2xl"></div>
+                                <div class="relative z-10 flex min-w-0 items-center gap-4">
+                                    <div class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl bg-emerald-500 text-white shadow-sm">
+                                        <i class="fa-solid fa-wallet text-base"></i>
                                     </div>
-                                    <p class="mb-2 text-xs font-medium uppercase tracking-[0.2em] opacity-80">Pendapatan Diterima</p>
-                                    <p class="text-2xl font-semibold leading-tight">Rp {{ number_format($data['metrics']['revenue_received'] ?? 0, 0, ',', '.') }}</p>
+                                    <p class="min-w-0 flex-1 text-xs font-medium uppercase tracking-[0.18em] opacity-80">Pendapatan Diterima</p>
+                                    <p class="flex-shrink-0 whitespace-nowrap text-right text-[clamp(1.05rem,1.35vw,1.45rem)] font-semibold leading-tight tabular-nums">
+                                        Rp {{ $revenueReceived }}
+                                    </p>
                                 </div>
                             </div>
                         @endif
                     </div>
                 </section>
 
-                <section class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <section class="grid grid-cols-1 gap-5 lg:grid-cols-2 lg:gap-8">
                     <!-- Status Pemesanan -->
-                    <div class="bg-white rounded-3xl border border-[#EDE0D0] shadow-xl p-8">
-                        <h3 class="text-2xl font-display font-semibold text-[#3F2B1B] mb-6 flex items-center gap-3">
+                    <div class="bg-white rounded-3xl border border-[#EDE0D0] shadow-xl p-5 sm:p-8">
+                        <h3 class="mb-4 flex items-center gap-3 font-display text-xl font-semibold text-[#3F2B1B] sm:mb-6 sm:text-2xl">
                             <i class="fa-solid fa-chart-pie text-[#D4A017]"></i>
                             Status Pemesanan
                         </h3>
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
                             @foreach(['WAITING_PAYMENT','DP_PAID','PAID','CANCELLED'] as $status)
                                 @php
                                     $labels = [
@@ -173,7 +178,7 @@
                                         'CANCELLED' => 'Dibatalkan',
                                     ];
                                 @endphp
-                                <div class="flex justify-between items-center bg-[#FAF6F0] hover:bg-white transition-colors px-6 py-5 rounded-2xl border border-[#EDE0D0]">
+                                <div class="flex items-center justify-between rounded-2xl border border-[#EDE0D0] bg-[#FAF6F0] px-4 py-3 transition-colors hover:bg-white sm:px-6 sm:py-5">
                                     <span class="text-[#5C432C]">{{ $labels[$status] ?? $status }}</span>
                                     <span class="font-semibold text-lg bg-white px-5 py-1 rounded-3xl shadow-sm">{{ $data['statusCounts'][$status] ?? 0 }}</span>
                                 </div>
@@ -181,7 +186,7 @@
                         </div>
                     </div>
                     @if($role === Role::ADMIN)
-                        <div class="bg-white rounded-3xl border border-[#EDE0D0] shadow-xl p-8">
+                        <div class="bg-white rounded-3xl border border-[#EDE0D0] shadow-xl p-5 sm:p-8">
                             <div class="flex items-center justify-between mb-6">
                                 <h3 class="text-2xl font-display font-semibold text-[#3F2B1B] flex items-center gap-3">
                                     <i class="fa-solid fa-calendar-week text-[#D4A017]"></i>
@@ -216,7 +221,7 @@
                             </div>
                         </div>
                     @elseif($role === Role::MANAGER || $role === Role::OWNER)
-                        <div class="bg-white rounded-3xl border border-[#EDE0D0] shadow-xl p-8">
+                        <div class="bg-white rounded-3xl border border-[#EDE0D0] shadow-xl p-5 sm:p-8">
                             <div class="flex items-center justify-between mb-6">
                                 <h3 class="text-2xl font-display font-semibold text-[#3F2B1B] flex items-center gap-3">
                                     <i class="fa-solid fa-users-gear text-[#D4A017]"></i>
@@ -244,16 +249,16 @@
                                 ];
                             @endphp
 
-                            <div class="space-y-4">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 @foreach($roleLabels as $roleValue => $roleLabel)
-                                    <div class="flex items-center justify-between rounded-2xl border border-[#EDE0D0] bg-[#FAF6F0] px-6 py-5">
-                                        <div class="flex items-center gap-3 text-[#5C432C]">
-                                            <span class="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-[#D4A017] shadow-sm">
+                                    <div class="flex items-center justify-between rounded-2xl border border-[#EDE0D0] bg-[#FAF6F0] px-4 py-3">
+                                        <div class="flex items-center gap-2.5 text-[#5C432C]">
+                                            <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-white text-[#D4A017] shadow-sm">
                                                 <i class="fa-solid {{ $roleIcons[$roleValue] }}"></i>
                                             </span>
-                                            <span class="font-medium">{{ $roleLabel }}</span>
+                                            <span class="text-sm font-medium">{{ $roleLabel }}</span>
                                         </div>
-                                        <span class="rounded-3xl bg-white px-5 py-1.5 text-lg font-semibold text-[#3F2B1B] shadow-sm">
+                                        <span class="rounded-2xl bg-white px-3 py-1 text-sm font-semibold text-[#3F2B1B] shadow-sm">
                                             {{ $data['roleCounts'][$roleValue] ?? 0 }}
                                         </span>
                                     </div>
@@ -270,27 +275,29 @@
                         <x-stat-card label="Project Final" :value="$data['completed'] ?? 0" color="emerald" />
                         <x-stat-card label="Akan Datang" :value="$data['upcoming']->count() ?? 0" color="blue" />
                     </div>
-                    <div class="bg-white rounded-3xl border border-[#EDE0D0] shadow-xl overflow-hidden">
-                        <div class="px-8 py-6 border-b border-[#EDE0D0] bg-gradient-to-r from-[#FAF6F0] to-white">
-                            <h3 class="font-display text-3xl font-semibold text-[#3F2B1B]">Jadwal Mendatang</h3>
+                    <div class="bg-white rounded-2xl border border-[#EDE0D0] shadow-lg overflow-hidden">
+                        <div class="px-5 py-4 border-b border-[#EDE0D0] bg-gradient-to-r from-[#FAF6F0] to-white">
+                            <h3 class="font-display text-2xl font-semibold text-[#3F2B1B]">Jadwal Mendatang</h3>
                         </div>
                         <div class="divide-y divide-[#EDE0D0]">
                             @forelse($data['upcoming'] ?? [] as $item)
-                                <div class="px-8 py-6 hover:bg-[#FAF6F0] transition-all">
-                                    <div class="flex gap-4">
-                                        <div class="w-10 h-10 flex-shrink-0 bg-gradient-to-br from-[#D4A017] to-[#E07A5F] rounded-2xl flex items-center justify-center text-white">
+                                <div class="px-5 py-4 hover:bg-[#FAF6F0] transition-all">
+                                    <div class="flex gap-3">
+                                        <div class="w-9 h-9 flex-shrink-0 bg-gradient-to-br from-[#D4A017] to-[#E07A5F] rounded-xl flex items-center justify-center text-white">
                                             <i class="fa-solid fa-camera"></i>
                                         </div>
                                         <div class="flex-1">
-                                            <p class="font-semibold text-[#3F2B1B]">{{ $item->start_at->translatedFormat('d M H:i') }} – {{ $item->end_at->translatedFormat('H:i') }}</p>
-                                            <p class="text-sm text-[#7A5B3A]">Lokasi: {{ $item->booking->location ?? '-' }}</p>
-                                            <p class="text-sm text-[#7A5B3A]">Klien: {{ $item->booking->client->name ?? '-' }}</p>
+                                            <p class="text-sm font-semibold text-[#3F2B1B]">{{ $item->start_at->translatedFormat('d M H:i') }} - {{ $item->end_at->translatedFormat('H:i') }}</p>
+                                            <div class="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-[#7A5B3A]">
+                                                <span>Lokasi: {{ $item->booking->location ?? '-' }}</span>
+                                                <span>Klien: {{ $item->booking->client->name ?? '-' }}</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             @empty
-                                <div class="px-8 py-16 text-center text-[#8B7359]">
-                                    <i class="fa-solid fa-calendar-check text-6xl mb-4 opacity-30"></i>
+                                <div class="px-5 py-10 text-center text-[#8B7359]">
+                                    <i class="fa-solid fa-calendar-check text-4xl mb-3 opacity-30"></i>
                                     <p>Tidak ada jadwal</p>
                                 </div>
                             @endforelse
@@ -305,27 +312,29 @@
                         <x-stat-card label="Final Ditandai" :value="$data['finalized'] ?? 0" color="emerald" />
                         <x-stat-card label="Antrian Edit" :value="$data['queue']->count() ?? 0" color="amber" />
                     </div>
-                    <div class="bg-white rounded-3xl border border-[#EDE0D0] shadow-xl overflow-hidden">
-                        <div class="px-8 py-6 border-b border-[#EDE0D0] bg-gradient-to-r from-[#FAF6F0] to-white">
-                            <h3 class="font-display text-3xl font-semibold text-[#3F2B1B]">Antrian Tugas</h3>
+                    <div class="bg-white rounded-2xl border border-[#EDE0D0] shadow-lg overflow-hidden">
+                        <div class="px-5 py-4 border-b border-[#EDE0D0] bg-gradient-to-r from-[#FAF6F0] to-white">
+                            <h3 class="font-display text-2xl font-semibold text-[#3F2B1B]">Antrian Tugas</h3>
                         </div>
                         <div class="divide-y divide-[#EDE0D0]">
                             @forelse($data['queue'] ?? [] as $item)
-                                <div class="px-8 py-6 hover:bg-[#FAF6F0] transition-all">
-                                    <div class="flex gap-4">
-                                        <div class="w-10 h-10 flex-shrink-0 bg-gradient-to-br from-[#6B4A2D] to-[#4C351F] rounded-2xl flex items-center justify-center text-white">
+                                <div class="px-5 py-4 hover:bg-[#FAF6F0] transition-all">
+                                    <div class="flex gap-3">
+                                        <div class="w-9 h-9 flex-shrink-0 bg-gradient-to-br from-[#6B4A2D] to-[#4C351F] rounded-xl flex items-center justify-center text-white">
                                             <i class="fa-solid fa-pen-ruler"></i>
                                         </div>
                                         <div class="flex-1">
-                                            <p class="font-semibold text-[#3F2B1B]">{{ $item->booking->location ?? 'N/A' }}</p>
-                                            <p class="text-sm text-[#7A5B3A]">Mulai: {{ optional($item->start_at)?->translatedFormat('d M H:i') ?? '-' }}</p>
-                                            <p class="text-sm text-[#7A5B3A]">Klien: {{ $item->booking->client->name ?? '-' }}</p>
+                                            <p class="text-sm font-semibold text-[#3F2B1B]">{{ $item->booking->location ?? 'N/A' }}</p>
+                                            <div class="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-[#7A5B3A]">
+                                                <span>Mulai: {{ optional($item->start_at)?->translatedFormat('d M H:i') ?? '-' }}</span>
+                                                <span>Klien: {{ $item->booking->client->name ?? '-' }}</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             @empty
-                                <div class="px-8 py-16 text-center text-[#8B7359]">
-                                    <i class="fa-solid fa-face-smile text-6xl mb-4 opacity-30"></i>
+                                <div class="px-5 py-10 text-center text-[#8B7359]">
+                                    <i class="fa-solid fa-face-smile text-4xl mb-3 opacity-30"></i>
                                     <p>Belum ada tugas</p>
                                 </div>
                             @endforelse
@@ -337,4 +346,3 @@
         </div>
     </div>
 </x-app-layout>
-

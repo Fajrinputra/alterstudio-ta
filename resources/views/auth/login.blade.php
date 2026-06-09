@@ -1,54 +1,50 @@
 <x-guest-layout>
-    <div class="relative bg-[#FAF6F0] min-h-screen flex items-center justify-center p-4 overflow-hidden">
+    <div class="relative flex h-screen w-full items-center justify-center overflow-hidden bg-cover bg-center p-3 sm:p-4"
+         style="background-image: url('{{ asset('images/auth/bg-login.jpg') }}');">
         
-        <!-- Subtle Background Pattern -->
-        <div class="absolute inset-0 pointer-events-none opacity-30 bg-[radial-gradient(circle_at_20%_30%,rgba(212,160,23,0.08),transparent_50%),radial-gradient(circle_at_80%_70%,rgba(224,122,95,0.08),transparent_50%)]"></div>
+        <!-- Dark overlay for readability -->
+        <div class="absolute inset-0 bg-black/35 pointer-events-none"></div>
 
-        <div class="w-full max-w-5xl">
-            <div class="grid md:grid-cols-2 gap-10 items-center">
+        <div class="relative z-10 w-full max-w-4xl">
+            <div class="grid items-center gap-4 md:grid-cols-2 md:gap-6">
 
                 <!-- Left Side - Branding -->
-                <div class="hidden md:flex flex-col justify-center bg-white/70 backdrop-blur-xl border border-[#EDE0D0] rounded-3xl shadow-2xl p-10 h-full">
-                    <div class="flex items-center gap-4 mb-8">
-                        <div class="relative">
-                            <div class="absolute inset-0 bg-gradient-to-br from-[#D4A017] to-[#E07A5F] rounded-2xl blur-xl opacity-40"></div>
-                            <div class="relative h-16 w-16 rounded-2xl bg-gradient-to-br from-[#D4A017] to-[#E07A5F] flex items-center justify-center text-white font-black text-3xl shadow-inner">
-                                A
-                            </div>
-                        </div>
+                <div class="hidden md:flex flex-col justify-center bg-white border border-[#EDE0D0] rounded-3xl shadow-2xl p-7 h-full text-center">
+                    <div class="mb-6 flex flex-col items-center gap-3">
                         <div>
-                            <p class="font-display text-3xl tracking-tight text-[#3F2B1B]">Alter Studio</p>
-                            <p class="text-sm text-[#8B7359]">Premium Photography</p>
+                            <p class="font-display text-3xl font-bold tracking-tight text-[#3F2B1B]">Alter Studio</p>
+                            <span class="mx-auto mt-2 block h-1 w-16 rounded-full bg-gradient-to-r from-[#D4A017] to-[#E07A5F]"></span>
+                            <p class="text-xs text-[#8B7359]">Premium Photography</p>
                         </div>
                     </div>
 
-                    <h1 class="font-display text-4xl leading-tight font-semibold text-[#3F2B1B] mb-6">
+                    <h1 class="font-display text-3xl leading-tight font-semibold text-[#3F2B1B] mb-4">
                         Selamat Datang Kembali
                     </h1>
-                    <p class="text-[#5C432C] text-lg mb-8">
+                    <p class="text-[#5C432C] text-base leading-7 mb-6">
                         Masuk ke akun Anda untuk mengelola pemesanan, melihat portofolio, dan mengakses fitur studio.
                     </p>
 
-                    <div class="space-y-5 text-[#5C432C]">
-                        <div class="flex items-start gap-4">
-                            <i class="fa-solid fa-circle-check text-[#D4A017] mt-1 text-xl"></i>
+                    <div class="mx-auto w-full max-w-sm space-y-3.5 text-left text-[#5C432C]">
+                        <div class="flex items-start gap-3">
+                            <i class="fa-solid fa-circle-check text-[#D4A017] mt-1 text-base"></i>
                             <div>
-                                <p class="font-medium">Midtrans Integration</p>
-                                <p class="text-sm text-[#7A5B3A]">Pembayaran cepat & aman</p>
+                                <p class="text-sm font-medium">Midtrans Integration</p>
+                                <p class="text-xs text-[#7A5B3A]">Pembayaran cepat & aman</p>
                             </div>
                         </div>
-                        <div class="flex items-start gap-4">
-                            <i class="fa-solid fa-circle-check text-[#D4A017] mt-1 text-xl"></i>
+                        <div class="flex items-start gap-3">
+                            <i class="fa-solid fa-circle-check text-[#D4A017] mt-1 text-base"></i>
                             <div>
-                                <p class="font-medium">Jadwal Anti-Bentrok</p>
-                                <p class="text-sm text-[#7A5B3A]">Pemesanan kru & studio real-time</p>
+                                <p class="text-sm font-medium">Jadwal Anti-Bentrok</p>
+                                <p class="text-xs text-[#7A5B3A]">Pemesanan kru & studio real-time</p>
                             </div>
                         </div>
-                        <div class="flex items-start gap-4">
-                            <i class="fa-solid fa-circle-check text-[#D4A017] mt-1 text-xl"></i>
+                        <div class="flex items-start gap-3">
+                            <i class="fa-solid fa-circle-check text-[#D4A017] mt-1 text-base"></i>
                             <div>
-                                <p class="font-medium">Portofolio & Download</p>
-                                <p class="text-sm text-[#7A5B3A]">Hasil foto siap diunduh kapan saja</p>
+                                <p class="text-sm font-medium">Portofolio & Download</p>
+                                <p class="text-xs text-[#7A5B3A]">Hasil foto siap diunduh kapan saja</p>
                             </div>
                         </div>
                     </div>
@@ -56,23 +52,23 @@
 
                 <!-- Right Side - Login Form -->
                 <div class="relative">
-                    <div class="bg-white rounded-3xl shadow-2xl border border-[#EDE0D0] p-8 sm:p-12">
+                    <div class="bg-white rounded-3xl shadow-2xl border border-[#EDE0D0] p-5 sm:p-8">
                         
                         <!-- Form Header -->
-                        <div class="text-center mb-8">
-                            <div class="mx-auto mb-5 flex items-center justify-center">
-                                <div class="h-16 w-16 rounded-2xl bg-gradient-to-br from-[#D4A017] to-[#E07A5F] flex items-center justify-center text-white shadow-lg">
-                                    <i class="fa-solid fa-user text-3xl"></i>
+                        <div class="text-center mb-4 sm:mb-5">
+                            <div class="mx-auto mb-3 flex items-center justify-center">
+                                <div class="h-12 w-12 rounded-2xl bg-gradient-to-br from-[#D4A017] to-[#E07A5F] flex items-center justify-center text-white shadow-lg">
+                                    <i class="fa-solid fa-user text-xl"></i>
                                 </div>
                             </div>
-                            <h2 class="font-display text-4xl font-semibold text-[#3F2B1B] tracking-tight">Selamat Datang Kembali</h2>
-                            <p class="text-[#7A5B3A] mt-2">Masuk ke akun Alter Studio Anda</p>
+                            <h2 class="font-display text-2xl font-semibold text-[#3F2B1B] tracking-tight sm:text-3xl">Selamat Datang Kembali</h2>
+                            <p class="text-sm text-[#7A5B3A] mt-1">Masuk ke akun Alter Studio Anda</p>
                         </div>
 
                         <!-- Tombol Kembali ke Landing Page -->
-                        <div class="flex justify-center mb-8">
+                        <div class="flex justify-center mb-4 sm:mb-5">
                             <a href="/" 
-                               class="inline-flex items-center gap-2 px-6 py-3 rounded-2xl border border-[#E1D3C5] text-[#5C432C] hover:border-[#D4A017] hover:text-[#D4A017] hover:bg-white transition-all text-sm font-medium">
+                               class="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-[#E1D3C5] px-4 py-2.5 text-sm font-medium text-[#5C432C] transition-all hover:border-[#D4A017] hover:bg-white hover:text-[#D4A017] sm:w-auto sm:px-5">
                                 <i class="fa-solid fa-arrow-left"></i>
                                 <span>Kembali ke Landing Page</span>
                             </a>
@@ -81,18 +77,18 @@
                         <!-- Session Status -->
                         <x-auth-session-status class="mb-6 text-emerald-700 bg-emerald-50 border border-emerald-100 p-4 rounded-2xl text-sm" :status="session('status')" />
 
-                        <form method="POST" action="{{ route('login') }}" class="space-y-6">
+                        <form method="POST" action="{{ route('login') }}" class="space-y-3.5 sm:space-y-4">
                             @csrf
 
                             <!-- Email -->
-                            <div class="space-y-2">
+                            <div class="space-y-1.5">
                                 <label for="email" class="block text-sm font-medium text-[#5C432C]">Email</label>
                                 <div class="relative">
                                     <span class="absolute left-4 top-1/2 -translate-y-1/2 text-[#D4A017]">
                                         <i class="fa-solid fa-envelope"></i>
                                     </span>
                                     <x-text-input id="email"
-                                        class="block w-full pl-11 pr-4 py-4 bg-[#FAF6F0] border border-[#E1D3C5] rounded-2xl text-[#3F2B1B] placeholder:text-[#9C7C5E] focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/30 transition-all"
+                                        class="block w-full pl-11 pr-4 py-3 bg-[#FAF6F0] border border-[#E1D3C5] rounded-2xl text-[#3F2B1B] placeholder:text-[#9C7C5E] focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/30 transition-all"
                                         type="email"
                                         name="email"
                                         :value="old('email')"
@@ -103,14 +99,14 @@
                             </div>
 
                             <!-- Password -->
-                            <div class="space-y-2">
+                            <div class="space-y-1.5">
                                 <label for="password" class="block text-sm font-medium text-[#5C432C]">Password</label>
                                 <div class="relative">
                                     <span class="absolute left-4 top-1/2 -translate-y-1/2 text-[#D4A017]">
                                         <i class="fa-solid fa-lock"></i>
                                     </span>
                                     <x-text-input id="password"
-                                        class="block w-full pl-11 pr-12 py-4 bg-[#FAF6F0] border border-[#E1D3C5] rounded-2xl text-[#3F2B1B] placeholder:text-[#9C7C5E] focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/30 transition-all"
+                                        class="block w-full pl-11 pr-12 py-3 bg-[#FAF6F0] border border-[#E1D3C5] rounded-2xl text-[#3F2B1B] placeholder:text-[#9C7C5E] focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/30 transition-all"
                                         type="password"
                                         name="password"
                                         required autocomplete="current-password"
@@ -124,7 +120,7 @@
                             </div>
 
                             <!-- Remember Me & Forgot Password -->
-                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-sm">
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-sm">
                                 <label for="remember_me" class="inline-flex items-center gap-2 cursor-pointer">
                                     <input id="remember_me" type="checkbox" 
                                            class="w-5 h-5 rounded-xl border-[#E1D3C5] text-[#D4A017] focus:ring-[#D4A017]"
@@ -143,13 +139,13 @@
 
                             <!-- Login Button -->
                             <button type="submit"
-                                    class="w-full mt-4 py-4 rounded-2xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] text-white font-semibold text-lg shadow-lg shadow-[#D4A017]/30 hover:shadow-xl hover:-translate-y-0.5 transition-all flex items-center justify-center gap-3">
+                                    class="w-full mt-2 py-3 rounded-2xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] text-white font-semibold text-base shadow-lg shadow-[#D4A017]/30 hover:shadow-xl hover:-translate-y-0.5 transition-all flex items-center justify-center gap-3">
                                 <i class="fa-solid fa-arrow-right-to-bracket"></i>
                                 Masuk Sekarang
                             </button>
 
                             <!-- Register Link -->
-                            <p class="text-center text-sm text-[#7A5B3A] mt-6">
+                            <p class="text-center text-sm text-[#7A5B3A] mt-4">
                                 Belum punya akun? 
                                 @if (Route::has('register'))
                                     <a href="{{ route('register') }}" 

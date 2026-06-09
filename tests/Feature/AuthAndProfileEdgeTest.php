@@ -10,7 +10,6 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Notification;
-use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
@@ -81,10 +80,11 @@ class AuthAndProfileEdgeTest extends TestCase
 
     public function test_password_reset_link_failure_branch_is_reached(): void
     {
+        Notification::fake();
         $user = User::factory()->create(['role' => Role::CLIENT, 'email' => 'reset-fail@example.test']);
-        Password::shouldReceive('sendResetLink')
-            ->once()
-            ->andReturn(Password::INVALID_USER);
+
+        $this->post(route('password.email'), ['email' => $user->email])
+            ->assertSessionHas('status');
 
         $this->from(route('password.request'))
             ->post(route('password.email'), ['email' => $user->email])

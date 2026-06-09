@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\StudioLocation;
 use App\Models\StudioRoom;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
 /**
@@ -67,6 +68,8 @@ class StudioLocationController extends Controller
             $this->syncPhotos($location, $paths);
         }
 
+        Cache::forget('landing.page.data.v2');
+
         if ($request->wantsJson()) {
             return response()->json($location, 201);
         }
@@ -101,6 +104,8 @@ class StudioLocationController extends Controller
 
         $this->syncPhotos($studioLocation, $gallery->values()->all());
 
+        Cache::forget('landing.page.data.v2');
+
         if ($request->wantsJson()) {
             return response()->json($studioLocation);
         }
@@ -110,6 +115,8 @@ class StudioLocationController extends Controller
     public function destroy(StudioLocation $studioLocation)
     {
         $studioLocation->delete();
+        Cache::forget('landing.page.data.v2');
+
         if (request()->wantsJson()) {
             return response()->json(['message' => 'Lokasi berhasil dihapus.']);
         }
@@ -151,6 +158,7 @@ class StudioLocationController extends Controller
 
         StudioRoom::create($data);
 
+        Cache::forget('landing.page.data.v2');
         return back()->with('status', 'Studio/ruang berhasil ditambahkan.');
     }
 
@@ -179,6 +187,7 @@ class StudioLocationController extends Controller
 
         $studioRoom->update($payload);
 
+        Cache::forget('landing.page.data.v2');
         return back()->with('status', 'Studio/ruang berhasil diperbarui.');
     }
 
@@ -187,6 +196,7 @@ class StudioLocationController extends Controller
     {
         if ($studioRoom->bookings()->exists()) {
             $studioRoom->update(['is_active' => false]);
+            Cache::forget('landing.page.data.v2');
             return back()->with('status', 'Ruangan sudah dipakai booking, status diubah menjadi nonaktif.');
         }
 
@@ -195,6 +205,7 @@ class StudioLocationController extends Controller
         }
 
         $studioRoom->delete();
+        Cache::forget('landing.page.data.v2');
         return back()->with('status', 'Studio/ruang berhasil dihapus.');
     }
 

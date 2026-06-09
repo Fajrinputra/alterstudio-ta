@@ -1,0 +1,57 @@
+@startuml
+title SD-B15 Hapus Kategori Layanan
+
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam BoxPadding 4
+skinparam sequence {
+    ArrowColor #333333
+    LifeLineBorderColor #999999
+    LifeLineBackgroundColor white
+    ParticipantBorderColor #999999
+    ParticipantBackgroundColor #ECEEF8
+    ParticipantFontColor #111111
+    ActorBorderColor #999999
+    ActorFontColor #111111
+    GroupBorderColor #111111
+    GroupBackgroundColor transparent
+}
+
+actor "Admin" as Admin
+boundary "Halaman Kategori Layanan" as HalamanKategori
+boundary "Modal Konfirmasi Hapus" as ModalHapus
+control "ServiceCategoryController" as CategoryController
+entity "ServiceCategories Model" as ServiceCategory
+entity "ServicePackages Model" as ServicePackage
+
+Admin -> HalamanKategori : Pilih kategori
+Admin -> HalamanKategori : Klik hapus kategori
+HalamanKategori -> ModalHapus : tampilkan konfirmasi hapus
+ModalHapus --> Admin : konfirmasi tampil
+
+alt Konfirmasi dibatalkan
+    Admin -> ModalHapus : batal hapus
+    ModalHapus --> HalamanKategori : tutup modal
+    HalamanKategori --> Admin : kategori tidak dihapus
+else Konfirmasi hapus
+    Admin -> ModalHapus : konfirmasi hapus
+    ModalHapus -> CategoryController : destroy(categoryId)
+    CategoryController -> CategoryController : validasi otorisasi
+    CategoryController -> ServicePackage : cek paket pada kategori
+    ServicePackage --> CategoryController : data paket / kosong
+
+    alt Kategori tidak memiliki paket
+        CategoryController -> ServiceCategory : delete kategori layanan
+        ServiceCategory --> CategoryController : kategori terhapus
+        CategoryController --> HalamanKategori : redirect dengan pesan berhasil
+        HalamanKategori --> Admin : kategori terhapus
+    else Kategori masih memiliki paket
+        CategoryController --> HalamanKategori : tampilkan pesan hapus ditolak
+        HalamanKategori --> Admin : kategori tidak dapat dihapus
+    else Gagal hapus
+        CategoryController --> HalamanKategori : tampilkan pesan error
+        HalamanKategori --> Admin : proses hapus gagal
+    end
+end
+
+@enduml

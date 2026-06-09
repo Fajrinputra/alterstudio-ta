@@ -6,17 +6,11 @@
 
         <div class="w-full max-w-md">
             
-            <!-- Logo -->
             <div class="text-center mb-8">
-                <a href="/" class="inline-flex items-center gap-3 mx-auto">
-                    <div class="relative">
-                        <div class="absolute inset-0 bg-gradient-to-br from-[#D4A017] to-[#E07A5F] rounded-2xl blur-xl opacity-40"></div>
-                        <div class="relative h-14 w-14 rounded-2xl bg-gradient-to-br from-[#D4A017] to-[#E07A5F] flex items-center justify-center text-white font-black text-2xl shadow-inner">
-                            A
-                        </div>
-                    </div>
-                    <div class="text-left leading-tight">
-                        <p class="font-display text-2xl text-[#3F2B1B]">Alter Studio</p>
+                <a href="/" class="block w-fit mx-auto">
+                    <div class="leading-tight">
+                        <p class="font-display text-3xl font-bold text-[#3F2B1B]">Alter Studio</p>
+                        <span class="mx-auto mt-2 block h-1 w-16 rounded-full bg-gradient-to-r from-[#D4A017] to-[#E07A5F]"></span>
                         <p class="text-xs text-[#8B7359]">Premium Photography</p>
                     </div>
                 </a>

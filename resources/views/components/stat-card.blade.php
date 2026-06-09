@@ -35,26 +35,28 @@
     $iconColor = $palette['icon'];
 @endphp
 
-<div {{ $attributes->class("relative overflow-hidden rounded-3xl border bg-gradient-to-br p-6 shadow-xl {$bgColor}") }}>
-    <div class="absolute -right-6 -top-6 h-24 w-24 rounded-full {{ $iconColor }} opacity-10 blur-2xl"></div>
+<div {{ $attributes->class("relative min-w-0 overflow-hidden rounded-2xl border bg-gradient-to-br p-5 shadow-lg {$bgColor}") }}>
+    <div class="absolute -right-6 -top-6 h-20 w-20 rounded-full {{ $iconColor }} opacity-10 blur-2xl"></div>
     
-    <div class="relative z-10">
-        <div class="flex items-start justify-between gap-3">
-            @if($icon)
-                <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl {{ $iconColor }} text-white shadow-sm">
-                    <i class="fa-solid fa-{{ $icon }} text-lg"></i>
-                </div>
-            @endif
-            
-            @if($trend)
-                <span class="rounded-3xl bg-white px-2.5 py-1 text-[11px] {{ $trend > 0 ? 'text-emerald-600' : 'text-red-600' }} shadow-sm">
-                    <i class="fa-solid fa-arrow-{{ $trend > 0 ? 'up' : 'down' }} mr-1"></i>
-                    {{ abs($trend) }}%
-                </span>
-            @endif
-        </div>
-        
-        <p class="mb-2 text-xs font-medium uppercase tracking-[0.2em] opacity-80">{{ $label }}</p>
-        <p class="text-3xl font-semibold leading-none">{{ number_format($value) }}</p>
+    <div class="relative z-10 flex min-w-0 items-center gap-4">
+        @if($icon || $trend)
+            <div class="flex flex-shrink-0 items-center gap-3">
+                @if($icon)
+                    <div class="flex h-11 w-11 items-center justify-center rounded-2xl {{ $iconColor }} text-white shadow-sm">
+                        <i class="fa-solid fa-{{ $icon }} text-base"></i>
+                    </div>
+                @endif
+
+                @if($trend)
+                    <span class="rounded-3xl bg-white px-2.5 py-1 text-[11px] {{ $trend > 0 ? 'text-emerald-600' : 'text-red-600' }} shadow-sm">
+                        <i class="fa-solid fa-arrow-{{ $trend > 0 ? 'up' : 'down' }} mr-1"></i>
+                        {{ abs($trend) }}%
+                    </span>
+                @endif
+            </div>
+        @endif
+
+        <p class="min-w-0 flex-1 text-xs font-medium uppercase tracking-[0.18em] opacity-80">{{ $label }}</p>
+        <p class="flex-shrink-0 text-right text-2xl font-semibold leading-none tabular-nums">{{ number_format($value) }}</p>
     </div>
 </div>

@@ -1,0 +1,37 @@
+@startuml
+title SD-B44 Logout Pengguna
+
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam BoxPadding 4
+skinparam sequence {
+    ArrowColor #333333
+    LifeLineBorderColor #999999
+    LifeLineBackgroundColor white
+    ParticipantBorderColor #999999
+    ParticipantBackgroundColor #ECEEF8
+    ParticipantFontColor #111111
+    ActorBorderColor #999999
+    ActorFontColor #111111
+}
+
+actor "Pengguna" as Pengguna
+boundary "Tombol Keluar" as TombolKeluar
+boundary "Form Logout" as FormLogout
+control "AuthenticatedSessionController" as AuthController
+control "AuthGuard" as AuthGuard
+control "SessionStore" as SessionStore
+
+Pengguna -> TombolKeluar : Klik keluar
+TombolKeluar -> FormLogout : submit form logout
+FormLogout -> AuthController : destroy(request)
+AuthController -> AuthGuard : logout user dari guard web
+AuthGuard --> AuthController : user logout
+AuthController -> SessionStore : invalidate session
+SessionStore --> AuthController : session invalidated
+AuthController -> SessionStore : regenerate CSRF token
+SessionStore --> AuthController : token baru dibuat
+AuthController --> FormLogout : redirect ke landing page
+FormLogout --> Pengguna : pengguna keluar dari sistem
+
+@enduml

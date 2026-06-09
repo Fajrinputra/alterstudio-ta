@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\ServiceCategory;
 use App\Models\LandingHeroSlide;
 use App\Models\StudioLocation;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
 
 /**
@@ -13,6 +14,15 @@ use Illuminate\Support\Facades\Schema;
 class LandingController extends Controller
 {
     public function __invoke()
+    {
+        $data = app()->runningUnitTests()
+            ? $this->landingData()
+            : Cache::remember('landing.page.data.v2', now()->addMinutes(5), fn () => $this->landingData());
+
+        return view('welcome', $data);
+    }
+
+    private function landingData(): array
     {
         // Ambil kategori beserta paket aktif dan jumlah pemesanannya.
         $categories = ServiceCategory::with(['packages' => function ($q) {
@@ -46,6 +56,6 @@ class LandingController extends Controller
                 ->get()
             : collect();
 
-        return view('welcome', compact('categories', 'locations', 'mostPopularPackageIds', 'heroSlides'));
+        return compact('categories', 'locations', 'mostPopularPackageIds', 'heroSlides');
     }
 }

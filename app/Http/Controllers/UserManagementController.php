@@ -183,10 +183,7 @@ class UserManagementController extends Controller
         }
 
         return Project::query()
-            ->where(function ($query) use ($user) {
-                $query->where('photographer_id', $user->id)
-                    ->orWhere('editor_id', $user->id);
-            })
+            ->whereHas('scheduleRecord.users', fn ($query) => $query->where('user_id', $user->id))
             ->whereHas('booking', fn ($booking) => $booking->where('status', '!=', Booking::STATUS_CANCELLED))
             ->where('status', '!=', Project::STATUS_FINAL)
             ->exists();

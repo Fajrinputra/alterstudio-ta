@@ -106,18 +106,13 @@
         <!-- Nav -->
         <header class="sticky top-0 z-30 glass border-b border-white/60 shadow-sm">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex items-center justify-between h-16">
+                <div class="flex items-center justify-between gap-3 h-14 sm:h-16">
                     <!-- Logo -->
                     <div class="flex items-center gap-3">
-                        <div class="relative">
-                            <div class="absolute inset-0 bg-gradient-to-br from-[#D4A017] via-[#E07A5F] to-[#B56D3E] rounded-2xl blur-xl opacity-40"></div>
-                            <div class="relative h-11 w-11 rounded-2xl bg-gradient-to-br from-[#D4A017] to-[#B56D3E] flex items-center justify-center text-white font-black text-2xl shadow-inner">
-                                A
-                            </div>
-                        </div>
-                        <div>
-                            <p class="font-display text-2xl tracking-tight text-[#3F2B1B]">Alter Studio</p>
-                            <p class="text-[10px] uppercase tracking-[1px] text-[#8B7359] -mt-1">Premium Moments</p>
+                        <div class="inline-block leading-none">
+                            <p class="font-display text-xl font-extrabold tracking-tight text-[#3F2B1B] sm:text-2xl">Alter Studio</p>
+                            <span class="my-1.5 block h-0.5 w-full rounded-full bg-gradient-to-r from-[#D4A017] to-[#E07A5F]"></span>
+                            <p class="text-[10px] font-medium uppercase tracking-[0.18em] text-[#8B7359]">Premium Fotografi</p>
                         </div>
                     </div>
 
@@ -132,29 +127,29 @@
                     </div>
 
                     <!-- Auth Buttons -->
-                    <div class="flex items-center gap-3 text-sm">
+                    <div class="flex shrink-0 items-center gap-2 text-xs sm:gap-3 sm:text-sm">
                         @auth
                             <div class="flex items-center gap-3">
-                                <span class="text-sm text-[#5C432C] font-medium">{{ Auth::user()->name }}</span>
+                                <span class="hidden text-sm text-[#5C432C] font-medium sm:inline">{{ Auth::user()->name }}</span>
                                 <form method="POST" action="{{ route('logout') }}">
                                     @csrf
-                                    <button class="px-5 py-2 rounded-2xl border border-[#E1D3C5] text-[#5C432C] hover:bg-white hover:border-[#D4A017] transition-all">
+                                    <button class="px-3 py-2 rounded-2xl border border-[#E1D3C5] text-[#5C432C] hover:bg-white hover:border-[#D4A017] transition-all sm:px-5">
                                         Keluar
                                     </button>
                                 </form>
                                 <a href="{{ route('dashboard') }}" 
-                                   class="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] text-white font-semibold shadow-lg shadow-[#D4A017]/30 hover:shadow-xl hover:-translate-y-0.5 transition-all">
+                                   class="px-3 py-2 rounded-2xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] text-white font-semibold shadow-lg shadow-[#D4A017]/30 hover:shadow-xl hover:-translate-y-0.5 transition-all sm:px-6 sm:py-2.5">
                                     Dashboard
                                 </a>
                             </div>
                         @else
                             <a href="{{ route('login') }}" 
-                               class="px-5 py-2.5 rounded-2xl border border-[#E1D3C5] text-[#5C432C] hover:bg-white hover:shadow transition-all">
+                               class="px-3 py-2 rounded-2xl border border-[#E1D3C5] text-[#5C432C] hover:bg-white hover:shadow transition-all sm:px-5 sm:py-2.5">
                                 Masuk
                             </a>
                             @if (Route::has('register'))
                                 <a href="{{ route('register') }}" 
-                                   class="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] text-white font-semibold shadow-lg shadow-[#D4A017]/30 hover:shadow-xl hover:-translate-y-0.5 transition-all">
+                                   class="px-3 py-2 rounded-2xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] text-white font-semibold shadow-lg shadow-[#D4A017]/30 hover:shadow-xl hover:-translate-y-0.5 transition-all sm:px-6 sm:py-2.5">
                                     Daftar
                                 </a>
                             @endif
@@ -177,7 +172,7 @@
             $heroCurrent = $heroSlidesCollection->first() ?: $defaultHero;
         @endphp
 
-        <section id="hero" class="relative overflow-hidden h-[620px] md:h-[720px] lg:h-[780px] flex items-center">
+        <section id="hero" class="relative flex min-h-[560px] h-[calc(100svh-3.5rem)] max-h-[700px] items-center overflow-hidden md:h-[720px] md:max-h-none lg:h-[780px]">
             <!-- Background Image -->
             <div class="absolute inset-0">
                 @if($heroSlidesCollection->isNotEmpty())
@@ -187,12 +182,12 @@
                                  data-eyebrow="{{ $slide->eyebrow ?? '' }}"
                                  data-title="{{ $slide->title }}"
                                  data-subtitle="{{ $slide->subtitle ?? '' }}">
-                                <img src="{{ Storage::url($slide->image_path) }}" alt="{{ $slide->title }}" class="w-full h-full object-cover">
+                                <img src="{{ Storage::url($slide->image_path) }}" alt="" class="w-full h-full object-cover" onerror="this.style.display='none'">
                             </div>
                         @endforeach
                     </div>
                 @else
-                    <img src="{{ $heroFallbackImage }}" alt="Studio lights" class="w-full h-full object-cover">
+                    <img src="{{ $heroFallbackImage }}" alt="" class="w-full h-full object-cover" onerror="this.style.display='none'">
                 @endif
                 
                 <div class="absolute inset-0 bg-gradient-to-br from-[#3F2B1B]/85 via-[#5C432C]/65 to-transparent"></div>
@@ -202,37 +197,37 @@
             <!-- Subtle Particle Canvas -->
             <canvas id="hero-particles"></canvas>
 
-            <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 z-10">
+            <div class="relative z-10 mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-20 lg:px-8">
                 <div class="max-w-3xl">
-                    <p id="hero-eyebrow" class="text-xs md:text-sm uppercase tracking-[3px] mb-6 text-[#E7D9C2] flex items-center gap-3">
+                    <p id="hero-eyebrow" class="mb-4 flex items-center gap-3 text-[11px] uppercase tracking-[2px] text-[#E7D9C2] sm:mb-6 md:text-sm md:tracking-[3px]">
                         <span class="flex-1 h-px bg-gradient-to-r from-[#D4A017] to-transparent"></span>
                         {{ $heroCurrent->eyebrow ?? 'CASA DE ALTER & SIGNATURE' }}
                         <span class="flex-1 h-px bg-gradient-to-l from-[#D4A017] to-transparent"></span>
                     </p>
                     
-                    <h1 id="hero-title" class="font-display text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.05] tracking-tighter text-white mb-6">
+                    <h1 id="hero-title" class="mb-5 font-display text-4xl font-bold leading-[1.08] tracking-tight text-white sm:text-5xl md:text-6xl lg:text-7xl">
                         {{ $heroCurrent->title }}
                     </h1>
                     
-                    <p id="hero-subtitle" class="text-lg md:text-xl text-[#E7D9C2] max-w-xl mb-10">
+                    <p id="hero-subtitle" class="mb-8 max-w-xl text-base text-[#E7D9C2] sm:text-lg md:text-xl">
                         {{ $heroCurrent->subtitle }}
                     </p>
 
-                    <div class="flex flex-wrap gap-4">
+                    <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-4">
                         <a href="#portofolio" 
-                           class="group px-8 py-4 rounded-3xl bg-white text-[#3F2B1B] font-semibold flex items-center gap-3 hover:shadow-2xl hover:shadow-white/40 transition-all duration-300">
+                           class="group flex w-full items-center justify-center gap-3 rounded-3xl bg-white px-6 py-3.5 font-semibold text-[#3F2B1B] transition-all duration-300 hover:shadow-2xl hover:shadow-white/40 sm:w-auto sm:px-8 sm:py-4">
                             Lihat Portofolio
                             <i class="fa-solid fa-arrow-right group-hover:translate-x-2 transition-transform"></i>
                         </a>
                         <a href="#paket" 
-                           class="px-8 py-4 rounded-3xl border-2 border-white/60 text-white hover:bg-white/10 hover:border-white transition-all duration-300">
+                           class="w-full rounded-3xl border-2 border-white/60 px-6 py-3.5 text-center text-white transition-all duration-300 hover:border-white hover:bg-white/10 sm:w-auto sm:px-8 sm:py-4">
                             Lihat Paket
                         </a>
                     </div>
 
-                    <div class="flex flex-wrap gap-3 pt-12">
+                    <div class="flex flex-wrap gap-2 pt-8 sm:gap-3 sm:pt-12">
                         @foreach(['Pemesanan Mudah', 'Pembayaran Aman', 'Pengalaman Baru', 'Jadwal Anti-Bentrok'] as $feature)
-                            <span class="px-5 py-2.5 rounded-3xl bg-white/10 backdrop-blur-md border border-white/30 text-sm text-white flex items-center gap-2">
+                            <span class="flex items-center gap-2 rounded-3xl border border-white/30 bg-white/10 px-3 py-2 text-xs text-white backdrop-blur-md sm:px-5 sm:py-2.5 sm:text-sm">
                                 <i class="fa-solid fa-circle-check text-[#D4A017]"></i>
                                 {{ $feature }}
                             </span>
@@ -251,17 +246,17 @@
         </section>
 
         <!-- Thin highlight bar -->
-        <div class="bg-gradient-to-r from-[#E7D9C2] via-[#D4C3A8] to-[#E7D9C2] text-[#5C432C] text-sm py-5 border-b border-[#D4C3A8]/50">
-            <div class="max-w-7xl mx-auto px-6 flex flex-wrap gap-6 justify-center items-center">
+        <div class="border-b border-[#D4C3A8]/50 bg-gradient-to-r from-[#E7D9C2] via-[#D4C3A8] to-[#E7D9C2] py-3 text-center text-xs text-[#5C432C] sm:py-5 sm:text-sm">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 flex flex-wrap gap-6 justify-center items-center">
                 <span>Fotografi adalah seni menghentikan waktu, mengubah momen fana menjadi kenangan abadi melalui permainan cahaya dan rasa</span>
             </div>
         </div>
 
         <!-- About / Stats -->
-        <section id="tentang" class="max-w-7xl mx-auto px-6 py-20 space-y-12">
+        <section id="tentang" class="mx-auto max-w-7xl space-y-8 px-4 py-12 sm:px-6 sm:py-20 sm:space-y-12">
             <div class="text-center space-y-4">
-                <p class="font-display text-5xl tracking-tight text-[#3F2B1B]">Tentang Alter Studio</p>
-                <p class="text-[#7A5B3A] max-w-2xl mx-auto text-lg">Rumah fotografi dengan dua cabang unggulan, siap melayani wedding, portrait, hingga komersial dengan tim profesional.</p>
+                <p class="font-display text-3xl tracking-tight text-[#3F2B1B] sm:text-5xl">Tentang Alter Studio</p>
+                <p class="text-[#7A5B3A] max-w-2xl mx-auto text-sm sm:text-lg">Rumah fotografi dengan dua cabang unggulan, siap melayani wedding, portrait, hingga komersial dengan tim profesional.</p>
             </div>
            
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-6">
@@ -274,11 +269,11 @@
                     ];
                 @endphp
                 @foreach($stats as $item)
-                    <div class="group rounded-3xl bg-white border border-[#EDE0D0] p-8 text-center hover:border-[#D4A017]/30 hover:shadow-xl transition-all duration-300">
+                    <div class="group rounded-3xl bg-white border border-[#EDE0D0] p-4 text-center hover:border-[#D4A017]/30 hover:shadow-xl transition-all duration-300 sm:p-8">
                         <div class="w-14 h-14 mx-auto mb-5 rounded-2xl bg-gradient-to-br from-[#D4A017]/10 to-[#E07A5F]/10 flex items-center justify-center group-hover:scale-110 transition-transform">
                             <i class="{{ $item['icon'] }} text-2xl text-[#D4A017] group-hover:text-[#E07A5F]"></i>
                         </div>
-                        <p class="font-display text-4xl font-semibold text-[#3F2B1B]">{{ $item['value'] }}</p>
+                        <p class="font-display text-2xl font-semibold text-[#3F2B1B] sm:text-4xl">{{ $item['value'] }}</p>
                         <p class="text-sm text-[#7A5B3A] mt-1">{{ $item['label'] }}</p>
                     </div>
                 @endforeach
@@ -286,11 +281,11 @@
         </section>
 
         <!-- Packages Section -->
-        <section id="paket" class="bg-white py-20">
-            <div class="max-w-7xl mx-auto px-6">
-                <div class="text-center mb-14">
-                    <h2 class="font-display text-5xl font-bold tracking-tight text-[#3F2B1B]">Paket & Kategori Foto</h2>
-                    <p class="text-[#7A5B3A] text-xl mt-3">Pilih paket yang sesuai dengan cerita Anda</p>
+        <section id="paket" class="bg-white py-12 sm:py-20">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6">
+                <div class="text-center mb-10 sm:mb-14">
+                    <h2 class="font-display text-3xl font-bold tracking-tight text-[#3F2B1B] sm:text-5xl">Paket & Kategori Foto</h2>
+                    <p class="text-[#7A5B3A] text-sm mt-3 sm:text-xl">Pilih paket yang sesuai dengan cerita Anda</p>
                 </div>
 
                 @php
@@ -303,11 +298,11 @@
                 @endphp
 
                 <!-- Categories Filter -->
-                <div class="flex flex-wrap justify-center gap-3 mb-14">
+                <div class="flex flex-wrap justify-center gap-2 mb-10 sm:gap-3 sm:mb-14">
                     @foreach($categories as $category)
                         <button type="button" 
                                 data-category-filter="{{ $category->id }}"
-                                class="category-tab px-8 py-3 rounded-3xl border 
+                                class="category-tab rounded-3xl border px-4 py-2 text-xs sm:px-8 sm:py-3 sm:text-sm
                                     border-[#E1D3C5] bg-white text-[#5C432C] 
                                     hover:border-[#D4A017] hover:bg-[#D4A017] hover:text-white transition-all">
                             {{ $category->name }} ({{ $category->packages->count() }})
@@ -323,21 +318,21 @@
                                 $features = collect($package->features ?? [])->filter()->take(5)->values();
                                 $isPopular = in_array($package->id, $mostPopularPackageIds ?? [], true) && (($package->bookings_count ?? 0) > 0);
                             @endphp
-                            <div class="package-card relative bg-white rounded-3xl border {{ $isPopular ? 'border-2 border-[#D4A017]' : 'border-[#EDE0D0]' }} p-9 shadow-lg"
+                            <div class="package-card relative bg-white rounded-3xl border {{ $isPopular ? 'border-2 border-[#D4A017]' : 'border-[#EDE0D0]' }} p-4 shadow-md sm:p-9 sm:shadow-lg"
                                  data-package-card data-category-id="{{ $package->category_id }}">
                                 @if($isPopular)
                                     <div class="popular-badge">Paling Diminati 🔥</div>
                                 @endif
-                                <p class="text-xs uppercase tracking-widest text-[#8B7359] mb-2">{{ $package->category_name }}</p>
-                                <h3 class="font-display text-3xl font-semibold text-[#3F2B1B] mb-4">{{ $package->name }}</h3>
-                                <div class="text-4xl font-bold text-[#D4A017] mb-6">Rp {{ number_format($package->price, 0, ',', '.') }}</div>
+                                <p class="mb-1.5 text-[11px] uppercase tracking-widest text-[#8B7359] sm:mb-2 sm:text-xs">{{ $package->category_name }}</p>
+                                <h3 class="mb-2 font-display text-2xl font-semibold leading-tight text-[#3F2B1B] sm:mb-4 sm:text-3xl">{{ $package->name }}</h3>
+                                <div class="mb-3 text-2xl font-bold text-[#D4A017] sm:mb-6 sm:text-4xl">Rp {{ number_format($package->price, 0, ',', '.') }}</div>
                                 @if($package->description)
-                                    <p class="text-[#7A5B3A] mb-6 line-clamp-2">{{ $package->description }}</p>
+                                    <p class="mb-3 line-clamp-2 text-sm text-[#7A5B3A] sm:mb-6 sm:text-base">{{ $package->description }}</p>
                                 @endif
-                                <ul class="space-y-3 mb-8 min-h-[140px]">
+                                <ul class="mb-4 space-y-2 sm:mb-8 sm:min-h-[140px] sm:space-y-3">
                                     @forelse($features as $feature)
-                                        <li class="flex items-start gap-3 text-sm text-[#3F2B1B]">
-                                            <i class="fa-solid fa-circle-check text-[#D4A017] mt-0.5"></i>
+                                        <li class="{{ $loop->iteration > 3 ? 'hidden sm:flex' : 'flex' }} items-start gap-2 text-sm leading-5 text-[#3F2B1B] sm:gap-3">
+                                            <i class="fa-solid fa-circle-check mt-0.5 text-xs text-[#D4A017] sm:text-sm"></i>
                                             <span>{{ $feature }}</span>
                                         </li>
                                     @empty
@@ -347,18 +342,18 @@
                                 @auth
                                     @if(auth()->user()->role === \App\Enums\Role::CLIENT)
                                         <a href="{{ route('bookings.create', ['package_id' => $package->id]) }}" 
-                                           class="block w-full text-center py-4 rounded-3xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] text-white font-semibold hover:brightness-110 transition-all">
+                                           class="block w-full rounded-3xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] py-3 text-center text-sm font-semibold text-white transition-all hover:brightness-110 sm:py-4 sm:text-base">
                                             Pilih Paket
                                         </a>
                                     @else
                                         <a href="{{ route('catalog.public') }}" 
-                                           class="block w-full text-center py-4 rounded-3xl border-2 border-[#D4A017] text-[#D4A017] font-semibold hover:bg-[#D4A017] hover:text-white transition-all">
+                                           class="block w-full rounded-3xl border-2 border-[#D4A017] py-3 text-center text-sm font-semibold text-[#D4A017] transition-all hover:bg-[#D4A017] hover:text-white sm:py-4 sm:text-base">
                                             Lihat Detail
                                         </a>
                                     @endif
                                 @else
                                     <a href="{{ route('register') }}" 
-                                       class="block w-full text-center py-4 rounded-3xl border-2 border-[#D4A017] text-[#D4A017] font-semibold hover:bg-[#D4A017] hover:text-white transition-all">
+                                       class="block w-full rounded-3xl border-2 border-[#D4A017] py-3 text-center text-sm font-semibold text-[#D4A017] transition-all hover:bg-[#D4A017] hover:text-white sm:py-4 sm:text-base">
                                         Daftar untuk Pemesanan
                                     </a>
                                 @endauth
@@ -375,11 +370,11 @@
         </section>
 
        <!-- Portfolio Section -->
-<section id="portofolio" class="py-20 bg-[#FAF6F0]">
-    <div class="max-w-7xl mx-auto px-6">
-        <div class="text-center mb-14">
-            <h2 class="font-display text-5xl font-bold tracking-tight text-[#3F2B1B]">Portofolio Kami</h2>
-            <p class="text-[#7A5B3A] text-xl mt-3">Koleksi momen terbaik yang telah kami abadikan</p>
+<section id="portofolio" class="bg-[#FAF6F0] py-12 sm:py-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6">
+        <div class="mb-10 text-center sm:mb-14">
+            <h2 class="font-display text-3xl font-bold tracking-tight text-[#3F2B1B] sm:text-5xl">Portofolio Kami</h2>
+            <p class="mt-3 text-sm text-[#7A5B3A] sm:text-xl">Koleksi momen terbaik yang telah kami abadikan</p>
         </div>
 
         @php
@@ -404,41 +399,41 @@
         @endphp
 
         @if($portfolioItems->isNotEmpty())
-            <div class="flex flex-wrap justify-center gap-3 mb-12">
+            <div class="mb-8 flex flex-wrap justify-center gap-2 sm:mb-12 sm:gap-3">
                 <!-- Button "Semua Foto" tanpa class active -->
                 <button type="button" data-portfolio-filter="all"
-                        class="portfolio-tab px-8 py-3 rounded-3xl border border-[#E1D3C5] bg-white text-[#5C432C] hover:bg-[#D4A017] hover:text-white hover:border-[#D4A017] transition-all">
+                        class="portfolio-tab rounded-3xl border border-[#E1D3C5] bg-white px-4 py-2 text-xs text-[#5C432C] transition-all hover:border-[#D4A017] hover:bg-[#D4A017] hover:text-white sm:px-8 sm:py-3 sm:text-sm">
                     Semua Foto
                 </button>
 
                 @foreach($categories as $category)
                     @if(in_array((string) $category->id, $portfolioCategoryIds, true))
                         <button type="button" data-portfolio-filter="{{ $category->id }}"
-                                class="portfolio-tab px-8 py-3 rounded-3xl border border-[#E1D3C5] text-[#5C432C] bg-white hover:bg-[#D4A017] hover:text-white hover:border-[#D4A017] transition-all">
+                                class="portfolio-tab rounded-3xl border border-[#E1D3C5] bg-white px-4 py-2 text-xs text-[#5C432C] transition-all hover:border-[#D4A017] hover:bg-[#D4A017] hover:text-white sm:px-8 sm:py-3 sm:text-sm">
                             {{ $category->name }}
                         </button>
                     @endif
                 @endforeach
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
                 @foreach($portfolioItems as $photo)
                     <a href="{{ $photo['url'] }}" target="_blank"
                        data-portfolio-card
                        data-portfolio-category="{{ $photo['category_id'] }}"
                        data-portfolio-category-name="{{ $photo['category_name'] }}"
                        data-portfolio-package-name="{{ $photo['package_name'] }}"
-                       class="group relative rounded-3xl overflow-hidden border border-[#EDE0D0] shadow-xl hover:shadow-2xl transition-all duration-500">
-                        <div class="aspect-video">
+                       class="group relative overflow-hidden rounded-2xl border border-[#EDE0D0] shadow-md transition-all duration-500 hover:shadow-2xl sm:rounded-3xl sm:shadow-xl">
+                        <div class="aspect-[4/3] sm:aspect-video">
                             <img src="{{ $photo['url'] }}" alt="Portofolio Alter Studio" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
                         </div>
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-6">
+                        <div class="absolute inset-0 flex items-end bg-gradient-to-t from-black/75 via-black/20 to-transparent p-3 opacity-100 transition-opacity sm:p-6 sm:opacity-0 sm:group-hover:opacity-100">
                             <div>
-                                <p class="text-xs text-white/80 uppercase tracking-widest">{{ $photo['category_name'] }}</p>
-                                <p class="text-white font-medium">{{ $photo['package_name'] }}</p>
+                                <p class="text-[10px] uppercase tracking-widest text-white/80 sm:text-xs">{{ $photo['category_name'] }}</p>
+                                <p class="line-clamp-1 text-xs font-medium text-white sm:text-base">{{ $photo['package_name'] }}</p>
                             </div>
                         </div>
-                        <div class="absolute top-4 right-4 w-9 h-9 rounded-2xl bg-white/90 backdrop-blur flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0">
+                        <div class="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-xl bg-white/90 opacity-0 backdrop-blur transition-all translate-y-2 group-hover:translate-y-0 group-hover:opacity-100 sm:right-4 sm:top-4 sm:h-9 sm:w-9 sm:rounded-2xl">
                             <i class="fa-solid fa-expand text-[#D4A017]"></i>
                         </div>
                     </a>
@@ -454,50 +449,50 @@
 </section>
 
         <!-- Studio Section -->
-        <section id="studio" class="bg-white py-20">
-            <div class="max-w-7xl mx-auto px-6">
-                <div class="text-center mb-14">
-                    <h2 class="font-display text-5xl font-bold tracking-tight text-[#3F2B1B]">Studio & Lokasi</h2>
-                    <p class="text-[#7A5B3A] text-xl mt-3">Kunjungi cabang kami dan rasakan pengalamannya</p>
+        <section id="studio" class="bg-white py-12 sm:py-20">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6">
+                <div class="mb-10 text-center sm:mb-14">
+                    <h2 class="font-display text-3xl font-bold tracking-tight text-[#3F2B1B] sm:text-5xl">Studio & Lokasi</h2>
+                    <p class="mt-3 text-sm text-[#7A5B3A] sm:text-xl">Kunjungi cabang kami dan rasakan pengalamannya</p>
                 </div>
                 @if($locations->count())
-                    <div class="grid md:grid-cols-2 gap-8">
+                    <div class="grid gap-4 md:grid-cols-2 md:gap-8">
                         @foreach($locations as $loc)
                             @php
                                 $photo = $loc->photo_path ? Storage::url($loc->photo_path) : null;
                             @endphp
                            
-                            <div class="group bg-white border border-[#EDE0D0] rounded-3xl shadow-xl overflow-hidden hover:shadow-2xl transition-all">
+                            <div class="group overflow-hidden rounded-3xl border border-[#EDE0D0] bg-white shadow-md transition-all hover:shadow-2xl sm:shadow-xl">
                                 @if($photo)
-                                    <div class="h-72 w-full overflow-hidden">
+                                    <div class="h-40 w-full overflow-hidden sm:h-72">
                                         <img src="{{ $photo }}" alt="{{ $loc->name }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
                                     </div>
                                 @else
-                                    <div class="h-72 w-full bg-gradient-to-br from-[#FAF6F0] to-[#E7D9C2] flex items-center justify-center">
-                                        <span class="font-display text-4xl text-[#3F2B1B]">{{ $loc->name }}</span>
+                                    <div class="flex h-40 w-full items-center justify-center bg-gradient-to-br from-[#FAF6F0] to-[#E7D9C2] sm:h-72">
+                                        <span class="font-display text-2xl text-[#3F2B1B] sm:text-4xl">{{ $loc->name }}</span>
                                     </div>
                                 @endif
                                
-                                <div class="p-9">
-                                    <h3 class="font-display text-3xl font-semibold text-[#3F2B1B] mb-3">{{ $loc->name }}</h3>
+                                <div class="p-4 sm:p-9">
+                                    <h3 class="mb-2 font-display text-2xl font-semibold text-[#3F2B1B] sm:mb-3 sm:text-3xl">{{ $loc->name }}</h3>
                                     @if($loc->address)
-                                        <p class="text-[#7A5B3A] mb-5 flex items-start gap-3">
+                                        <p class="mb-3 flex items-start gap-2 text-sm leading-5 text-[#7A5B3A] sm:mb-5 sm:gap-3 sm:text-base">
                                             <i class="fa-solid fa-location-dot text-[#D4A017] mt-1"></i>
                                             <span>{{ $loc->address }}</span>
                                         </p>
                                     @endif
                                     @if($loc->description)
-                                        <p class="text-[#5C432C] mb-8">{{ $loc->description }}</p>
+                                        <p class="mb-4 line-clamp-2 text-sm text-[#5C432C] sm:mb-8 sm:text-base">{{ $loc->description }}</p>
                                     @endif
                                    
-                                    <div class="flex gap-4">
+                                    <div class="flex gap-3 sm:gap-4">
                                         <a href="{{ route('locations.public.show', $loc) }}" 
-                                           class="flex-1 text-center py-4 rounded-3xl border-2 border-[#D4A017] text-[#D4A017] font-semibold hover:bg-[#D4A017] hover:text-white transition-all">
+                                           class="flex-1 rounded-3xl border-2 border-[#D4A017] py-3 text-center text-sm font-semibold text-[#D4A017] transition-all hover:bg-[#D4A017] hover:text-white sm:py-4 sm:text-base">
                                             Detail Cabang
                                         </a>
                                         @if($loc->map_url)
                                             <a href="{{ $loc->map_url }}" target="_blank"
-                                               class="px-8 py-4 rounded-3xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] text-white font-semibold hover:brightness-110 transition-all">
+                                               class="rounded-3xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] px-5 py-3 text-sm font-semibold text-white transition-all hover:brightness-110 sm:px-8 sm:py-4 sm:text-base">
                                                 <i class="fa-solid fa-map"></i>
                                             </a>
                                         @endif
@@ -516,31 +511,31 @@
         </section>
 
         <!-- Contact Section -->
-        <section id="kontak" class="bg-white py-20">
-            <div class="max-w-4xl mx-auto px-6">
-                <div class="bg-gradient-to-br from-[#FAF6F0] to-white rounded-3xl p-14 text-center border border-[#EDE0D0]">
-                    <h2 class="font-display text-5xl font-bold text-[#3F2B1B] mb-6">Hubungi Kami</h2>
-                    <p class="text-[#7A5B3A] text-xl max-w-xl mx-auto mb-12">
+        <section id="kontak" class="bg-white py-12 sm:py-20">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6">
+                <div class="bg-gradient-to-br from-[#FAF6F0] to-white rounded-3xl p-6 text-center border border-[#EDE0D0] sm:p-14">
+                    <h2 class="font-display text-3xl font-bold text-[#3F2B1B] mb-4 sm:mb-6 sm:text-5xl">Hubungi Kami</h2>
+                    <p class="text-[#7A5B3A] text-sm max-w-xl mx-auto mb-8 sm:mb-12 sm:text-xl">
                         Ada pertanyaan? Kami siap membantu mewujudkan momen spesial Anda.
                     </p>
-                    <div class="flex flex-wrap justify-center gap-4">
+                    <div class="flex flex-col justify-center gap-3 sm:flex-row sm:flex-wrap sm:gap-4">
                         <a href="{{ $waUrl }}" target="_blank" rel="noopener"
-                           class="inline-flex items-center gap-3 px-8 py-4 rounded-3xl bg-[#25D366] text-white font-semibold hover:brightness-95 transition-all">
+                           class="inline-flex items-center justify-center gap-3 rounded-3xl bg-[#25D366] px-6 py-3.5 font-semibold text-white transition-all hover:brightness-95 sm:px-8 sm:py-4">
                             <i class="fa-brands fa-whatsapp text-xl"></i>
                             WhatsApp Admin
                         </a>
                         <a href="{{ $instagramUrl }}" target="_blank" rel="noopener"
-                           class="inline-flex items-center gap-3 px-8 py-4 rounded-3xl bg-gradient-to-r from-[#fd5949] via-[#d6249f] to-[#285AEB] text-white font-semibold hover:opacity-95 transition-all">
+                           class="inline-flex items-center justify-center gap-3 rounded-3xl bg-gradient-to-r from-[#fd5949] via-[#d6249f] to-[#285AEB] px-6 py-3.5 font-semibold text-white transition-all hover:opacity-95 sm:px-8 sm:py-4">
                             <i class="fa-brands fa-instagram text-xl"></i>
                             Instagram
                         </a>
                         <a href="{{ $tiktokUrl }}" target="_blank" rel="noopener"
-                           class="inline-flex items-center gap-3 px-8 py-4 rounded-3xl bg-black text-white font-semibold hover:opacity-90 transition-all">
+                           class="inline-flex items-center justify-center gap-3 rounded-3xl bg-black px-6 py-3.5 font-semibold text-white transition-all hover:opacity-90 sm:px-8 sm:py-4">
                             <i class="fa-brands fa-tiktok text-xl"></i>
                             TikTok
                         </a>
                         <a href="{{ route('register') }}"
-                           class="inline-flex items-center gap-3 px-8 py-4 rounded-3xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] text-white font-semibold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all">
+                           class="inline-flex items-center justify-center gap-3 rounded-3xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] px-6 py-3.5 font-semibold text-white shadow-lg transition-all hover:-translate-y-0.5 hover:shadow-xl sm:px-8 sm:py-4">
                             <i class="fa-solid fa-calendar-check"></i>
                             Pesan Sekarang
                         </a>
@@ -563,15 +558,16 @@
     <button type="button"
             data-faq-open
             aria-label="Buka rules pemesanan"
-            class="fixed bottom-28 right-8 z-50 inline-flex h-16 w-16 items-center justify-center rounded-3xl bg-gradient-to-br from-[#D4A017] via-[#E0912F] to-[#E07A5F] text-white shadow-2xl ring-4 ring-white/50 transition-all hover:scale-110 active:scale-95">
-        <i class="fa-solid fa-circle-question text-3xl"></i>
+            class="fixed bottom-24 right-4 z-50 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#D4A017] via-[#E0912F] to-[#E07A5F] text-white shadow-2xl ring-4 ring-white/50 transition-all hover:scale-110 active:scale-95 sm:bottom-28 sm:h-16 sm:w-16 sm:rounded-3xl">
+        <i class="fa-solid fa-circle-question text-xl sm:text-3xl"></i>
     </button>
 
     <!-- Floating WA -->
     <a href="{{ $waUrl }}" target="_blank" rel="noopener"
-       class="fixed bottom-8 right-8 z-50 inline-flex items-center gap-3 px-6 py-4 rounded-3xl bg-[#25D366] text-white font-semibold shadow-2xl hover:brightness-95 transition-all">
-        <i class="fa-brands fa-whatsapp text-2xl"></i>
-        <span class="hidden sm:inline">WhatsApp Admin</span>
+       aria-label="Hubungi WhatsApp Admin"
+       title="WhatsApp Admin"
+       class="fixed bottom-6 right-4 z-50 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-[#25D366] text-white shadow-2xl ring-4 ring-white/50 transition-all hover:scale-110 hover:brightness-95 active:scale-95 sm:bottom-8 sm:h-16 sm:w-16 sm:rounded-3xl">
+        <i class="fa-brands fa-whatsapp text-xl sm:text-3xl"></i>
     </a>
 
     <!-- Rules Modal -->
@@ -619,7 +615,7 @@
                     <div class="rounded-3xl border border-[#EDE0D0] bg-[#FAF6F0] p-5">
                         <p class="font-semibold text-[#3F2B1B]">Aturan Pasca-Produksi</p>
                         <p class="mt-2">
-                            Fotografer baru dapat membagikan link Google Drive foto mentah setelah pemesanan terjadwal dan pembayaran sudah lunas. Link Drive berlaku selama 7 hari, sehingga klien disarankan segera membuka folder dan mencatat kode foto yang ingin diedit.
+                            Fotografer baru dapat membagikan link Google Drive foto mentah setelah pemesanan terjadwal dan pembayaran sudah lunas. Link Drive berlaku selama 3 hari, sehingga klien disarankan segera membuka folder dan mencatat kode foto yang ingin diedit.
                         </p>
                     </div>
 

@@ -30,8 +30,8 @@ class BookingController extends Controller
         $query = Booking::with([
             'package',
             'payments',
-            'project.photographer',
-            'project.editor',
+            'project.scheduleRecord.photographerAssignment.user',
+            'project.scheduleRecord.editorAssignment.user',
             'client',
             'studioLocation',
             'studioRoom',

@@ -17,8 +17,8 @@
                     Kembali ke Kategori
                 </a>
                 <a href="{{ route('admin.catalog.packages.create', $category) }}"
-                   class="inline-flex w-full sm:w-auto items-center justify-center gap-3 px-8 py-3 rounded-3xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] text-white font-semibold shadow-lg shadow-[#D4A017]/30 hover:shadow-xl hover:-translate-y-0.5 transition-all">
-                    <i class="fa-solid fa-plus"></i>
+                   class="inline-flex w-full sm:w-auto items-center justify-center gap-2.5 rounded-2xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-[#D4A017]/25 transition-all hover:-translate-y-0.5 hover:shadow-xl">
+                    <i class="fa-solid fa-plus text-xs"></i>
                     Tambah Paket Baru
                 </a>
             </div>

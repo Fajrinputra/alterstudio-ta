@@ -35,6 +35,7 @@ class FinalPhotosReadyNotification extends Notification implements ShouldQueue
             ->greeting('Halo '.$notifiable->name.',')
             ->line('Editor sudah menandai hasil edit final tersedia di folder Drive project.')
             ->line('Paket: '.$packageName)
+            ->line('Link Drive hasil final berlaku selama 3 hari sejak hasil dibagikan. Silakan segera buka dan unduh file Anda.')
             ->action('Lihat Pemesanan', route('bookings.index'))
             ->line('Terima kasih sudah menggunakan layanan Alter Studio.');
     }

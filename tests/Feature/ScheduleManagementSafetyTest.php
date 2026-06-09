@@ -61,10 +61,13 @@ class ScheduleManagementSafetyTest extends TestCase
             ])
             ->assertOk();
 
-        $this->assertDatabaseHas('projects', [
-            'id' => $project->id,
-            'photographer_id' => $photographerB->id,
-            'editor_id' => $editorB->id,
+        $this->assertDatabaseHas('project_schedule_users', [
+            'user_id' => $photographerB->id,
+            'role' => Role::PHOTOGRAPHER->value,
+        ]);
+        $this->assertDatabaseHas('project_schedule_users', [
+            'user_id' => $editorB->id,
+            'role' => Role::EDITOR->value,
         ]);
     }
 
@@ -104,9 +107,9 @@ class ScheduleManagementSafetyTest extends TestCase
             ->deleteJson("/projects/{$project->id}/schedule")
             ->assertStatus(405);
 
-        $this->assertDatabaseHas('projects', [
-            'id' => $project->id,
-            'photographer_id' => $photographer->id,
+        $this->assertDatabaseHas('project_schedule_users', [
+            'user_id' => $photographer->id,
+            'role' => Role::PHOTOGRAPHER->value,
         ]);
     }
 }

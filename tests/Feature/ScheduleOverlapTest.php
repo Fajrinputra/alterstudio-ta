@@ -107,4 +107,56 @@ class ScheduleOverlapTest extends TestCase
             ])
             ->assertStatus(422);
     }
+
+    /**
+     * Pengujian: bentrok ruangan juga terdeteksi dari booking aktif yang belum memiliki schedule.
+     * Hasil yang diharapkan: sistem menolak jadwal jika ada booking lain pada ruangan dan jam yang sama.
+     */
+    public function test_room_overlap_is_blocked_from_existing_booking_without_schedule(): void
+    {
+        config()->set('studio.booking_buffer_minutes', 15);
+
+        $admin = User::factory()->create(['role' => Role::ADMIN]);
+        $photographer = User::factory()->create(['role' => Role::PHOTOGRAPHER]);
+        $editor = User::factory()->create(['role' => Role::EDITOR]);
+        $location = StudioLocation::create([
+            'name' => 'Cabang Booking Overlap',
+            'slug' => 'cabang-booking-overlap',
+            'is_active' => true,
+        ]);
+        $room = StudioRoom::create([
+            'studio_location_id' => $location->id,
+            'name' => 'Studio Booking Overlap',
+            'is_active' => true,
+        ]);
+        $package = ServicePackage::factory()->create(['duration_minutes' => 60]);
+        $bookingDate = now()->addDay()->toDateString();
+
+        Booking::factory()->create([
+            'status' => Booking::STATUS_PAID,
+            'package_id' => $package->id,
+            'booking_date' => $bookingDate,
+            'booking_time' => '11:00',
+            'studio_location_id' => $location->id,
+            'studio_room_id' => $room->id,
+        ]);
+        $bookingToSchedule = Booking::factory()->create([
+            'status' => Booking::STATUS_PAID,
+            'package_id' => $package->id,
+            'booking_date' => $bookingDate,
+            'booking_time' => '11:30',
+            'studio_location_id' => $location->id,
+            'studio_room_id' => $room->id,
+        ]);
+        $project = Project::factory()->create(['booking_id' => $bookingToSchedule->id]);
+
+        $this->actingAs($admin)
+            ->postJson("/projects/{$project->id}/schedule", [
+                'photographer_id' => $photographer->id,
+                'editor_id' => $editor->id,
+                'studio_room_id' => $room->id,
+            ])
+            ->assertStatus(422)
+            ->assertJsonPath('message', 'Jadwal bentrok: ruangan yang dipilih sudah memiliki jadwal pada waktu tersebut.');
+    }
 }

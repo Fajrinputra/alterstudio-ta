@@ -35,6 +35,7 @@ class RawPhotosUploadedNotification extends Notification implements ShouldQueue
             ->greeting('Halo '.$notifiable->name.',')
             ->line('Link Google Drive untuk foto mentah sesi Anda sudah tersedia.')
             ->line('Paket: '.$packageName)
+            ->line('Link Drive ini berlaku selama 3 hari sejak link dibagikan. Silakan segera buka folder Drive dan catat kode foto yang ingin diedit.')
             ->line('Silakan buka halaman pemesanan, akses link Drive, lalu kirim kode foto dan deskripsi permintaan edit melalui sistem.')
             ->action('Lihat Pemesanan', route('bookings.index'))
             ->line('Terima kasih telah menggunakan layanan Alter Studio.');

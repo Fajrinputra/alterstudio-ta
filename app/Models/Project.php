@@ -1,5 +1,6 @@
 <?php
 namespace App\Models;
+use App\Enums\Role;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,6 +13,9 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 class Project extends Model
 {
     use HasFactory;
+
+    protected ?int $pendingPhotographerId = null;
+    protected ?int $pendingEditorId = null;
 
     protected $fillable = [
         'booking_id',
@@ -57,6 +61,60 @@ class Project extends Model
         'final_drive_uploaded_at' => 'datetime',
     ];
 
+    protected static function booted(): void
+    {
+        static::saved(function (Project $project) {
+            if (! $project->pendingPhotographerId && ! $project->pendingEditorId) {
+                return;
+            }
+
+            if (! $project->start_at || ! $project->end_at || ! $project->booking) {
+                return;
+            }
+
+            $schedule = $project->scheduleRecord()->updateOrCreate(
+                ['project_id' => $project->id],
+                [
+                    'booking_id' => $project->booking_id,
+                    'studio_location_id' => (int) $project->booking->studio_location_id,
+                    'studio_room_id' => (int) $project->booking->studio_room_id,
+                    'scheduled_by' => auth()->id()
+                        ?? User::whereIn('role', [Role::ADMIN->value, Role::OWNER->value])->value('id')
+                        ?? User::query()->value('id'),
+                    'start_at' => $project->start_at,
+                    'end_at' => $project->end_at,
+                    'status' => ProjectSchedule::STATUS_SCHEDULED,
+                ]
+            );
+
+            $assignments = collect([
+                $project->pendingPhotographerId ? [
+                    'user_id' => $project->pendingPhotographerId,
+                    'role' => Role::PHOTOGRAPHER->value,
+                ] : null,
+                $project->pendingEditorId && $project->pendingEditorId !== $project->pendingPhotographerId ? [
+                    'user_id' => $project->pendingEditorId,
+                    'role' => Role::EDITOR->value,
+                ] : null,
+            ])->filter()->values()->all();
+
+            $schedule->users()->delete();
+            $schedule->users()->createMany($assignments);
+
+            $project->unsetRelation('scheduleRecord');
+        });
+    }
+
+    public function setPhotographerIdAttribute($value): void
+    {
+        $this->pendingPhotographerId = $value ? (int) $value : null;
+    }
+
+    public function setEditorIdAttribute($value): void
+    {
+        $this->pendingEditorId = $value ? (int) $value : null;
+    }
+
     public function booking(): BelongsTo
     {
         return $this->belongsTo(Booking::class);
@@ -79,16 +137,6 @@ class Project extends Model
         return $this->hasOne(ProjectSchedule::class);
     }
 
-    public function photographer(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'photographer_id');
-    }
-
-    public function editor(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'editor_id');
-    }
-
     public function rawDriveUploader(): BelongsTo
     {
         return $this->belongsTo(User::class, 'raw_drive_uploaded_by');
@@ -97,6 +145,26 @@ class Project extends Model
     public function finalDriveUploader(): BelongsTo
     {
         return $this->belongsTo(User::class, 'final_drive_uploaded_by');
+    }
+
+    public function getPhotographerIdAttribute(): ?int
+    {
+        return $this->scheduleRecord?->photographer_id;
+    }
+
+    public function getEditorIdAttribute(): ?int
+    {
+        return $this->scheduleRecord?->editor_id;
+    }
+
+    public function getPhotographerAttribute(): ?User
+    {
+        return $this->scheduleRecord?->photographer;
+    }
+
+    public function getEditorAttribute(): ?User
+    {
+        return $this->scheduleRecord?->editor;
     }
 
     /**
@@ -124,14 +192,14 @@ class Project extends Model
             ];
         }
 
-        if (! $this->start_at && ! $this->end_at && ! $this->photographer_id && ! $this->editor_id) {
+        if (! $this->start_at && ! $this->end_at && ! $this->pendingPhotographerId && ! $this->pendingEditorId) {
             return null;
         }
 
         return (object) [
             'project_id' => $this->id,
-            'photographer_id' => $this->photographer_id,
-            'editor_id' => $this->editor_id,
+            'photographer_id' => $this->photographer_id ?? $this->pendingPhotographerId,
+            'editor_id' => $this->editor_id ?? $this->pendingEditorId,
             'start_at' => $this->start_at,
             'end_at' => $this->end_at,
             'photographer' => $this->photographer,

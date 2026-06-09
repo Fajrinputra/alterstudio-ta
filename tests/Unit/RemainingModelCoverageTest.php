@@ -2,10 +2,15 @@
 
 namespace Tests\Unit;
 
+use App\Enums\Role;
 use App\Models\Booking;
+use App\Models\LandingHeroSlide;
 use App\Models\Project;
+use App\Models\ProjectSchedule;
+use App\Models\ProjectScheduleUser;
 use App\Models\ServicePackage;
 use App\Models\StudioLocation;
+use App\Models\StudioRoom;
 use App\Models\User;
 use Tests\TestCase;
 
@@ -16,12 +21,22 @@ class RemainingModelCoverageTest extends TestCase
         $booking = new Booking();
         $project = new Project();
         $location = new StudioLocation();
+        $slide = new LandingHeroSlide();
+        $schedule = new ProjectSchedule();
+        $scheduleUser = new ProjectScheduleUser();
         $user = new User();
 
         $this->assertSame('studio_location_id', $booking->studioLocation()->getForeignKeyName());
         $this->assertSame('studio_room_id', $booking->studioRoom()->getForeignKeyName());
         $this->assertSame('project_id', $project->selections()->getForeignKeyName());
         $this->assertSame('studio_location_id', $location->bookings()->getForeignKeyName());
+        $this->assertSame('user_id', $slide->creator()->getForeignKeyName());
+        $this->assertSame('user_id', $slide->updater()->getForeignKeyName());
+        $this->assertSame('project_id', $schedule->project()->getForeignKeyName());
+        $this->assertSame('studio_location_id', $schedule->studioLocation()->getForeignKeyName());
+        $this->assertSame('studio_room_id', $schedule->studioRoom()->getForeignKeyName());
+        $this->assertSame('scheduled_by', $schedule->scheduler()->getForeignKeyName());
+        $this->assertSame('project_schedule_id', $scheduleUser->schedule()->getForeignKeyName());
         $this->assertSame('user_id', $user->schedulesAsPhotographer()->getForeignKeyName());
         $this->assertSame('user_id', $user->schedulesAsEditor()->getForeignKeyName());
     }
@@ -80,5 +95,49 @@ class RemainingModelCoverageTest extends TestCase
         ]);
 
         $this->assertSame(['locations/photo.jpg', 'locations/string.jpg'], $location->photo_gallery);
+    }
+
+    public function test_remaining_model_accessors_and_alias_mutators_are_exposed(): void
+    {
+        $slide = new LandingHeroSlide();
+        $slide->created_by = 12;
+        $this->assertSame(12, $slide->user_id);
+        $slide->updated_by = 15;
+        $this->assertSame(15, $slide->user_id);
+
+        $booking = new Booking();
+        $booking->setRawAttributes(['location' => 'Cabang Lama - Studio Lama']);
+        $this->assertSame('Cabang Lama - Studio Lama', $booking->location);
+
+        $bookingWithRelations = new Booking();
+        $bookingWithRelations->setRelation('studioLocation', new StudioLocation(['name' => 'Cabang Baru']));
+        $bookingWithRelations->setRelation('studioRoom', new StudioRoom(['name' => 'Studio A']));
+        $this->assertSame('Cabang Baru - Studio A', $bookingWithRelations->location);
+
+        $photographer = new User(['name' => 'Fotografer Test']);
+        $photographer->id = 21;
+        $editor = new User(['name' => 'Editor Test']);
+        $editor->id = 22;
+
+        $photographerAssignment = new ProjectScheduleUser([
+            'user_id' => $photographer->id,
+            'role' => Role::PHOTOGRAPHER->value,
+        ]);
+        $photographerAssignment->setRelation('user', $photographer);
+
+        $editorAssignment = new ProjectScheduleUser([
+            'user_id' => $editor->id,
+            'role' => Role::EDITOR->value,
+        ]);
+        $editorAssignment->setRelation('user', $editor);
+
+        $schedule = new ProjectSchedule();
+        $schedule->setRelation('photographerAssignment', $photographerAssignment);
+        $schedule->setRelation('editorAssignment', $editorAssignment);
+
+        $this->assertSame(21, $schedule->photographer_id);
+        $this->assertSame(22, $schedule->editor_id);
+        $this->assertSame($photographer, $schedule->photographer);
+        $this->assertSame($editor, $schedule->editor);
     }
 }

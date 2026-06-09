@@ -1,0 +1,61 @@
+@startuml
+title SD-B19 Hapus Paket Layanan
+
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam BoxPadding 4
+skinparam sequence {
+    ArrowColor #333333
+    LifeLineBorderColor #999999
+    LifeLineBackgroundColor white
+    ParticipantBorderColor #999999
+    ParticipantBackgroundColor #ECEEF8
+    ParticipantFontColor #111111
+    ActorBorderColor #999999
+    ActorFontColor #111111
+    GroupBorderColor #111111
+    GroupBackgroundColor transparent
+}
+
+actor "Admin" as Admin
+boundary "Halaman Detail Paket" as HalamanDetail
+boundary "Modal Konfirmasi Hapus" as ModalHapus
+control "ServicePackageController" as PackageController
+entity "ServicePackages Model" as ServicePackage
+entity "Bookings Model" as Booking
+entity "Projects Model" as Project
+
+Admin -> HalamanDetail : Klik paket yang ingin dihapus
+HalamanDetail -> ModalHapus : tampilkan konfirmasi hapus
+ModalHapus --> Admin : modal konfirmasi tampil
+
+alt Konfirmasi dibatalkan
+    Admin -> ModalHapus : batal hapus
+    ModalHapus --> HalamanDetail : tutup modal
+    HalamanDetail --> Admin : paket tidak dihapus
+else Konfirmasi hapus
+    Admin -> ModalHapus : konfirmasi hapus
+    ModalHapus -> PackageController : destroy(packageId)
+    PackageController -> PackageController : validasi otorisasi
+    PackageController -> Booking : cek booking aktif yang memakai paket
+    Booking --> PackageController : data booking aktif / kosong
+    PackageController -> Project : cek project belum final
+    Project --> PackageController : data project aktif / kosong
+
+    alt Paket tidak dipakai transaksi aktif
+        PackageController -> ServicePackage : delete atau soft delete paket
+        ServicePackage --> PackageController : paket terhapus
+        PackageController --> HalamanDetail : redirect dengan pesan berhasil
+        HalamanDetail --> Admin : paket terhapus
+    else Paket masih dipakai booking aktif/project belum final
+        PackageController -> ServicePackage : update is_active = false
+        ServicePackage --> PackageController : paket dinonaktifkan
+        PackageController --> HalamanDetail : tampilkan pesan paket dinonaktifkan
+        HalamanDetail --> Admin : hapus ditolak, paket disembunyikan
+    else Gagal proses
+        PackageController --> HalamanDetail : tampilkan pesan error
+        HalamanDetail --> Admin : proses gagal
+    end
+end
+
+@enduml

@@ -1,92 +1,70 @@
 <x-guest-layout>
-    <div class="relative bg-[#FAF6F0] min-h-screen flex items-center justify-center p-4">
-        
-        <!-- Subtle Background -->
-        <div class="absolute inset-0 pointer-events-none opacity-30 bg-[radial-gradient(circle_at_20%_30%,rgba(212,160,23,0.08),transparent_50%),radial-gradient(circle_at_80%_70%,rgba(224,122,95,0.08),transparent_50%)]"></div>
+    <div class="relative flex h-screen w-full items-center justify-center overflow-hidden bg-cover bg-center p-4"
+         style="background-image: url('{{ asset('images/auth/bg-forgot-password.jpg') }}');">
 
-        <div class="w-full max-w-md">
-            
-            <!-- Logo -->
-            <div class="text-center mb-8">
-                <a href="/" class="inline-flex items-center gap-3 mx-auto">
-                    <div class="relative">
-                        <div class="absolute inset-0 bg-gradient-to-br from-[#D4A017] to-[#E07A5F] rounded-2xl blur-xl opacity-40"></div>
-                        <div class="relative h-14 w-14 rounded-2xl bg-gradient-to-br from-[#D4A017] to-[#E07A5F] flex items-center justify-center text-white font-black text-2xl shadow-inner">
-                            A
-                        </div>
-                    </div>
-                    <div class="text-left leading-tight">
-                        <p class="font-display text-2xl text-[#3F2B1B]">Alter Studio</p>
+        <div class="absolute inset-0 bg-black/35 pointer-events-none"></div>
+
+        <div class="relative z-10 w-full max-w-md">
+            <div class="rounded-3xl border border-[#EDE0D0] bg-white p-6 shadow-2xl sm:p-8">
+                <a href="/" class="mx-auto mb-7 block w-fit text-center leading-tight">
+                    <div>
+                        <p class="font-display text-3xl font-bold text-[#3F2B1B]">Alter Studio</p>
+                        <span class="mx-auto mt-2 block h-1 w-16 rounded-full bg-gradient-to-r from-[#D4A017] to-[#E07A5F]"></span>
                         <p class="text-xs text-[#8B7359]">Premium Photography</p>
                     </div>
                 </a>
-            </div>
 
-            <!-- Card -->
-            <div class="bg-white rounded-3xl shadow-2xl border border-[#EDE0D0] p-8 sm:p-10">
-                <div class="text-center mb-8">
-                    <div class="mx-auto mb-5 flex items-center justify-center h-16 w-16 rounded-2xl bg-gradient-to-br from-[#D4A017] to-[#E07A5F] text-white">
-                        <i class="fa-solid fa-envelope text-3xl"></i>
+                <div class="mb-6 text-center">
+                    <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[#D4A017] to-[#E07A5F] text-white shadow-lg">
+                        <i class="fa-solid fa-envelope text-2xl"></i>
                     </div>
                     <h2 class="font-display text-3xl font-semibold text-[#3F2B1B]">Lupa Password?</h2>
-                    <p class="text-[#7A5B3A] mt-3 text-[15px] leading-relaxed">
+                    <p class="mt-2 text-sm leading-6 text-[#7A5B3A]">
                         Masukkan alamat email Anda dan kami akan mengirimkan tautan untuk mereset password.
                     </p>
                 </div>
 
-                <!-- Session Status -->
-                <x-auth-session-status class="mb-6 text-emerald-700 bg-emerald-50 border border-emerald-100 p-4 rounded-2xl text-sm" :status="session('status')" />
+                <x-auth-session-status class="mb-5 rounded-2xl border border-emerald-100 bg-emerald-50 p-3 text-sm text-emerald-700" :status="session('status')" />
 
-                <form method="POST" action="{{ route('password.email') }}" class="space-y-6">
+                <form method="POST" action="{{ route('password.email') }}" class="space-y-5">
                     @csrf
 
-                    <!-- Email -->
-                    <div class="space-y-2">
+                    <div class="space-y-1.5">
                         <label for="email" class="block text-sm font-medium text-[#5C432C]">Alamat Email</label>
                         <div class="relative">
                             <span class="absolute left-4 top-1/2 -translate-y-1/2 text-[#D4A017]">
                                 <i class="fa-solid fa-envelope"></i>
                             </span>
                             <x-text-input id="email"
-                                class="block w-full pl-11 pr-4 py-4 bg-[#FAF6F0] border border-[#E1D3C5] rounded-2xl text-[#3F2B1B] placeholder:text-[#9C7C5E] focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/30 transition-all"
+                                class="block w-full rounded-2xl border border-[#E1D3C5] bg-[#FAF6F0] py-3 pl-11 pr-4 text-[#3F2B1B] placeholder:text-[#9C7C5E] focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/30"
                                 type="email"
                                 name="email"
                                 :value="old('email')"
                                 required autofocus
                                 placeholder="nama@email.com" />
                         </div>
-                        <x-input-error :messages="$errors->get('email')" class="text-rose-500 text-sm" />
+                        <x-input-error :messages="$errors->get('email')" class="text-sm text-rose-500" />
                     </div>
 
-                    <!-- Submit Button -->
                     <button type="submit"
-                            class="w-full py-4 rounded-2xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] text-white font-semibold text-lg shadow-lg shadow-[#D4A017]/30 hover:shadow-xl hover:-translate-y-0.5 transition-all flex items-center justify-center gap-3">
+                            class="flex w-full items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] py-3 text-base font-semibold text-white shadow-lg shadow-[#D4A017]/30 transition-all hover:-translate-y-0.5 hover:shadow-xl">
                         <i class="fa-solid fa-paper-plane"></i>
                         Kirim Tautan Reset Password
                     </button>
                 </form>
 
-                <!-- Links -->
-                <div class="text-center mt-8 space-y-3">
-                    <a href="{{ route('login') }}" 
-                       class="text-[#D4A017] hover:text-[#E07A5F] font-medium flex items-center justify-center gap-2 transition-colors">
+                <div class="mt-6 space-y-3 text-center">
+                    <a href="{{ route('login') }}"
+                       class="inline-flex items-center justify-center gap-2 text-sm font-medium text-[#D4A017] transition-colors hover:text-[#E07A5F]">
                         <i class="fa-solid fa-arrow-left"></i>
                         Kembali ke Halaman Login
                     </a>
-                    
+
                     <p class="text-sm text-[#7A5B3A]">
-                        Belum punya akun? 
-                        <a href="{{ route('register') }}" class="text-[#D4A017] font-semibold hover:text-[#E07A5F]">Daftar sekarang</a>
+                        Belum punya akun?
+                        <a href="{{ route('register') }}" class="font-semibold text-[#D4A017] hover:text-[#E07A5F]">Daftar sekarang</a>
                     </p>
                 </div>
-            </div>
-
-            <!-- Back to Home -->
-            <div class="text-center mt-6">
-                <a href="/" class="text-sm text-[#8B7359] hover:text-[#D4A017] transition-colors inline-flex items-center gap-2">
-                    <i class="fa-solid fa-house"></i>
-                    Kembali ke Beranda
-                </a>
             </div>
         </div>
     </div>

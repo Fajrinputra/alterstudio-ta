@@ -1,0 +1,48 @@
+@startuml
+title SD-B04 Register
+
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam BoxPadding 4
+skinparam sequence {
+    ArrowColor #333333
+    LifeLineBorderColor #999999
+    LifeLineBackgroundColor white
+    ParticipantBorderColor #999999
+    ParticipantBackgroundColor #ECEEF8
+    ParticipantFontColor #111111
+    ActorBorderColor #999999
+    ActorFontColor #111111
+    GroupBorderColor #111111
+    GroupBackgroundColor transparent
+}
+
+actor "Klien" as Klien
+boundary "Halaman Register" as HalamanRegister
+boundary "Form Register" as FormRegister
+control "RegisteredUserController" as RegisterController
+control "EmailVerificationService" as EmailVerificationService
+entity "Users Model" as User
+
+Klien -> HalamanRegister : Mengklik menu daftar
+HalamanRegister --> Klien : Form register tampil
+Klien -> FormRegister : Mengisi data akun
+Klien -> FormRegister : Klik daftar
+FormRegister -> RegisterController : store(data register)
+RegisterController -> RegisterController : validasi nama, email,\npassword, konfirmasi
+
+alt Data valid
+    RegisterController -> User : create user role CLIENT
+    User --> RegisterController : user baru
+    RegisterController -> EmailVerificationService : kirim email verifikasi
+    EmailVerificationService -> EmailVerificationService : send verification link
+    EmailVerificationService --> EmailVerificationService : email terkirim
+    EmailVerificationService --> RegisterController : notifikasi terkirim
+    RegisterController --> HalamanRegister : redirect halaman login
+    HalamanRegister --> Klien : akun berhasil dibuat
+else Data tidak valid / email sudah terdaftar
+    RegisterController --> FormRegister : tampilkan error validasi
+    FormRegister --> Klien : registrasi ditolak
+end
+
+@enduml
