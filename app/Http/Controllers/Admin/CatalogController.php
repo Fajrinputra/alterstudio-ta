@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ServiceCategory;
 use App\Models\ServicePackage;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * Kelola kategori/paket katalog dari sisi admin/manager.
@@ -96,6 +97,8 @@ class CatalogController extends Controller
             }
         }
 
+        Cache::forget('landing.page.data.v2');
+
         return redirect()->route('admin.catalog')->with('status', 'Katalog dan paket tersimpan.');
     }
 
@@ -158,6 +161,8 @@ class CatalogController extends Controller
             }
             $this->syncGalleryItems($package, array_slice($paths, 0, 20));
         }
+
+        Cache::forget('landing.page.data.v2');
 
         return redirect()->route('admin.catalog.packages', $category)->with('status', 'Paket ditambahkan.');
     }

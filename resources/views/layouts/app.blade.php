@@ -14,7 +14,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     {{-- Font Awesome --}}
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
     
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>[x-cloak]{display:none!important;}</style>
@@ -92,7 +93,7 @@
         <div x-data="{ faqOpen: false }" @keydown.escape.window="faqOpen = false">
             <button type="button"
                     @click="faqOpen = true"
-                    aria-label="Buka rules pemesanan"
+                    aria-label="Buka panduan pemesanan"
                     class="fixed bottom-24 right-4 z-50 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#D4A017] via-[#E0912F] to-[#E07A5F] text-white shadow-xl ring-4 ring-white/50 transition-all duration-300 hover:scale-105 active:scale-95 sm:right-6 sm:h-14 sm:w-14">
                 <i class="fa-solid fa-circle-question text-xl sm:text-2xl"></i>
             </button>
@@ -101,7 +102,7 @@
                 <button type="button"
                         class="absolute inset-0 bg-[#3F2B1B]/45 backdrop-blur-sm"
                         @click="faqOpen = false"
-                        aria-label="Tutup rules"></button>
+                        aria-label="Tutup panduan"></button>
 
                 <section x-show="faqOpen"
                          x-transition
@@ -109,48 +110,45 @@
                     <button type="button"
                             @click="faqOpen = false"
                             class="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-xl text-[#8B7359] transition hover:bg-[#FAF6F0] hover:text-[#3F2B1B]"
-                            aria-label="Tutup rules">
+                            aria-label="Tutup panduan">
                         <i class="fa-solid fa-xmark text-lg"></i>
                     </button>
 
                     <div class="pr-12">
                         <p class="inline-flex items-center gap-2 rounded-2xl bg-[#FAF6F0] px-4 py-2 text-xs font-semibold uppercase tracking-wider text-[#8B7359]">
                             <i class="fa-solid fa-circle-info text-[#D4A017]"></i>
-                            Rules
+                            Panduan
                         </p>
-                        <h2 class="mt-4 font-display text-2xl font-semibold text-[#3F2B1B]">Panduan Pemesanan Alter Studio</h2>
+                        <h2 class="mt-4 font-display text-2xl font-semibold text-[#3F2B1B]">Tata Cara dan Persyaratan Pemesanan</h2>
                         <p class="mt-3 text-sm leading-6 text-[#7A5B3A]">
-                            Pemesanan akan masuk sebagai pengajuan terlebih dahulu dan perlu dikonfirmasi admin atau manajer sebelum pembayaran dibuka. Setelah dikonfirmasi, klien dapat memilih pembayaran DP sebesar 10% dari total pemesanan atau langsung lunas. Jika memilih DP, sisa pembayaran wajib dilunasi sebelum proses pasca-produksi dapat berjalan.
+                            Panduan ini berisi langkah pemesanan dan syarat penting agar proses foto, pembayaran, dan pengambilan hasil berjalan lancar.
                         </p>
                     </div>
 
                     <div class="mt-6 space-y-4 text-sm leading-6 text-[#5C432C]">
                         <div class="rounded-2xl border border-[#EDE0D0] bg-[#FAF6F0] p-4">
-                            <p class="font-semibold text-[#3F2B1B]">Aturan Jadwal</p>
-                            <p class="mt-2">
-                                Pilihan jam mengikuti durasi paket, add-on tambah waktu, jeda antar sesi, kapasitas ruangan cabang, dan jam operasional studio. Untuk pemesanan di hari yang sama, jam yang sudah lewat tidak dapat dipilih.
-                            </p>
+                            <p class="font-semibold text-[#3F2B1B]">1. Pilih Layanan dan Jadwal</p>
+                            <p class="mt-2">Pilih paket, cabang studio, ruangan, tanggal, jam, dan add-on yang dibutuhkan. Sistem hanya menampilkan slot yang masih tersedia sesuai durasi paket, tambahan waktu, jeda antar sesi, dan jam operasional studio.</p>
                         </div>
 
                         <div class="rounded-2xl border border-[#EDE0D0] bg-[#FAF6F0] p-4">
-                            <p class="font-semibold text-[#3F2B1B]">Aturan Pembayaran</p>
-                            <p class="mt-2">
-                                Pembayaran DP menandakan pemesanan sudah diamankan, tetapi belum dianggap lunas. Admin dapat menandai pelunasan jika sisa pembayaran dibayar di lokasi. Pemesanan yang sudah DP tidak dapat dibatalkan dari aksi admin biasa.
-                            </p>
+                            <p class="font-semibold text-[#3F2B1B]">2. Tunggu Konfirmasi</p>
+                            <p class="mt-2">Pemesanan yang dikirim akan berstatus diajukan. Admin atau manajer akan memeriksa pemesanan terlebih dahulu sebelum pembayaran dibuka.</p>
                         </div>
 
                         <div class="rounded-2xl border border-[#EDE0D0] bg-[#FAF6F0] p-4">
-                            <p class="font-semibold text-[#3F2B1B]">Aturan Pasca-Produksi</p>
-                            <p class="mt-2">
-                                Fotografer baru dapat membagikan link Google Drive foto mentah setelah pemesanan terjadwal dan pembayaran sudah lunas. Link Drive berlaku selama 3 hari, sehingga klien disarankan segera membuka folder dan mencatat kode foto yang ingin diedit.
-                            </p>
+                            <p class="font-semibold text-[#3F2B1B]">3. Lakukan Pembayaran</p>
+                            <p class="mt-2">Setelah dikonfirmasi, Anda dapat membayar DP sebesar 10% atau langsung lunas. Jika memilih DP, sisa pembayaran wajib dilunasi sebelum proses pasca-produksi dan pembagian link foto dapat dilanjutkan.</p>
                         </div>
 
                         <div class="rounded-2xl border border-[#EDE0D0] bg-[#FAF6F0] p-4">
-                            <p class="font-semibold text-[#3F2B1B]">Aturan Edit</p>
-                            <p class="mt-2">
-                                Klien dapat mengirim maksimal 10 kode foto beserta deskripsi permintaan edit. Pastikan kode foto dan deskripsi edit ditulis dengan jelas karena permintaan akan diproses sebagai acuan hasil final.
-                            </p>
+                            <p class="font-semibold text-[#3F2B1B]">4. Foto Mentah dan Permintaan Edit</p>
+                            <p class="mt-2">Link Google Drive foto mentah hanya dapat dibuka setelah pembayaran lunas dan berlaku selama 3 hari. Pilih maksimal 10 kode foto, lalu tulis deskripsi edit dengan jelas agar editor memahami permintaan Anda.</p>
+                        </div>
+
+                        <div class="rounded-2xl border border-[#EDE0D0] bg-[#FAF6F0] p-4">
+                            <p class="font-semibold text-[#3F2B1B]">5. Syarat Penting</p>
+                            <p class="mt-2">Tanggal pemesanan maksimal 1 bulan dari hari ini dan tidak boleh memilih tanggal yang sudah lewat. Slot pada hari yang sama otomatis disembunyikan jika jamnya sudah berlalu.</p>
                         </div>
                     </div>
                 </section>

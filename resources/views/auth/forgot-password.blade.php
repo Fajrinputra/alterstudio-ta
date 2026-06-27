@@ -10,7 +10,7 @@
                     <div>
                         <p class="font-display text-3xl font-bold text-[#3F2B1B]">Alter Studio</p>
                         <span class="mx-auto mt-2 block h-1 w-16 rounded-full bg-gradient-to-r from-[#D4A017] to-[#E07A5F]"></span>
-                        <p class="text-xs text-[#8B7359]">Premium Photography</p>
+                        <p class="text-xs text-[#8B7359]">Studio Fotografi Premium</p>
                     </div>
                 </a>
 
@@ -18,9 +18,9 @@
                     <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[#D4A017] to-[#E07A5F] text-white shadow-lg">
                         <i class="fa-solid fa-envelope text-2xl"></i>
                     </div>
-                    <h2 class="font-display text-3xl font-semibold text-[#3F2B1B]">Lupa Password?</h2>
+                    <h2 class="font-display text-3xl font-semibold text-[#3F2B1B]">Lupa Kata Sandi?</h2>
                     <p class="mt-2 text-sm leading-6 text-[#7A5B3A]">
-                        Masukkan alamat email Anda dan kami akan mengirimkan tautan untuk mereset password.
+                        Masukkan alamat email Anda dan kami akan mengirimkan tautan untuk mengatur ulang kata sandi.
                     </p>
                 </div>
 
@@ -49,7 +49,7 @@
                     <button type="submit"
                             class="flex w-full items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] py-3 text-base font-semibold text-white shadow-lg shadow-[#D4A017]/30 transition-all hover:-translate-y-0.5 hover:shadow-xl">
                         <i class="fa-solid fa-paper-plane"></i>
-                        Kirim Tautan Reset Password
+                        Kirim Tautan Atur Ulang
                     </button>
                 </form>
 

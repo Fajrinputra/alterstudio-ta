@@ -22,70 +22,111 @@
 
             {{-- ==================== CLIENT ==================== --}}
             @if($role === Role::CLIENT)
-                <!-- Welcome Banner -->
-                <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#D4A017] via-[#E07A5F] to-[#B56D3E] p-5 text-white shadow-2xl sm:p-8 lg:p-10">
-                    <div class="absolute -right-10 -top-10 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
-                    <div class="absolute -left-12 bottom-6 w-56 h-56 bg-black/10 rounded-full blur-3xl"></div>
-                    
-                    <div class="relative z-10 flex flex-col lg:flex-row lg:items-end gap-6">
-                        <div class="flex-1">
-                            <div class="mb-4 inline-flex items-center gap-2 rounded-3xl bg-white/20 px-4 py-2 text-xs backdrop-blur-md sm:px-5 sm:text-sm">
-                                <i class="fa-solid fa-sparkles"></i>
+                @php
+                    $metrics = $data['metrics'] ?? [];
+
+                    $projectStatusLabels = [
+                        'DRAFT' => 'Belum Terjadwal',
+                        'SCHEDULED' => 'Sesi Terjadwal',
+                        'SHOOT_DONE' => 'Foto Mentah Tersedia',
+                        'EDITING' => 'Proses Editing',
+                        'FINAL' => 'Hasil Final Siap',
+                    ];
+
+                    $projectStatusColors = [
+                        'DRAFT' => 'bg-slate-100 text-slate-700 border-slate-200',
+                        'SCHEDULED' => 'bg-sky-100 text-sky-700 border-sky-200',
+                        'SHOOT_DONE' => 'bg-purple-100 text-purple-700 border-purple-200',
+                        'EDITING' => 'bg-orange-100 text-orange-700 border-orange-200',
+                        'FINAL' => 'bg-emerald-100 text-emerald-700 border-emerald-200',
+                    ];
+                @endphp
+
+                <section class="grid grid-cols-1 gap-5 lg:grid-cols-[1.15fr_0.85fr] lg:gap-8">
+                    <div class="relative overflow-hidden rounded-3xl border border-[#EDE0D0] bg-gradient-to-br from-[#FFF8ED] via-white to-[#F8EFE2] p-6 shadow-xl sm:p-8">
+                        <div class="absolute -right-16 -top-16 h-40 w-40 rounded-full bg-[#D4A017]/20 blur-3xl"></div>
+                        <div class="absolute -bottom-16 -left-16 h-40 w-40 rounded-full bg-[#E57B5F]/20 blur-3xl"></div>
+
+                        <div class="relative z-10">
+                            <p class="mb-2 text-sm font-medium uppercase tracking-[0.18em] text-[#8B7359]">
                                 Selamat datang kembali!
-                            </div>
-                            <h3 class="mb-3 font-display text-3xl font-bold leading-tight tracking-tight sm:text-5xl sm:leading-none sm:tracking-tighter">
+                            </p>
+
+                            <h3 class="font-display text-3xl font-semibold text-[#3F2B1B] sm:text-4xl">
                                 Siap abadikan momen berikutnya?
                             </h3>
-                            <p class="max-w-md text-sm text-white/90 sm:text-xl">
+
+                            <p class="mt-3 max-w-xl text-sm leading-relaxed text-[#7A5B3A] sm:text-base">
                                 Kelola pemesanan, lihat progress foto, dan akses hasil akhir di Drive dengan mudah.
                             </p>
-                        </div>
-                        <div>
-                            <a href="{{ route('bookings.create') }}" 
-                               class="inline-flex w-full items-center justify-center gap-3 rounded-3xl bg-white px-6 py-3.5 font-semibold text-[#3F2B1B] shadow-xl transition-transform hover:scale-105 sm:w-auto sm:px-8 sm:py-4">
-                                <i class="fa-solid fa-calendar-plus"></i>
+
+                            <a href="{{ route('bookings.create') }}"
+                            class="mt-6 inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-[#D4A017] to-[#E57B5F] px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-[#D4A017]/20 transition-all hover:-translate-y-0.5 hover:shadow-xl">
+                                <i class="fa-solid fa-plus"></i>
                                 Pemesanan Baru
                             </a>
                         </div>
                     </div>
-                </div>
 
-                <!-- Stats -->
-                <section>
-                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
-                        @php $metrics = $data['metrics'] ?? []; @endphp
-                        <x-stat-card label="Total Pemesanan" :value="$metrics['bookings'] ?? 0" />
-                        <x-stat-card label="Menunggu Tinjauan / Pembayaran" :value="$metrics['waiting_payment'] ?? 0" color="amber" />
-                        <x-stat-card label="Sedang Berjalan" :value="$metrics['in_progress'] ?? 0" color="blue" />
-                        <x-stat-card label="Final Tersedia" :value="$metrics['final_ready'] ?? 0" color="emerald" />
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-1">
+                        <x-stat-card label="Total Pemesanan" :value="$metrics['bookings'] ?? 0" icon="receipt" />
+                        <x-stat-card label="Project Final" :value="$metrics['projects_final'] ?? 0" color="emerald" icon="circle-check" />
                     </div>
                 </section>
 
                 <!-- Recent Bookings -->
-                <section class="bg-white rounded-3xl border border-[#EDE0D0] shadow-xl overflow-hidden">
+                <section class="overflow-hidden rounded-3xl border border-[#EDE0D0] bg-white shadow-xl">
                     <div class="border-b border-[#EDE0D0] bg-gradient-to-r from-[#FAF6F0] to-white px-5 py-4 sm:px-8 sm:py-6">
-                        <h3 class="font-display text-2xl font-semibold text-[#3F2B1B] sm:text-3xl">Pemesanan Terbaru</h3>
-                        <p class="text-[#7A5B3A]">5 pemesanan terakhir Anda</p>
+                        <h3 class="font-display text-2xl font-semibold text-[#3F2B1B] sm:text-3xl">
+                            Pemesanan Terbaru
+                        </h3>
+                        <p class="text-[#7A5B3A]">
+                            5 pemesanan terakhir Anda
+                        </p>
                     </div>
-                    
+
+                    {{-- Tampilan mobile --}}
                     <div class="space-y-4 p-4 lg:hidden">
                         @forelse($data['latest'] ?? [] as $booking)
+                            @php
+                                $projectStatus = $booking->project?->status;
+                                $projectLabel = $projectStatusLabels[$projectStatus] ?? '-';
+                                $projectColor = $projectStatusColors[$projectStatus] ?? 'bg-slate-100 text-slate-700 border-slate-200';
+                            @endphp
+
                             <article class="rounded-3xl border border-[#EDE0D0] bg-[#FAF6F0] px-4 py-4">
                                 <div class="flex items-start justify-between gap-3">
                                     <div>
-                                        <p class="text-[11px] uppercase tracking-wide text-[#8B7359]">Pemesanan {{ $loop->iteration }}</p>
-                                        <h4 class="mt-1 text-sm font-semibold text-[#3F2B1B]">{{ $booking->package->name ?? '-' }}</h4>
+                                        <p class="text-[11px] uppercase tracking-wide text-[#8B7359]">
+                                            Pemesanan {{ $loop->iteration }}
+                                        </p>
+                                        <h4 class="mt-1 text-sm font-semibold text-[#3F2B1B]">
+                                            {{ $booking->package->name ?? '-' }}
+                                        </h4>
                                     </div>
+
                                     <x-status-badge :status="$booking->status" :confirmed-at="$booking->confirmed_at" />
                                 </div>
+
                                 <dl class="mt-4 grid grid-cols-2 gap-3 text-sm">
                                     <div class="rounded-2xl bg-white px-3 py-2.5">
-                                        <dt class="text-[11px] uppercase tracking-wide text-[#8B7359]">Tanggal</dt>
-                                        <dd class="mt-1 font-medium text-[#3F2B1B]">{{ $booking->booking_date->translatedFormat('d M Y') }}</dd>
+                                        <dt class="text-[11px] uppercase tracking-wide text-[#8B7359]">
+                                            Tanggal
+                                        </dt>
+                                        <dd class="mt-1 font-medium text-[#3F2B1B]">
+                                            {{ $booking->booking_date->translatedFormat('d M Y') }}
+                                        </dd>
                                     </div>
+
                                     <div class="rounded-2xl bg-white px-3 py-2.5">
-                                        <dt class="text-[11px] uppercase tracking-wide text-[#8B7359]">Project</dt>
-                                        <dd class="mt-1 font-medium text-[#3F2B1B]">{{ $booking->project?->status ?? '-' }}</dd>
+                                        <dt class="text-[11px] uppercase tracking-wide text-[#8B7359]">
+                                            Project
+                                        </dt>
+                                        <dd class="mt-1">
+                                            <span class="inline-flex items-center justify-center rounded-full border px-3 py-1 text-xs font-semibold {{ $projectColor }}">
+                                                {{ $projectLabel }}
+                                            </span>
+                                        </dd>
                                     </div>
                                 </dl>
                             </article>
@@ -97,6 +138,7 @@
                         @endforelse
                     </div>
 
+                    {{-- Tampilan desktop --}}
                     <div class="hidden overflow-x-auto lg:block">
                         <table class="min-w-full table-fixed text-sm">
                             <thead>
@@ -108,16 +150,37 @@
                                     <th class="px-4 py-4 text-center font-bold">Project</th>
                                 </tr>
                             </thead>
+
                             <tbody class="divide-y divide-[#EDE0D0]">
                                 @forelse($data['latest'] ?? [] as $booking)
-                                    <tr class="text-[#3F2B1B] hover:bg-[#FAF6F0] transition-all">
-                                        <td class="px-4 py-4 text-center font-medium">{{ $loop->iteration }}</td>
-                                        <td class="px-4 py-4 text-center">{{ $booking->booking_date->translatedFormat('d M Y') }}</td>
-                                        <td class="px-4 py-4 text-center">{{ $booking->package->name ?? '-' }}</td>
+                                    @php
+                                        $projectStatus = $booking->project?->status;
+                                        $projectLabel = $projectStatusLabels[$projectStatus] ?? '-';
+                                        $projectColor = $projectStatusColors[$projectStatus] ?? 'bg-slate-100 text-slate-700 border-slate-200';
+                                    @endphp
+
+                                    <tr class="text-[#3F2B1B] transition-all hover:bg-[#FAF6F0]">
+                                        <td class="px-4 py-4 text-center font-medium">
+                                            {{ $loop->iteration }}
+                                        </td>
+
+                                        <td class="px-4 py-4 text-center">
+                                            {{ $booking->booking_date->translatedFormat('d M Y') }}
+                                        </td>
+
+                                        <td class="px-4 py-4 text-center">
+                                            {{ $booking->package->name ?? '-' }}
+                                        </td>
+
                                         <td class="px-4 py-4 text-center">
                                             <x-status-badge :status="$booking->status" :confirmed-at="$booking->confirmed_at" />
                                         </td>
-                                        <td class="px-4 py-4 text-center">{{ $booking->project?->status ?? '-' }}</td>
+
+                                        <td class="px-4 py-4 text-center">
+                                            <span class="inline-flex items-center justify-center rounded-full border px-3 py-1 text-xs font-semibold {{ $projectColor }}">
+                                                {{ $projectLabel }}
+                                            </span>
+                                        </td>
                                     </tr>
                                 @empty
                                     <tr>
@@ -220,6 +283,7 @@
                                 @endforelse
                             </div>
                         </div>
+
                     @elseif($role === Role::MANAGER || $role === Role::OWNER)
                         <div class="bg-white rounded-3xl border border-[#EDE0D0] shadow-xl p-5 sm:p-8">
                             <div class="flex items-center justify-between mb-6">

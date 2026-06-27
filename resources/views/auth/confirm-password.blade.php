@@ -11,7 +11,7 @@
                     <div class="leading-tight">
                         <p class="font-display text-3xl font-bold text-[#3F2B1B]">Alter Studio</p>
                         <span class="mx-auto mt-2 block h-1 w-16 rounded-full bg-gradient-to-r from-[#D4A017] to-[#E07A5F]"></span>
-                        <p class="text-xs text-[#8B7359]">Premium Photography</p>
+                        <p class="text-xs text-[#8B7359]">Studio Fotografi Premium</p>
                     </div>
                 </a>
             </div>
@@ -22,9 +22,9 @@
                     <div class="mx-auto mb-5 flex items-center justify-center h-16 w-16 rounded-2xl bg-gradient-to-br from-[#D4A017] to-[#E07A5F] text-white">
                         <i class="fa-solid fa-lock text-3xl"></i>
                     </div>
-                    <h2 class="font-display text-3xl font-semibold text-[#3F2B1B]">Konfirmasi Password</h2>
+                    <h2 class="font-display text-3xl font-semibold text-[#3F2B1B]">Konfirmasi Kata Sandi</h2>
                     <p class="text-[#7A5B3A] mt-3 text-[15px]">
-                        Ini adalah area aman. Mohon konfirmasi password Anda sebelum melanjutkan.
+                        Ini adalah area aman. Mohon konfirmasi kata sandi Anda sebelum melanjutkan.
                     </p>
                 </div>
 
@@ -33,7 +33,7 @@
 
                     <!-- Password -->
                     <div class="space-y-2">
-                        <label for="password" class="block text-sm font-medium text-[#5C432C]">Password</label>
+                        <label for="password" class="block text-sm font-medium text-[#5C432C]">Kata Sandi</label>
                         <div class="relative">
                             <span class="absolute left-4 top-1/2 -translate-y-1/2 text-[#D4A017]">
                                 <i class="fa-solid fa-key"></i>
@@ -43,7 +43,7 @@
                                 type="password"
                                 name="password"
                                 required autocomplete="current-password"
-                                placeholder="Masukkan password Anda" />
+                                placeholder="Masukkan kata sandi Anda" />
                         </div>
                         <x-input-error :messages="$errors->get('password')" class="text-rose-500 text-sm" />
                     </div>
@@ -52,7 +52,7 @@
                     <button type="submit"
                             class="w-full py-4 rounded-2xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] text-white font-semibold text-lg shadow-lg shadow-[#D4A017]/30 hover:shadow-xl hover:-translate-y-0.5 transition-all flex items-center justify-center gap-3">
                         <i class="fa-solid fa-circle-check"></i>
-                        Konfirmasi Password
+                        Konfirmasi Kata Sandi
                     </button>
                 </form>
 

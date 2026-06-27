@@ -3,8 +3,8 @@
 @if ($status)
     @php
         $messages = [
-            'password-updated-login' => 'Password berhasil diperbarui. Silakan masuk kembali menggunakan password baru.',
-            'password-updated' => 'Password berhasil diperbarui.',
+            'password-updated-login' => 'Kata sandi berhasil diperbarui. Silakan masuk kembali menggunakan kata sandi baru.',
+            'password-updated' => 'Kata sandi berhasil diperbarui.',
         ];
         $displayStatus = $messages[$status] ?? $status;
     @endphp

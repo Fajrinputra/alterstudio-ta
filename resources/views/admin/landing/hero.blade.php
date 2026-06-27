@@ -8,10 +8,10 @@
             <div>
                 <p class="text-sm text-[#8B7359] tracking-[1.5px] uppercase font-medium flex items-center gap-2">
                     <i class="fa-solid fa-image text-[#D4A017]"></i>
-                    Landing Page Management
+                    Pengelolaan Landing Page
                 </p>
                 <h2 class="font-display text-4xl md:text-5xl font-semibold tracking-[-1px] text-[#3F2B1B] mt-1">
-                    Kelola <span class="font-medium bg-gradient-to-r from-[#D4A017] via-[#E07A5F] to-[#D4A017] bg-clip-text text-transparent">Hero Slider</span>
+                    Kelola <span class="font-medium bg-gradient-to-r from-[#D4A017] via-[#E07A5F] to-[#D4A017] bg-clip-text text-transparent">Slide Hero</span>
                 </h2>
             </div>
         </div>
@@ -74,7 +74,7 @@
                                         <label class="inline-flex items-center gap-2 text-sm text-[#7A5B3A]">
                                             <input type="checkbox" name="is_active" value="1" checked 
                                                    class="w-5 h-5 rounded-xl border-[#E1D3C5] text-[#D4A017] focus:ring-[#D4A017]">
-                                            <span class="font-medium">Aktif di Slider</span>
+                                            <span class="font-medium">Tampilkan di Hero</span>
                                         </label>
                                     </div>
                                 </div>
@@ -196,7 +196,7 @@
                                                 <div class="flex gap-3 pt-2">
                                                     <button type="submit"
                                                             class="flex-1 py-3.5 rounded-3xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] text-white font-semibold hover:brightness-110 transition-all">
-                                                        Update Slide
+                                                        Perbarui Slide
                                                     </button>
                                                     
                                                     <button type="button"

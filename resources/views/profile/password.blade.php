@@ -12,7 +12,7 @@
                     Pengaturan Profil
                 </p>
                 <h2 class="font-display text-4xl md:text-5xl font-semibold tracking-[-1px] text-[#3F2B1B]">
-                    Ubah Password
+                    Ubah Kata Sandi
                 </h2>
             </div>
             <a href="{{ route('profile.edit') }}"

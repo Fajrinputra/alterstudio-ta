@@ -11,7 +11,7 @@
                     <div class="leading-tight">
                         <p class="font-display text-3xl font-bold text-[#3F2B1B]">Alter Studio</p>
                         <span class="mx-auto mt-2 block h-1 w-16 rounded-full bg-gradient-to-r from-[#D4A017] to-[#E07A5F]"></span>
-                        <p class="text-xs text-[#8B7359]">Premium Photography</p>
+                        <p class="text-xs text-[#8B7359]">Studio Fotografi Premium</p>
                     </div>
                 </a>
             </div>

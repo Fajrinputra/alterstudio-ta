@@ -10,7 +10,7 @@
                     <div>
                         <p class="font-display text-3xl font-bold text-[#3F2B1B]">Alter Studio</p>
                         <span class="mx-auto mt-2 block h-1 w-16 rounded-full bg-gradient-to-r from-[#D4A017] to-[#E07A5F]"></span>
-                        <p class="text-xs text-[#8B7359]">Premium Photography</p>
+                        <p class="text-xs text-[#8B7359]">Studio Fotografi Premium</p>
                     </div>
                 </a>
 
@@ -18,8 +18,8 @@
                     <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[#D4A017] to-[#E07A5F] text-white shadow-lg">
                         <i class="fa-solid fa-rotate-left text-2xl"></i>
                     </div>
-                    <h2 class="font-display text-3xl font-semibold text-[#3F2B1B]">Reset Password</h2>
-                    <p class="mt-2 text-sm text-[#7A5B3A]">Buat password baru untuk akun Anda</p>
+                    <h2 class="font-display text-3xl font-semibold text-[#3F2B1B]">Atur Ulang Kata Sandi</h2>
+                    <p class="mt-2 text-sm text-[#7A5B3A]">Buat kata sandi baru untuk akun Anda</p>
                 </div>
 
                 <form method="POST" action="{{ route('password.store') }}" class="space-y-4">
@@ -44,7 +44,7 @@
                     </div>
 
                     <div class="space-y-1.5">
-                        <label for="password" class="block text-sm font-medium text-[#5C432C]">Password Baru</label>
+                        <label for="password" class="block text-sm font-medium text-[#5C432C]">Kata Sandi Baru</label>
                         <div class="relative">
                             <span class="absolute left-4 top-1/2 -translate-y-1/2 text-[#D4A017]">
                                 <i class="fa-solid fa-lock"></i>
@@ -60,7 +60,7 @@
                     </div>
 
                     <div class="space-y-1.5">
-                        <label for="password_confirmation" class="block text-sm font-medium text-[#5C432C]">Konfirmasi Password Baru</label>
+                        <label for="password_confirmation" class="block text-sm font-medium text-[#5C432C]">Konfirmasi Kata Sandi Baru</label>
                         <div class="relative">
                             <span class="absolute left-4 top-1/2 -translate-y-1/2 text-[#D4A017]">
                                 <i class="fa-solid fa-lock"></i>
@@ -70,7 +70,7 @@
                                 type="password"
                                 name="password_confirmation"
                                 required autocomplete="new-password"
-                                placeholder="Ketik ulang password" />
+                                placeholder="Ketik ulang kata sandi" />
                         </div>
                         <x-input-error :messages="$errors->get('password_confirmation')" class="text-sm text-rose-500" />
                     </div>
@@ -78,7 +78,7 @@
                     <button type="submit"
                             class="flex w-full items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] py-3 text-base font-semibold text-white shadow-lg shadow-[#D4A017]/30 transition-all hover:-translate-y-0.5 hover:shadow-xl">
                         <i class="fa-solid fa-circle-check"></i>
-                        Reset Password
+                        Simpan Kata Sandi Baru
                     </button>
                 </form>
             </div>

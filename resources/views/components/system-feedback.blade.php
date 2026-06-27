@@ -2,7 +2,7 @@
     $statusMessages = [
         'profile-updated' => 'Profil berhasil diperbarui.',
         'avatar-updated' => 'Foto profil berhasil diperbarui.',
-        'password-updated' => 'Password berhasil diperbarui.',
+        'password-updated' => 'Kata sandi berhasil diperbarui.',
     ];
     $successMessage = session('success')
         ?? session('user_status')

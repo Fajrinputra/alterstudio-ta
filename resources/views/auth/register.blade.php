@@ -14,7 +14,7 @@
                         <div>
                             <p class="font-display text-3xl font-bold tracking-tight text-[#3F2B1B]">Alter Studio</p>
                             <span class="mx-auto mt-2 block h-1 w-16 rounded-full bg-gradient-to-r from-[#D4A017] to-[#E07A5F]"></span>
-                            <p class="text-xs text-[#8B7359]">Premium Photography</p>
+                            <p class="text-xs text-[#8B7359]">Studio Fotografi Premium</p>
                         </div>
                     </div>
 
@@ -22,13 +22,13 @@
                         Buat Akun Baru
                     </h1>
                     <p class="mb-4 text-sm leading-6 text-[#5C432C]">
-                        Daftar untuk memesan jadwal studio, memantau pembayaran, dan mengunduh hasil foto Anda.
+                        Daftar untuk memesan layanan fotografi, memantau pembayaran, dan mengakses link hasil foto Anda.
                     </p>
 
                     <a href="/" 
                        class="mx-auto mb-4 inline-flex items-center gap-2 rounded-2xl border border-[#E1D3C5] px-4 py-2 text-xs font-medium text-[#5C432C] transition-all hover:border-[#D4A017] hover:text-[#D4A017]">
                         <i class="fa-solid fa-arrow-left"></i>
-                        <span>Kembali ke Landing Page</span>
+                        <span>Kembali ke Beranda</span>
                     </a>
 
                     <div class="grid grid-cols-2 gap-2 text-left">
@@ -46,7 +46,7 @@
                         </div>
                         <div class="rounded-2xl border border-[#EDE0D0] bg-[#FAF6F0] p-3">
                             <i class="fa-solid fa-download mb-1.5 text-base text-[#D4A017]"></i>
-                            <p class="text-xs font-medium text-[#3F2B1B]">Download Instan</p>
+                            <p class="text-xs font-medium text-[#3F2B1B]">Akses Link Foto</p>
                         </div>
                     </div>
                 </div>
@@ -127,7 +127,7 @@
 
                         <!-- Password -->
                         <div class="space-y-1">
-                            <label for="password" class="block text-xs font-medium text-[#5C432C]">Password</label>
+                            <label for="password" class="block text-xs font-medium text-[#5C432C]">Kata Sandi</label>
                             <div class="relative">
                                 <span class="absolute left-4 top-1/2 -translate-y-1/2 text-[#D4A017]">
                                     <i class="fa-solid fa-lock"></i>
@@ -148,7 +148,7 @@
 
                         <!-- Confirm Password -->
                         <div class="space-y-1">
-                            <label for="password_confirmation" class="block text-xs font-medium text-[#5C432C]">Konfirmasi Password</label>
+                            <label for="password_confirmation" class="block text-xs font-medium text-[#5C432C]">Konfirmasi Kata Sandi</label>
                             <div class="relative">
                                 <span class="absolute left-4 top-1/2 -translate-y-1/2 text-[#D4A017]">
                                     <i class="fa-solid fa-lock"></i>
@@ -158,7 +158,7 @@
                                     type="password"
                                     name="password_confirmation"
                                     required
-                                    placeholder="Ketik ulang password" />
+                                    placeholder="Ketik ulang kata sandi" />
                                 <button type="button" id="toggle-password-confirmation"
                                     class="absolute right-4 top-1/2 -translate-y-1/2 text-[#8B7359] transition-colors hover:text-[#5C432C]">
                                     <i id="toggle-password-confirmation-icon" class="fa-solid fa-eye"></i>

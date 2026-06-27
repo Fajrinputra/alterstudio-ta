@@ -14,7 +14,7 @@
                         <div>
                             <p class="font-display text-3xl font-bold tracking-tight text-[#3F2B1B]">Alter Studio</p>
                             <span class="mx-auto mt-2 block h-1 w-16 rounded-full bg-gradient-to-r from-[#D4A017] to-[#E07A5F]"></span>
-                            <p class="text-xs text-[#8B7359]">Premium Photography</p>
+                            <p class="text-xs text-[#8B7359]">Studio Fotografi Premium</p>
                         </div>
                     </div>
 
@@ -22,29 +22,29 @@
                         Selamat Datang Kembali
                     </h1>
                     <p class="text-[#5C432C] text-base leading-7 mb-6">
-                        Masuk ke akun Anda untuk mengelola pemesanan, melihat portofolio, dan mengakses fitur studio.
+                        Masuk untuk mengelola pemesanan, memantau pembayaran, melihat jadwal, dan mengakses hasil foto Anda.
                     </p>
 
                     <div class="mx-auto w-full max-w-sm space-y-3.5 text-left text-[#5C432C]">
                         <div class="flex items-start gap-3">
                             <i class="fa-solid fa-circle-check text-[#D4A017] mt-1 text-base"></i>
                             <div>
-                                <p class="text-sm font-medium">Midtrans Integration</p>
-                                <p class="text-xs text-[#7A5B3A]">Pembayaran cepat & aman</p>
+                                <p class="text-sm font-medium">Pembayaran Terintegrasi</p>
+                                <p class="text-xs text-[#7A5B3A]">DP atau lunas melalui Midtrans</p>
                             </div>
                         </div>
                         <div class="flex items-start gap-3">
                             <i class="fa-solid fa-circle-check text-[#D4A017] mt-1 text-base"></i>
                             <div>
-                                <p class="text-sm font-medium">Jadwal Anti-Bentrok</p>
-                                <p class="text-xs text-[#7A5B3A]">Pemesanan kru & studio real-time</p>
+                                <p class="text-sm font-medium">Jadwal Studio Terkelola</p>
+                                <p class="text-xs text-[#7A5B3A]">Cabang, ruangan, dan kru dicek otomatis</p>
                             </div>
                         </div>
                         <div class="flex items-start gap-3">
                             <i class="fa-solid fa-circle-check text-[#D4A017] mt-1 text-base"></i>
                             <div>
-                                <p class="text-sm font-medium">Portofolio & Download</p>
-                                <p class="text-xs text-[#7A5B3A]">Hasil foto siap diunduh kapan saja</p>
+                                <p class="text-sm font-medium">Foto via Google Drive</p>
+                                <p class="text-xs text-[#7A5B3A]">Link foto mentah dan hasil final tersimpan rapi</p>
                             </div>
                         </div>
                     </div>
@@ -70,7 +70,7 @@
                             <a href="/" 
                                class="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-[#E1D3C5] px-4 py-2.5 text-sm font-medium text-[#5C432C] transition-all hover:border-[#D4A017] hover:bg-white hover:text-[#D4A017] sm:w-auto sm:px-5">
                                 <i class="fa-solid fa-arrow-left"></i>
-                                <span>Kembali ke Landing Page</span>
+                                <span>Kembali ke Beranda</span>
                             </a>
                         </div>
 
@@ -100,7 +100,7 @@
 
                             <!-- Password -->
                             <div class="space-y-1.5">
-                                <label for="password" class="block text-sm font-medium text-[#5C432C]">Password</label>
+                                <label for="password" class="block text-sm font-medium text-[#5C432C]">Kata Sandi</label>
                                 <div class="relative">
                                     <span class="absolute left-4 top-1/2 -translate-y-1/2 text-[#D4A017]">
                                         <i class="fa-solid fa-lock"></i>
@@ -132,7 +132,7 @@
                                     <a href="{{ route('password.request') }}" 
                                        class="text-[#D4A017] hover:text-[#E07A5F] font-medium flex items-center gap-1 transition-colors">
                                         <i class="fa-solid fa-key"></i>
-                                        Lupa password?
+                                        Lupa kata sandi?
                                     </a>
                                 @endif
                             </div>

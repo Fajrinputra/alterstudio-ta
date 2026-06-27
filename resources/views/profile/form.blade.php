@@ -19,7 +19,7 @@
                 <a href="{{ route('profile.password') }}"
                    class="inline-flex items-center justify-center gap-3 px-6 py-3 rounded-3xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] text-white font-semibold shadow-xl hover:shadow-2xl hover:-translate-y-0.5 transition-all">
                     <i class="fa-solid fa-key"></i>
-                    Ubah Password
+                    Ubah Kata Sandi
                 </a>
                 <a href="{{ route('profile.edit') }}"
                    class="inline-flex items-center justify-center gap-3 px-6 py-3 rounded-3xl border border-[#E1D3C5] text-[#5C432C] hover:bg-white hover:border-[#D4A017] transition-all">
