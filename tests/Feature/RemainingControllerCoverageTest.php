@@ -221,7 +221,7 @@ class RemainingControllerCoverageTest extends TestCase
                 'name' => 'Owner Update',
                 'email' => $owner->email,
                 'role' => Role::OWNER->value,
-                'no_hp' => '081234567',
+                'no_hp' => '081234567890',
                 'is_active' => false,
             ])
             ->assertRedirect(route('profile.edit'));
@@ -236,7 +236,7 @@ class RemainingControllerCoverageTest extends TestCase
                 'email' => $photographer->email,
                 'role' => Role::PHOTOGRAPHER->value,
                 'password' => 'new-password',
-                'no_hp' => '080000',
+                'no_hp' => '081234567891',
                 'is_active' => true,
             ])
             ->assertRedirect(route('admin.users.index'));

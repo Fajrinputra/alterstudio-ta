@@ -199,6 +199,8 @@ class PaymentControllerEdgeTest extends TestCase
 
     public function test_payment_authorization_and_unknown_webhook_status_are_handled(): void
     {
+        config()->set('services.midtrans.server_key', 'server-key');
+
         $client = User::factory()->create(['role' => Role::CLIENT]);
         $other = User::factory()->create(['role' => Role::CLIENT]);
         $booking = $this->bookingFor($client, Booking::STATUS_WAITING_PAYMENT);
@@ -216,9 +218,23 @@ class PaymentControllerEdgeTest extends TestCase
             'order_id' => 'ORDER-UNKNOWN',
         ]);
 
+        $grossAmount = '500000.00';
+        $signature = hash('sha512', $payment->order_id.'200'.$grossAmount.'server-key');
+
         $this->postJson('/midtrans/webhook', [
             'order_id' => $payment->order_id,
             'transaction_status' => 'mystery',
+            'status_code' => '200',
+            'gross_amount' => $grossAmount,
+            'signature_key' => str_repeat('0', 128),
+        ])->assertForbidden();
+
+        $this->postJson('/midtrans/webhook', [
+            'order_id' => $payment->order_id,
+            'transaction_status' => 'mystery',
+            'status_code' => '200',
+            'gross_amount' => $grossAmount,
+            'signature_key' => $signature,
         ])->assertOk();
 
         $this->assertEquals(Payment::STATUS_PENDING, $payment->fresh()->status);

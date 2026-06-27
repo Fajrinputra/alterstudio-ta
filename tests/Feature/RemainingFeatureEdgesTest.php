@@ -436,9 +436,9 @@ class RemainingFeatureEdgesTest extends TestCase
 
     public function test_remaining_auth_landing_and_kernel_edges_are_covered(): void
     {
-        $admin = User::factory()->create(['role' => Role::ADMIN]);
-        $this->actingAs($admin)
-            ->get(route('admin.landing.hero'))
+        $manager = User::factory()->create(['role' => Role::MANAGER]);
+        $this->actingAs($manager)
+            ->get(route('manager.landing.hero'))
             ->assertOk()
             ->assertViewIs('admin.landing.hero');
 
@@ -581,7 +581,7 @@ class RemainingFeatureEdgesTest extends TestCase
                 'is_active' => false,
             ])
             ->assertRedirect()
-            ->assertSessionHas('status', 'Akun tidak dapat dinonaktifkan karena masih memiliki pemesanan atau project yang belum selesai.');
+            ->assertSessionHas('error', 'Akun tidak dapat dinonaktifkan karena masih memiliki pemesanan atau project yang belum selesai.');
     }
 
     public function test_cleanup_dry_run_processes_inactive_client_without_deleting(): void

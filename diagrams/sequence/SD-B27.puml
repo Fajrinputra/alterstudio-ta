@@ -21,7 +21,6 @@ actor "Klien" as Klien
 boundary "Halaman Project Klien" as HalamanProject
 boundary "Form Permintaan Edit" as FormEdit
 control "PhotoSelectionController" as PhotoSelectionController
-control "NotificationService" as NotificationService
 entity "Projects Model" as Project
 entity "Bookings Model" as Booking
 
@@ -49,8 +48,6 @@ PhotoSelectionController -> PhotoSelectionController : validasi belum pernah dik
 alt Data valid
     PhotoSelectionController -> Project : update edit_photo_codes,\nedit_request_note,\nedit_requested_at,\nstatus EDITING
     Project --> PhotoSelectionController : project diperbarui
-    PhotoSelectionController -> NotificationService : kirim notifikasi ke editor
-    NotificationService --> PhotoSelectionController : notifikasi terkirim
     PhotoSelectionController --> HalamanProject : tampilkan pesan berhasil
     HalamanProject --> Klien : permintaan edit tersimpan
 else Kode foto lebih dari 10

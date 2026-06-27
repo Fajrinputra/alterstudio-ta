@@ -15,17 +15,17 @@ skinparam sequence {
     ActorFontColor #111111
 }
 
-actor "Admin" as Admin
+actor "Manajer" as Manajer
 boundary "Menu Hero Landing Page" as MenuHero
 boundary "Halaman Kelola Hero" as HalamanHero
 control "LandingHeroSlideController" as LandingHeroController
 entity "LandingHeroSlides Model" as LandingHeroSlide
 
-Admin -> MenuHero : Membuka menu kelola hero
+Manajer -> MenuHero : Membuka menu kelola hero
 MenuHero -> LandingHeroController : index()
 LandingHeroController -> LandingHeroSlide : SELECT landing_hero_slides
 LandingHeroSlide --> LandingHeroController : data hero slide
 LandingHeroController --> HalamanHero : tampilkan daftar hero slide
-HalamanHero --> Admin : menu kelola hero tampil
+HalamanHero --> Manajer : menu kelola hero tampil
 
 @enduml

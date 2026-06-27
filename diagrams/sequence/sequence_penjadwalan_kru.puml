@@ -24,7 +24,6 @@ actor "Admin" as Admin
 boundary "Halaman Penjadwalan" as HalamanJadwal
 boundary "Form Penjadwalan" as FormJadwal
 control "ScheduleController" as ScheduleController
-control "NotificationService" as NotificationService
 entity "Projects Model" as Project
 entity "Bookings Model" as Booking
 entity "Users Model" as User
@@ -71,8 +70,6 @@ alt Jadwal valid
     ScheduleController -> Project : simpan jadwal project
     Project -> Project : update fotografer, editor,\nstart_at, end_at, status TERJADWAL
     Project --> ScheduleController : data project
-    ScheduleController -> NotificationService : kirim notifikasi tugas
-    NotificationService --> ScheduleController : notifikasi tugas terkirim ke kru
     ScheduleController --> FormJadwal : redirect dengan pesan berhasil
     FormJadwal --> Admin : Jadwal produksi berhasil disimpan
 else Booking belum DP / lunas

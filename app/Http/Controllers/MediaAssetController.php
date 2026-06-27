@@ -20,7 +20,7 @@ class MediaAssetController extends Controller
     public function store(Request $request, Project $project)
     {
         $validated = $request->validate([
-            'type' => ['required', 'in:' . implode(',', MediaAsset::TYPES)],
+            'type' => ['required', 'in:'.implode(',', MediaAsset::TYPES)],
         ]);
 
         return $validated['type'] === MediaAsset::TYPE_RAW
@@ -45,7 +45,7 @@ class MediaAssetController extends Controller
         }
 
         $data = $request->validate([
-            'raw_drive_url' => ['required', 'url', 'max:2048'],
+            'raw_drive_url' => $this->googleDriveUrlRules(required: true),
         ]);
 
         $project->update([
@@ -77,7 +77,7 @@ class MediaAssetController extends Controller
         }
 
         $data = $request->validate([
-            'final_drive_url' => ['nullable', 'url', 'max:2048'],
+            'final_drive_url' => $this->googleDriveUrlRules(required: false),
             'final_message' => ['nullable', 'string', 'max:1000'],
         ]);
 
@@ -117,7 +117,34 @@ class MediaAssetController extends Controller
             return back()->with('error', 'Link Drive foto mentah belum tersedia.');
         }
 
+        if ($project->isRawDriveExpired()) {
+            return back()->with('error', 'Masa akses link Drive foto mentah sudah kedaluwarsa setelah 3 hari.');
+        }
+
         return redirect()->away($project->raw_drive_url);
+    }
+
+    /** Buka hasil final hanya untuk klien pemilik selama masa akses tiga hari. */
+    public function downloadFinal(Project $project)
+    {
+        $user = request()->user();
+        if ($user->role === Role::CLIENT && $project->booking->client_id !== $user->id) {
+            abort(403);
+        }
+
+        if ($response = $this->ensurePostProductionAllowed(request(), $project)) {
+            return $response;
+        }
+
+        if (! $project->final_drive_url || ! $project->hasFinalDelivery()) {
+            return back()->with('error', 'Link Drive hasil final belum tersedia.');
+        }
+
+        if ($project->isFinalDriveExpired()) {
+            return back()->with('error', 'Masa akses link Drive hasil final sudah kedaluwarsa setelah 3 hari.');
+        }
+
+        return redirect()->away($project->final_drive_url);
     }
 
     protected function ensurePostProductionAllowed(Request $request, Project $project)
@@ -169,5 +196,25 @@ class MediaAssetController extends Controller
                 'message' => $message,
             ])
             : back()->with('success', $message);
+    }
+
+    /** @return array<int, mixed> */
+    protected function googleDriveUrlRules(bool $required): array
+    {
+        return [
+            $required ? 'required' : 'nullable',
+            'url',
+            'max:2048',
+            function (string $attribute, mixed $value, \Closure $fail): void {
+                if (! is_string($value) || $value === '') {
+                    return;
+                }
+
+                $host = strtolower((string) parse_url($value, PHP_URL_HOST));
+                if (! in_array($host, ['drive.google.com', 'www.drive.google.com'], true)) {
+                    $fail('Link harus menggunakan folder Google Drive dari domain drive.google.com.');
+                }
+            },
+        ];
     }
 }

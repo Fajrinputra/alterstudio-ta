@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\Role;
+use App\Models\Booking;
 use App\Models\StudioLocation;
 use App\Models\StudioRoom;
 use App\Models\User;
@@ -159,5 +160,32 @@ class StudioLocationControllerCoverageTest extends TestCase
 
         Storage::disk('public')->assertMissing($currentPhoto);
         $this->assertDatabaseMissing('studio_rooms', ['id' => $room->id]);
+    }
+
+    public function test_location_with_booking_history_is_deactivated_instead_of_deleted(): void
+    {
+        $owner = User::factory()->create(['role' => Role::OWNER]);
+        $location = StudioLocation::create([
+            'name' => 'Cabang Historis',
+            'slug' => 'cabang-historis',
+            'is_active' => true,
+        ]);
+        $room = StudioRoom::create([
+            'studio_location_id' => $location->id,
+            'name' => 'Studio Historis',
+            'is_active' => true,
+        ]);
+        Booking::factory()->create([
+            'studio_location_id' => $location->id,
+            'studio_room_id' => $room->id,
+        ]);
+
+        $this->actingAs($owner)
+            ->delete(route('admin.locations.destroy', $location))
+            ->assertRedirect(route('admin.locations.manage'))
+            ->assertSessionHas('status', 'Cabang sudah digunakan pada pemesanan, sehingga dinonaktifkan untuk menjaga riwayat transaksi.');
+
+        $this->assertDatabaseHas('studio_locations', ['id' => $location->id, 'is_active' => false]);
+        $this->assertDatabaseHas('studio_rooms', ['id' => $room->id, 'is_active' => false]);
     }
 }

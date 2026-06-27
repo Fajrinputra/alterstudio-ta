@@ -1,11 +1,14 @@
 <?php
+
 namespace App\Models;
+
 use App\Enums\Role;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Carbon;
 
 /**
  * Representasi workflow pasca-booking: jadwal, link Drive, permintaan edit, final.
@@ -14,7 +17,10 @@ class Project extends Model
 {
     use HasFactory;
 
+    public const DRIVE_ACCESS_DAYS = 3;
+
     protected ?int $pendingPhotographerId = null;
+
     protected ?int $pendingEditorId = null;
 
     protected $fillable = [
@@ -39,9 +45,13 @@ class Project extends Model
 
     /** Status workflow project. */
     public const STATUS_DRAFT = 'DRAFT';
+
     public const STATUS_SCHEDULED = 'SCHEDULED';
+
     public const STATUS_SHOOT_DONE = 'SHOOT_DONE';
+
     public const STATUS_EDITING = 'EDITING';
+
     public const STATUS_FINAL = 'FINAL';
 
     public const STATUSES = [
@@ -217,6 +227,26 @@ class Project extends Model
     public function hasRawDriveLink(): bool
     {
         return filled($this->raw_drive_url);
+    }
+
+    public function rawDriveExpiresAt(): ?Carbon
+    {
+        return $this->raw_drive_uploaded_at?->copy()->addDays(self::DRIVE_ACCESS_DAYS);
+    }
+
+    public function finalDriveExpiresAt(): ?Carbon
+    {
+        return $this->final_drive_uploaded_at?->copy()->addDays(self::DRIVE_ACCESS_DAYS);
+    }
+
+    public function isRawDriveExpired(): bool
+    {
+        return $this->rawDriveExpiresAt()?->isPast() ?? false;
+    }
+
+    public function isFinalDriveExpired(): bool
+    {
+        return $this->finalDriveExpiresAt()?->isPast() ?? false;
     }
 
     public function hasEditRequest(): bool

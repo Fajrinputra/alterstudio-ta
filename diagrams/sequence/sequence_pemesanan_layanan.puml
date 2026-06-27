@@ -26,7 +26,6 @@ boundary "Detail Paket" as Detail
 boundary "Form Pemesanan" as Form
 control "BookingController" as BookingController
 control "BookingAvailability" as BookingAvailability
-control "NotificationService" as NotificationService
 entity "Bookings Model" as Booking
 entity "Projects Model" as Project
 
@@ -90,8 +89,6 @@ alt Data valid dan slot tersedia
     BookingController -> Project : create project draft
     Project -> Project : simpan project status DRAFT
     Project --> BookingController : project tersimpan
-    BookingController -> NotificationService : kirim notifikasi pemesanan baru
-    NotificationService --> BookingController : notifikasi terkirim
     BookingController --> Form : redirect detail/status pemesanan
     Form --> Klien : Menampilkan status menunggu konfirmasi admin
 else Data tidak lengkap atau tidak valid

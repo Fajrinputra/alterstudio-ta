@@ -27,13 +27,6 @@
 
     <div class="py-8 bg-[#FAF6F0]" x-data="{ showDeleteLocation: false }">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-            @if (session('status'))
-                <div class="flex items-center gap-3 p-5 rounded-3xl bg-emerald-50 border border-emerald-200 text-emerald-700 shadow-sm">
-                    <i class="fa-solid fa-circle-check text-2xl"></i>
-                    <span class="font-medium">{{ session('status') }}</span>
-                </div>
-            @endif
-
             <section class="grid lg:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.65fr)] gap-8">
                 <div class="bg-white border border-[#EDE0D0] rounded-3xl shadow-xl overflow-hidden">
                     @if(count($studioLocation->photo_gallery ?? []))

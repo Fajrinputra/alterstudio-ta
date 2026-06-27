@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * Slide hero landing page yang dapat dikelola admin.
+ * Slide hero landing page yang dapat dikelola manajer.
  */
 class LandingHeroSlide extends Model
 {

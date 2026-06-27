@@ -21,6 +21,7 @@
 /storage/pail
 /vendor
 alterstudio_db_before_restore_*.sql
+/database/backups/*.sql
 Homestead.json
 Homestead.yaml
 Thumbs.db

@@ -284,8 +284,11 @@ Perintah ini akan menjalankan sekaligus:
 # Jalankan semua test
 php artisan test
 
-# Jalankan test dengan laporan coverage (butuh Xdebug)
-php artisan test --coverage
+# Jalankan coverage secara khusus; Xdebug tetap nonaktif saat aplikasi dipakai
+php -d xdebug.mode=coverage artisan test --coverage
+
+# Buat laporan coverage HTML
+php -d xdebug.mode=coverage artisan test --coverage-html coverage
 
 # Jalankan test file tertentu saja
 php artisan test --filter BookingFlowTest

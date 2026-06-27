@@ -8,6 +8,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
@@ -66,7 +67,18 @@ class PasswordResetLinkController extends Controller
             ]);
         });
 
-        $user->sendPasswordResetNotification($token);
+        try {
+            $user->sendPasswordResetNotification($token);
+        } catch (\Throwable $exception) {
+            DB::table($tokenTable)->where('user_id', $user->id)->delete();
+            Log::error('Password reset email could not be sent.', [
+                'user_id' => $user->id,
+                'exception' => $exception->getMessage(),
+            ]);
+
+            return back()->withInput($request->only('email'))
+                ->withErrors(['email' => 'Tautan reset password gagal dikirim. Silakan coba lagi.']);
+        }
 
         $status = Password::RESET_LINK_SENT;
 

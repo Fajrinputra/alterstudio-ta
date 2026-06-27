@@ -43,6 +43,23 @@ class MediaWorkflowStatusTest extends TestCase
         ]);
     }
 
+    /** Link foto mentah harus berasal dari domain resmi Google Drive. */
+    public function test_raw_drive_link_rejects_non_google_drive_domain(): void
+    {
+        [$project, $photographer] = $this->makeScheduledProject();
+
+        $this->actingAs($photographer)
+            ->from(route('projects.show', $project))
+            ->post("/projects/{$project->id}/assets", [
+                'type' => MediaAsset::TYPE_RAW,
+                'raw_drive_url' => 'https://example.com/raw-project',
+            ])
+            ->assertRedirect(route('projects.show', $project))
+            ->assertSessionHasErrors('raw_drive_url');
+
+        $this->assertNull($project->fresh()->raw_drive_url);
+    }
+
     /**
      * Pengujian: penyimpanan link Drive pada booking yang dibatalkan.
      * Hasil yang diharapkan: sistem menolak proses pasca-produksi dan link tidak tersimpan.
@@ -149,6 +166,33 @@ class MediaWorkflowStatusTest extends TestCase
             'id' => $project->id,
             'final_drive_url' => 'https://drive.google.com/drive/folders/final-project',
         ]);
+    }
+
+    /** Link hasil final harus berasal dari domain resmi Google Drive. */
+    public function test_final_drive_link_rejects_non_google_drive_domain(): void
+    {
+        [$project, , $editor] = $this->makeScheduledProject();
+        $project->update([
+            'status' => Project::STATUS_EDITING,
+            'selections_locked' => true,
+            'raw_drive_url' => 'https://drive.google.com/drive/folders/raw-project',
+            'raw_drive_uploaded_at' => now(),
+            'edit_photo_codes' => 'D001',
+            'edit_request_note' => 'Retouch natural',
+            'edit_requested_at' => now(),
+        ]);
+
+        $this->actingAs($editor)
+            ->from(route('projects.show', $project))
+            ->post("/projects/{$project->id}/assets", [
+                'type' => MediaAsset::TYPE_FINAL,
+                'final_drive_url' => 'https://example.com/final-project',
+                'final_message' => 'Hasil final sudah tersedia.',
+            ])
+            ->assertRedirect(route('projects.show', $project))
+            ->assertSessionHasErrors('final_drive_url');
+
+        $this->assertNull($project->fresh()->final_drive_url);
     }
 
     /**

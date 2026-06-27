@@ -25,13 +25,6 @@
     <div class="py-8 bg-[#FAF6F0]" x-data="{ showDelete: false, deleteUrl: '', deleteName: '' }">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
             
-            @if (session('user_status'))
-                <div class="flex items-center gap-3 p-5 rounded-3xl bg-emerald-50 border border-emerald-200 text-emerald-700 shadow-sm">
-                    <i class="fa-solid fa-circle-check text-2xl"></i>
-                    <span class="font-medium">{{ session('user_status') }}</span>
-                </div>
-            @endif
-
             {{-- Filter Section --}}
             <div class="relative group">
                 <div class="absolute inset-0 bg-gradient-to-r from-[#D4A017]/10 via-[#E07A5F]/10 rounded-3xl blur-2xl"></div>
@@ -117,6 +110,9 @@
                                                     <option value="1" @selected($user->is_active)>Aktif</option>
                                                     <option value="0" @selected(!$user->is_active)>Nonaktif</option>
                                                 </select>
+                                                @if($isOwner)
+                                                    <p class="mt-1 text-[10px] leading-4 text-[#8B7359]">Akun Owner wajib selalu aktif.</p>
+                                                @endif
                                             </form>
                                         </dd>
                                     </div>
@@ -193,6 +189,9 @@
                                                     <option value="1" @selected($user->is_active)>Aktif</option>
                                                     <option value="0" @selected(!$user->is_active)>Nonaktif</option>
                                                 </select>
+                                                @if($isOwner)
+                                                    <p class="mt-1 text-[10px] leading-4 text-[#8B7359]">Akun Owner wajib selalu aktif.</p>
+                                                @endif
                                             </form>
                                         </td>
                                         <td class="px-3 py-4 align-middle text-center">

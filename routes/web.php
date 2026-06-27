@@ -1,8 +1,8 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LandingController;
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 // Landing publik.
@@ -18,8 +18,10 @@ Route::get('/dashboard', DashboardController::class)
     ->name('dashboard');
 
 Route::middleware('auth')->group(function () {
-    Route::get('/catalog', [\App\Http\Controllers\Admin\CatalogController::class, 'publicIndex'])->name('catalog.public');
-    Route::get('/catalog/packages/{servicePackage}', [\App\Http\Controllers\Admin\CatalogController::class, 'publicShow'])->name('catalog.package.show');
+    Route::middleware('role:CLIENT,ADMIN,MANAGER')->group(function () {
+        Route::get('/catalog', [\App\Http\Controllers\Admin\CatalogController::class, 'publicIndex'])->name('catalog.public');
+        Route::get('/catalog/packages/{servicePackage}', [\App\Http\Controllers\Admin\CatalogController::class, 'publicShow'])->name('catalog.package.show');
+    });
 
     // Profil user
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile.edit');
@@ -40,31 +42,34 @@ Route::middleware('auth')->group(function () {
 
         Route::post('/projects/{project}/edit-request', [\App\Http\Controllers\PhotoSelectionController::class, 'store'])->name('projects.edit-request.store');
         Route::get('/projects/{project}/raw-download', [\App\Http\Controllers\MediaAssetController::class, 'downloadRaw'])->name('projects.raw.download');
+        Route::get('/projects/{project}/final-download', [\App\Http\Controllers\MediaAssetController::class, 'downloadFinal'])->name('projects.final.download');
     });
 
-        // Akses bersama admin/manager/owner untuk monitoring pemesanan
+    // Akses bersama admin/manager/owner untuk monitoring pemesanan.
     Route::middleware('role:ADMIN,MANAGER,OWNER')->group(function () {
         Route::get('/admin/bookings', [\App\Http\Controllers\BookingController::class, 'index']);
     });
 
-    // Penjadwalan kru hanya dapat dilakukan oleh admin
+    // Penjadwalan kru hanya dapat dikelola oleh admin.
     Route::middleware('role:ADMIN')->group(function () {
         Route::post('/projects/{project}/schedule', [\App\Http\Controllers\ScheduleController::class, 'store']);
         Route::put('/projects/{project}/schedule', [\App\Http\Controllers\ScheduleController::class, 'update'])->name('projects.schedule.update');
     });
 
-        // Fitur khusus admin
-    Route::middleware('role:ADMIN')->group(function () {
-        // Update status pembayaran hanya admin
+    // Admin dan manajer dapat mengonfirmasi, menolak, membatalkan, atau menandai lunas.
+    Route::middleware('role:ADMIN,MANAGER')->group(function () {
         Route::post('/admin/bookings/{booking}/status', [\App\Http\Controllers\BookingController::class, 'updateStatus'])->name('admin.bookings.status');
-
-        Route::get('/admin/landing/hero', [\App\Http\Controllers\Admin\LandingHeroController::class, 'index'])->name('admin.landing.hero');
-        Route::post('/admin/landing/hero', [\App\Http\Controllers\Admin\LandingHeroController::class, 'store'])->name('admin.landing.hero.store');
-        Route::put('/admin/landing/hero/{slide}', [\App\Http\Controllers\Admin\LandingHeroController::class, 'update'])->name('admin.landing.hero.update');
-        Route::delete('/admin/landing/hero/{slide}', [\App\Http\Controllers\Admin\LandingHeroController::class, 'destroy'])->name('admin.landing.hero.destroy');
     });
 
-    // Jadwal dapat diakses admin dan kru terkait; manajer tidak mengakses penjadwalan kru.
+    // Kelola hero landing page dipindahkan ke manajer.
+    Route::middleware('role:MANAGER')->group(function () {
+        Route::get('/manager/landing/hero', [\App\Http\Controllers\Admin\LandingHeroController::class, 'index'])->name('manager.landing.hero');
+        Route::post('/manager/landing/hero', [\App\Http\Controllers\Admin\LandingHeroController::class, 'store'])->name('manager.landing.hero.store');
+        Route::put('/manager/landing/hero/{slide}', [\App\Http\Controllers\Admin\LandingHeroController::class, 'update'])->name('manager.landing.hero.update');
+        Route::delete('/manager/landing/hero/{slide}', [\App\Http\Controllers\Admin\LandingHeroController::class, 'destroy'])->name('manager.landing.hero.destroy');
+    });
+
+    // Halaman jadwal dapat diakses admin dan kru terkait.
     Route::middleware('role:ADMIN,PHOTOGRAPHER,EDITOR')->group(function () {
         Route::get('/admin/schedules', [\App\Http\Controllers\ScheduleController::class, 'index'])->name('admin.schedules');
     });
@@ -75,15 +80,13 @@ Route::middleware('auth')->group(function () {
     });
 
     // Detail project boleh dilihat manager (read-only dari sisi route method GET)
-    Route::middleware('role:EDITOR,PHOTOGRAPHER,ADMIN,MANAGER,OWNER')->group(function () {
+    Route::middleware('role:EDITOR,PHOTOGRAPHER,ADMIN,MANAGER')->group(function () {
         Route::get('/projects/{project}', [\App\Http\Controllers\ProjectController::class, 'show'])->name('projects.show');
     });
 
     // Avatar upload
     Route::post('/profile/avatar', \App\Http\Controllers\ProfileAvatarController::class)->name('profile.avatar');
     Route::post('/profile/avatar/delete', [\App\Http\Controllers\ProfileAvatarController::class, 'destroy'])->name('profile.avatar.delete');
-
-
 
     // Kelola pengguna dan cabang hanya untuk owner.
     Route::middleware('role:OWNER')->group(function () {
@@ -114,8 +117,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/reports', [\App\Http\Controllers\ReportController::class, 'index'])->name('reports.index');
     });
 
-    // Kelola katalog untuk admin + manajer + owner
-    Route::middleware('role:ADMIN,MANAGER,OWNER')->group(function () {
+    // Kelola katalog hanya untuk admin dan manajer.
+    Route::middleware('role:ADMIN,MANAGER')->group(function () {
         // Kelola katalog (view)
         Route::get('/admin/catalog', [\App\Http\Controllers\Admin\CatalogController::class, 'index'])->name('admin.catalog');
         Route::get('/admin/catalog/create', [\App\Http\Controllers\Admin\CatalogController::class, 'create'])->name('admin.catalog.create');
@@ -143,4 +146,3 @@ require __DIR__.'/auth.php';
 
 // Midtrans webhook (no auth)
 Route::post('/midtrans/webhook', [\App\Http\Controllers\PaymentController::class, 'webhook']);
-

@@ -77,14 +77,43 @@ class ScheduleController extends Controller
                 $q->whereHas('scheduleRecord.users', fn ($users) => $users->where('user_id', $crewUserFilter));
             })
             ->orderByDesc('id')
-            ->get();
+            ->paginate(12)
+            ->withQueryString();
 
         $unavailablePhotographers = [];
         $unavailableEditors = [];
+        $projectWindows = [];
 
         foreach ($projects as $project) {
-            [$start, $end] = $this->buildScheduleWindow($project);
-            $unavailableIds = $this->overlappingAssignedUserIds($start, $end, $project->id);
+            $projectWindows[$project->id] = $this->buildScheduleWindow($project);
+        }
+
+        $existingSchedules = collect();
+        if ($projectWindows !== []) {
+            $rangeStart = collect($projectWindows)->pluck(0)->sortBy(fn ($date) => $date->getTimestamp())->first();
+            $rangeEnd = collect($projectWindows)->pluck(1)->sortByDesc(fn ($date) => $date->getTimestamp())->first();
+
+            $existingSchedules = ProjectSchedule::query()
+                ->with('users:id,project_schedule_id,user_id')
+                ->whereHas('booking', fn ($q) => $q->where('status', '!=', Booking::STATUS_CANCELLED))
+                ->where('start_at', '<', $rangeEnd->format('Y-m-d H:i:s'))
+                ->where('end_at', '>', $rangeStart->format('Y-m-d H:i:s'))
+                ->get();
+        }
+
+        foreach ($projects as $project) {
+            [$start, $end] = $projectWindows[$project->id];
+            $unavailableIds = $existingSchedules
+                ->filter(fn (ProjectSchedule $schedule) => $schedule->project_id !== $project->id
+                    && Carbon::parse($schedule->start_at)->lt($end)
+                    && Carbon::parse($schedule->end_at)->gt($start))
+                ->flatMap(fn (ProjectSchedule $schedule) => $schedule->users->pluck('user_id'))
+                ->map(fn ($id) => (int) $id)
+                ->filter()
+                ->unique()
+                ->values()
+                ->all();
+
             $unavailablePhotographers[$project->id] = $unavailableIds;
             $unavailableEditors[$project->id] = $unavailableIds;
         }
@@ -473,7 +502,7 @@ class ScheduleController extends Controller
     }
 
     /**
-     * @param array{photographer_id:int, editor_id:int, studio_room_id:int} $validated
+     * @param  array{photographer_id:int, editor_id:int, studio_room_id:int}  $validated
      */
     protected function syncScheduleRecord(Project $project, Booking $booking, StudioRoom $room, array $validated, DateTimeInterface $start, DateTimeInterface $end, ?int $scheduledBy): ProjectSchedule
     {

@@ -17,16 +17,16 @@ skinparam sequence {
     GroupBackgroundColor transparent
 }
 
-actor "Admin" as Admin
+actor "Manajer" as Manajer
 boundary "Halaman Kelola Hero" as HalamanHero
 boundary "Modal Hapus Slide Hero" as ModalHapus
 control "LandingHeroController" as LandingHeroController
 control "StorageService" as StorageService
 entity "LandingHeroSlides Model" as LandingHeroSlide
 
-Admin -> HalamanHero : Klik hapus pada slide hero
+Manajer -> HalamanHero : Klik hapus pada slide hero
 HalamanHero -> ModalHapus : tampilkan modal konfirmasi hapus
-Admin -> ModalHapus : konfirmasi hapus slide
+Manajer -> ModalHapus : konfirmasi hapus slide
 ModalHapus -> LandingHeroController : destroy(slideId)
 LandingHeroController -> LandingHeroSlide : SELECT landing_hero_slides
 LandingHeroSlide --> LandingHeroController : data slide
@@ -39,10 +39,10 @@ alt Slide ditemukan
     LandingHeroController -> LandingHeroSlide : DELETE landing_hero_slides
     LandingHeroSlide --> LandingHeroController : slide terhapus
     LandingHeroController --> HalamanHero : redirect dengan pesan berhasil
-    HalamanHero --> Admin : daftar slide hero diperbarui
+    HalamanHero --> Manajer : daftar slide hero diperbarui
 else Slide tidak ditemukan
     LandingHeroController --> ModalHapus : tampilkan pesan error
-    ModalHapus --> Admin : slide tidak ditemukan
+    ModalHapus --> Manajer : slide tidak ditemukan
 end
 
 @enduml

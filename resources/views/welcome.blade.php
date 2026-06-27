@@ -5,6 +5,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Alter Studio • Abadikan Momen Berharga</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
    
     {{-- Fonts --}}
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -593,7 +597,7 @@
                     </p>
                     <h2 class="mt-4 font-display text-3xl font-semibold text-[#3F2B1B]">Panduan Pemesanan Alter Studio</h2>
                     <p class="mt-3 text-sm leading-6 text-[#7A5B3A]">
-                        Pemesanan akan masuk sebagai pengajuan terlebih dahulu dan perlu dikonfirmasi admin sebelum pembayaran dibuka. Setelah dikonfirmasi, klien dapat memilih pembayaran DP sebesar 10% dari total pemesanan atau langsung lunas. Jika memilih DP, sisa pembayaran wajib dilunasi sebelum proses pasca-produksi dapat berjalan.
+                        Pemesanan akan masuk sebagai pengajuan terlebih dahulu dan perlu dikonfirmasi admin atau manajer sebelum pembayaran dibuka. Setelah dikonfirmasi, klien dapat memilih pembayaran DP sebesar 10% dari total pemesanan atau langsung lunas. Jika memilih DP, sisa pembayaran wajib dilunasi sebelum proses pasca-produksi dapat berjalan.
                     </p>
                 </div>
 

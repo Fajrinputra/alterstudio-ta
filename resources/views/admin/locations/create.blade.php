@@ -18,17 +18,6 @@
 
     <div class="py-8 bg-[#FAF6F0]">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            @if($errors->any())
-                <div class="mb-6 rounded-3xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700">
-                    <p class="font-semibold">Data belum bisa disimpan.</p>
-                    <ul class="mt-2 list-disc pl-5">
-                        @foreach($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
-
             <form method="POST" action="{{ route('admin.locations.store') }}" enctype="multipart/form-data" class="bg-white/85 border border-[#EDE0D0] rounded-3xl p-8 md:p-10 shadow-2xl space-y-7">
                 @csrf
 

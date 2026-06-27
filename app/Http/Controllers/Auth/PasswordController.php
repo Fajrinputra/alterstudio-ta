@@ -7,6 +7,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\View\View;
 
@@ -29,9 +30,20 @@ class PasswordController extends Controller
             'password' => ['required', Password::defaults(), 'confirmed'],
         ]);
 
-        $request->user()->update([
-            'password' => Hash::make($validated['password']),
-        ]);
+        try {
+            $request->user()->update([
+                'password' => Hash::make($validated['password']),
+            ]);
+        } catch (\Throwable $exception) {
+            Log::error('Profile password could not be updated.', [
+                'user_id' => $request->user()->id,
+                'exception' => $exception->getMessage(),
+            ]);
+
+            return back()->withErrors([
+                'password' => 'Password gagal diperbarui. Silakan coba lagi.',
+            ], 'updatePassword');
+        }
 
         Auth::logout();
 

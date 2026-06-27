@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Storage;
  */
 class LandingHeroController extends Controller
 {
-    /** Tampilkan seluruh slide hero untuk dikelola admin. */
+    /** Tampilkan seluruh slide hero untuk dikelola manajer. */
     public function index()
     {
         $slides = LandingHeroSlide::orderBy('sort_order')->orderBy('id')->get();

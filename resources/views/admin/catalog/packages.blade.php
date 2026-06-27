@@ -28,20 +28,6 @@
     <div class="py-12">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
             
-            {{-- Session Messages --}}
-            @if (session('status'))
-                <div class="flex items-center gap-3 p-5 rounded-3xl bg-emerald-50 border border-emerald-200 text-emerald-700">
-                    <i class="fa-solid fa-circle-check text-emerald-500"></i>
-                    <span class="font-medium">{{ session('status') }}</span>
-                </div>
-            @endif
-            @if (session('error'))
-                <div class="flex items-center gap-3 p-5 rounded-3xl bg-red-50 border border-red-200 text-red-700">
-                    <i class="fa-solid fa-circle-exclamation text-red-500"></i>
-                    <span class="font-medium">{{ session('error') }}</span>
-                </div>
-            @endif
-
             {{-- Packages Grid --}}
             <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                 @forelse($packages as $pkg)

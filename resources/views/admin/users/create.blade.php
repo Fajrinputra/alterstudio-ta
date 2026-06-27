@@ -71,7 +71,7 @@
                                     <i class="fa-solid fa-phone text-[#D4A017]"></i>
                                     NOMOR HP
                                 </label>
-                                <input name="no_hp" type="text"
+                                <input name="no_hp" type="tel" inputmode="tel" autocomplete="tel" maxlength="20"
                                        class="w-full px-6 py-4 rounded-3xl border border-[#E1D3C5] bg-white/70 backdrop-blur-md text-[#3F2B1B] focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20 transition-all"
                                        placeholder="08xxxxxxxxxx">
                             </div>
@@ -97,12 +97,12 @@
                                 <i class="fa-solid fa-lock text-[#D4A017]"></i>
                                 PASSWORD
                             </label>
-                            <input name="password" type="text"
-                                   placeholder="Kosongkan jika ingin menggunakan password default"
+                            <input name="password" type="password" required minlength="8" autocomplete="new-password"
+                                   placeholder="Minimal 8 karakter"
                                    class="w-full px-6 py-4 rounded-3xl border border-[#E1D3C5] bg-white/70 backdrop-blur-md text-[#3F2B1B] focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20 transition-all">
                             <p class="text-xs text-[#8B7359] flex items-center gap-2">
                                 <i class="fa-solid fa-circle-info"></i>
-                                Jika dikosongkan, password default adalah <span class="font-mono font-medium">"password"</span>
+                                Gunakan minimal 8 karakter dan berikan password kepada pemilik akun secara aman.
                             </p>
                         </div>
 

@@ -22,12 +22,17 @@ class CatalogController extends Controller
     /** Menampilkan katalog dalam mode baca saja. */
     public function publicIndex()
     {
-        $categories = ServiceCategory::with(['packages' => fn ($q) => $q->orderBy('name')])->orderBy('name')->get();
+        $categories = ServiceCategory::with([
+            'packages' => fn ($q) => $q->where('is_active', true)->orderBy('name'),
+        ])->orderBy('name')->get();
+
         return view('admin.catalog.index', compact('categories'));
     }
 
     public function publicShow(ServicePackage $servicePackage)
     {
+        abort_unless($servicePackage->is_active, 404);
+
         // Detail paket untuk halaman katalog publik/klien.
         $servicePackage->load(['category']);
         return view('admin.catalog.show', compact('servicePackage'));

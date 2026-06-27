@@ -127,10 +127,14 @@ class BookingServiceLifecycleIntegrationTest extends TestCase
             ->assertJsonPath('amount', 1050000);
 
         $orderId = $paymentResponse->json('order_id');
+        $grossAmount = '1050000.00';
 
         $this->postJson('/midtrans/webhook', [
             'order_id' => $orderId,
             'transaction_status' => 'settlement',
+            'status_code' => '200',
+            'gross_amount' => $grossAmount,
+            'signature_key' => hash('sha512', $orderId.'200'.$grossAmount.'integration-test-server-key'),
         ])->assertOk();
 
         $booking->refresh();

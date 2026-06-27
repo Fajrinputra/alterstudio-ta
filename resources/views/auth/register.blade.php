@@ -69,22 +69,42 @@
                     <form method="POST" action="{{ route('register') }}" class="space-y-1.5 sm:space-y-2">
                         @csrf
 
-                        <!-- Name -->
-                        <div class="space-y-1">
-                            <label for="name" class="block text-xs font-medium text-[#5C432C]">Nama Lengkap</label>
-                            <div class="relative">
-                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-[#D4A017]">
-                                    <i class="fa-solid fa-user"></i>
-                                </span>
-                                <x-text-input id="name"
-                                    class="block w-full rounded-2xl border border-[#E1D3C5] bg-[#FAF6F0] py-2 pl-11 pr-4 text-sm text-[#3F2B1B] placeholder:text-[#9C7C5E] focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/30"
-                                    type="text"
-                                    name="name"
-                                    :value="old('name')"
-                                    required autofocus
-                                    placeholder="Nama lengkap Anda" />
+                        <div class="grid grid-cols-2 gap-2">
+                            <!-- Name -->
+                            <div class="min-w-0 space-y-1">
+                                <label for="name" class="block text-xs font-medium text-[#5C432C]">Nama Lengkap</label>
+                                <div class="relative">
+                                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-[#D4A017]">
+                                        <i class="fa-solid fa-user"></i>
+                                    </span>
+                                    <x-text-input id="name"
+                                        class="block w-full rounded-2xl border border-[#E1D3C5] bg-[#FAF6F0] py-2 pl-9 pr-3 text-sm text-[#3F2B1B] placeholder:text-[#9C7C5E] focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/30"
+                                        type="text"
+                                        name="name"
+                                        :value="old('name')"
+                                        required autofocus autocomplete="name"
+                                        placeholder="Nama lengkap" />
+                                </div>
+                                <x-input-error :messages="$errors->get('name')" class="text-rose-500 text-xs" />
                             </div>
-                            <x-input-error :messages="$errors->get('name')" class="text-rose-500 text-xs" />
+
+                            <!-- Phone Number -->
+                            <div class="min-w-0 space-y-1">
+                                <label for="no_hp" class="block text-xs font-medium text-[#5C432C]">Nomor HP</label>
+                                <div class="relative">
+                                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-[#D4A017]">
+                                        <i class="fa-solid fa-phone"></i>
+                                    </span>
+                                    <x-text-input id="no_hp"
+                                        class="block w-full rounded-2xl border border-[#E1D3C5] bg-[#FAF6F0] py-2 pl-9 pr-3 text-sm text-[#3F2B1B] placeholder:text-[#9C7C5E] focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/30"
+                                        type="tel"
+                                        name="no_hp"
+                                        :value="old('no_hp')"
+                                        required inputmode="tel" autocomplete="tel" maxlength="20"
+                                        placeholder="081234567890" />
+                                </div>
+                                <x-input-error :messages="$errors->get('no_hp')" class="text-rose-500 text-xs" />
+                            </div>
                         </div>
 
                         <!-- Email -->

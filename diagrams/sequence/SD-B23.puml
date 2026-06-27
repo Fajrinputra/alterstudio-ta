@@ -17,8 +17,8 @@ skinparam sequence {
     GroupBackgroundColor transparent
 }
 
-actor "Admin" as Admin
-boundary "Halaman Pemesanan Admin" as HalamanAdmin
+actor "Admin / Manajer" as Admin
+boundary "Halaman Pemesanan Operasional" as HalamanAdmin
 boundary "Modal Pelunasan" as ModalPelunasan
 control "BookingController" as BookingController
 entity "Bookings Model" as Booking

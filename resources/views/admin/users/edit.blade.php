@@ -39,17 +39,6 @@
                         </div>
                     </div>
 
-                    @if($errors->any())
-                        <div class="mb-6 rounded-3xl border border-rose-200 bg-rose-50 px-5 py-4 text-sm text-rose-700">
-                            <p class="font-semibold">Data belum bisa disimpan.</p>
-                            <ul class="mt-2 list-disc pl-5">
-                                @foreach($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    @endif
-
                     <form method="POST" action="{{ route('admin.users.update', $user) }}" class="space-y-8">
                         @csrf
                         @method('PUT')
@@ -80,7 +69,7 @@
                                     <i class="fa-solid fa-phone text-[#D4A017]"></i>
                                     NOMOR HP
                                 </label>
-                                <input name="no_hp" type="text" value="{{ old('no_hp', $user->no_hp) }}"
+                                <input name="no_hp" type="tel" inputmode="tel" autocomplete="tel" maxlength="20" value="{{ old('no_hp', $user->no_hp) }}"
                                        class="w-full px-6 py-4 rounded-3xl border border-[#E1D3C5] bg-white/70 text-[#3F2B1B] focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20 transition-all"
                                        placeholder="08xxxxxxxxxx">
                             </div>

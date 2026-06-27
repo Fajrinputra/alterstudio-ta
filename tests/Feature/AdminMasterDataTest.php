@@ -243,17 +243,17 @@ class AdminMasterDataTest extends TestCase
     }
 
     /**
-     * Pengujian: Admin mengelola hero landing page.
+     * Pengujian: Manajer mengelola hero landing page.
      * Hasil yang diharapkan: slide hero dapat dibuat, diperbarui, gambar lama diganti, dan slide dihapus.
      */
-    public function test_admin_can_create_update_and_delete_landing_hero_slide(): void
+    public function test_manager_can_create_update_and_delete_landing_hero_slide(): void
     {
         Storage::fake('public');
-        $admin = User::factory()->create(['role' => Role::ADMIN]);
+        $manager = User::factory()->create(['role' => Role::MANAGER]);
 
-        $this->actingAs($admin)
-            ->from(route('admin.landing.hero'))
-            ->post(route('admin.landing.hero.store'), [
+        $this->actingAs($manager)
+            ->from(route('manager.landing.hero'))
+            ->post(route('manager.landing.hero.store'), [
                 'eyebrow' => 'Alter Studio',
                 'title' => 'Foto Keluarga',
                 'subtitle' => 'Abadikan momen keluarga',
@@ -261,15 +261,15 @@ class AdminMasterDataTest extends TestCase
                 'is_active' => true,
                 'image' => UploadedFile::fake()->image('hero.jpg', 1600, 900),
             ])
-            ->assertRedirect(route('admin.landing.hero'));
+            ->assertRedirect(route('manager.landing.hero'));
 
         $slide = LandingHeroSlide::where('title', 'Foto Keluarga')->firstOrFail();
         Storage::disk('public')->assertExists($slide->image_path);
 
         $oldImage = $slide->image_path;
-        $this->actingAs($admin)
-            ->from(route('admin.landing.hero'))
-            ->put(route('admin.landing.hero.update', $slide), [
+        $this->actingAs($manager)
+            ->from(route('manager.landing.hero'))
+            ->put(route('manager.landing.hero.update', $slide), [
                 'eyebrow' => 'Alter',
                 'title' => 'Foto Wisuda',
                 'subtitle' => 'Abadikan momen wisuda',
@@ -277,7 +277,7 @@ class AdminMasterDataTest extends TestCase
                 'is_active' => false,
                 'image' => UploadedFile::fake()->image('hero-new.jpg', 1600, 900),
             ])
-            ->assertRedirect(route('admin.landing.hero'));
+            ->assertRedirect(route('manager.landing.hero'));
 
         $slide->refresh();
         Storage::disk('public')->assertMissing($oldImage);
@@ -286,26 +286,26 @@ class AdminMasterDataTest extends TestCase
         $this->assertFalse($slide->is_active);
 
         $currentImage = $slide->image_path;
-        $this->actingAs($admin)
-            ->from(route('admin.landing.hero'))
-            ->delete(route('admin.landing.hero.destroy', $slide))
-            ->assertRedirect(route('admin.landing.hero'));
+        $this->actingAs($manager)
+            ->from(route('manager.landing.hero'))
+            ->delete(route('manager.landing.hero.destroy', $slide))
+            ->assertRedirect(route('manager.landing.hero'));
 
         Storage::disk('public')->assertMissing($currentImage);
         $this->assertDatabaseMissing('landing_hero_slides', ['id' => $slide->id]);
     }
 
     /**
-     * Pengujian: batas maksimal slide hero.
+     * Pengujian: batas maksimal slide hero untuk manajer.
      * Hasil yang diharapkan: sistem menolak pembuatan slide ke-11.
      */
-    public function test_admin_cannot_create_more_than_ten_landing_hero_slides(): void
+    public function test_manager_cannot_create_more_than_ten_landing_hero_slides(): void
     {
-        $admin = User::factory()->create(['role' => Role::ADMIN]);
+        $manager = User::factory()->create(['role' => Role::MANAGER]);
 
         foreach (range(1, 10) as $order) {
             LandingHeroSlide::create([
-                'user_id' => $admin->id,
+                'user_id' => $manager->id,
                 'title' => "Slide {$order}",
                 'image_path' => "landing/hero/slide-{$order}.jpg",
                 'sort_order' => $order,
@@ -313,13 +313,13 @@ class AdminMasterDataTest extends TestCase
             ]);
         }
 
-        $this->actingAs($admin)
-            ->from(route('admin.landing.hero'))
-            ->post(route('admin.landing.hero.store'), [
+        $this->actingAs($manager)
+            ->from(route('manager.landing.hero'))
+            ->post(route('manager.landing.hero.store'), [
                 'title' => 'Slide 11',
                 'sort_order' => 11,
             ])
-            ->assertRedirect(route('admin.landing.hero'))
+            ->assertRedirect(route('manager.landing.hero'))
             ->assertSessionHasErrors('sort_order');
 
         $this->assertSame(10, LandingHeroSlide::count());

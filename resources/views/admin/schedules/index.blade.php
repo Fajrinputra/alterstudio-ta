@@ -16,20 +16,6 @@
     <div class="bg-[#FAF6F0] py-5 sm:py-8">
         <div class="max-w-7xl mx-auto space-y-5 px-0 sm:px-6 lg:px-8 sm:space-y-8">
           
-            {{-- Session Messages --}}
-            @if(session('success'))
-                <div class="flex items-center gap-3 p-5 rounded-3xl bg-emerald-50 border border-emerald-200 text-emerald-700 shadow-sm">
-                    <i class="fa-solid fa-circle-check text-2xl"></i>
-                    <span class="font-medium">{{ session('success') }}</span>
-                </div>
-            @endif
-            @if(session('error'))
-                <div class="flex items-center gap-3 p-5 rounded-3xl bg-red-50 border border-red-200 text-red-700 shadow-sm">
-                    <i class="fa-solid fa-circle-exclamation text-2xl"></i>
-                    <span class="font-medium">{{ session('error') }}</span>
-                </div>
-            @endif
-
             {{-- Filter Form Premium --}}
             <div class="relative group">
                 <div class="absolute inset-0 bg-gradient-to-r from-[#D4A017]/10 via-[#E07A5F]/10 to-[#D4A017]/10 rounded-3xl blur-2xl"></div>
@@ -435,6 +421,14 @@
                                                 <i class="fa-solid fa-calendar-check shrink-0"></i>
                                                 <span class="whitespace-nowrap">{{ $canSchedule ? 'Simpan Jadwal' : 'Belum Bisa Dijadwalkan' }}</span>
                                             </button>
+                                            @if(!$canSchedule)
+                                                <p class="mt-2 text-xs leading-5 text-red-600">
+                                                    <i class="fa-solid fa-circle-exclamation mr-1"></i>
+                                                    {{ $project->booking?->status === \App\Models\Booking::STATUS_CANCELLED
+                                                        ? 'Pemesanan telah dibatalkan sehingga jadwal tidak dapat dibuat.'
+                                                        : 'Pemesanan harus sudah dibayar minimal DP sebelum dapat dijadwalkan.' }}
+                                                </p>
+                                            @endif
                                         </div>
                                     </form>
                                 @else
@@ -532,6 +526,12 @@
                     </div>
                 @endforelse
             </div>
+
+            @if($projects->hasPages())
+                <div class="pt-2">
+                    {{ $projects->links() }}
+                </div>
+            @endif
         </div>
     </div>
 </x-app-layout>

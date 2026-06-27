@@ -128,15 +128,17 @@
                                     $scheduleBadge = $b->project && $b->project->schedule
                                         ? ['bg' => 'bg-emerald-100', 'text' => 'text-emerald-700', 'label' => 'Terjadwal']
                                         : ['bg' => 'bg-amber-100', 'text' => 'text-amber-700', 'label' => 'Belum Dijadwalkan'];
-                                    $isAdmin = auth()->user()?->role === \App\Enums\Role::ADMIN;
-                                    $availableStatusTransitions = match ($b->status) {
-                                        'WAITING_PAYMENT' => $b->confirmed_at
-                                            ? ['CANCELLED' => 'Batalkan Pemesanan']
-                                            : ['WAITING_PAYMENT' => 'Konfirmasi Pemesanan', 'CANCELLED' => 'Tolak Pemesanan'],
-                                        'DP_PAID' => ['PAID' => 'Lunas'],
-                                        default => [],
-                                    };
-                                    $canUpdatePayment = $isAdmin && !empty($availableStatusTransitions);
+                                    $canManageStatus = auth()->user()?->isRole(\App\Enums\Role::ADMIN, \App\Enums\Role::MANAGER) === true;
+                                    $availableStatusTransitions = $canManageStatus
+                                        ? match ($b->status) {
+                                            'WAITING_PAYMENT' => $b->confirmed_at
+                                                ? ['CANCELLED' => 'Batalkan Pemesanan']
+                                                : ['WAITING_PAYMENT' => 'Konfirmasi Pemesanan', 'CANCELLED' => 'Tolak Pemesanan'],
+                                            'DP_PAID' => ['PAID' => 'Lunas'],
+                                            default => [],
+                                        }
+                                        : [];
+                                    $canUpdatePayment = !empty($availableStatusTransitions);
                                     $addonCollection = collect($b->selected_addons);
                                     $addonPreview = $addonCollection->take(2);
                                     $remainingAddonCount = max(0, $addonCollection->count() - $addonPreview->count());
@@ -196,7 +198,7 @@
                                                 <div class="pr-10">
                                                     <p class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#8B7359]">
                                                         <i class="fa-solid fa-clipboard-check text-[#D4A017]"></i>
-                                                        Aksi Admin
+                                                        Aksi Pemesanan
                                                     </p>
                                                     <h3 class="mt-2 text-xl font-semibold text-[#3F2B1B]">Pemesanan #{{ $b->id }}</h3>
                                                     <p class="mt-1 text-sm text-[#7A5B3A]">{{ $b->client->name ?? '-' }} - {{ $b->package->name ?? '-' }}</p>
@@ -205,12 +207,7 @@
                                                 @foreach($availableStatusTransitions as $statusValue => $statusLabel)
                                                     @php
                                                         $isDestructiveAction = $statusValue === 'CANCELLED';
-                                                        $buttonText = match ($statusValue) {
-                                                            'WAITING_PAYMENT' => 'Konfirmasi',
-                                                            'PAID' => 'Tandai Lunas',
-                                                            'CANCELLED' => str_starts_with($statusLabel, 'Tolak') ? 'Tolak' : 'Batalkan',
-                                                            default => $statusLabel,
-                                                        };
+                                                        $buttonText = $statusLabel;
                                                         $buttonIcon = match ($statusValue) {
                                                             'WAITING_PAYMENT', 'PAID' => 'fa-solid fa-check',
                                                             'CANCELLED' => 'fa-solid fa-xmark',
@@ -282,15 +279,17 @@
                                             $scheduleBadge = $b->project && $b->project->schedule
                                                 ? ['bg' => 'bg-emerald-100', 'text' => 'text-emerald-700', 'label' => 'Terjadwal']
                                                 : ['bg' => 'bg-amber-100', 'text' => 'text-amber-700', 'label' => 'Belum Dijadwalkan'];
-                                            $isAdmin = auth()->user()?->role === \App\Enums\Role::ADMIN;
-                                            $availableStatusTransitions = match ($b->status) {
-                                                'WAITING_PAYMENT' => $b->confirmed_at
-                                                    ? ['CANCELLED' => 'Batalkan Pemesanan']
-                                                    : ['WAITING_PAYMENT' => 'Konfirmasi Pemesanan', 'CANCELLED' => 'Tolak Pemesanan'],
-                                                'DP_PAID' => ['PAID' => 'Lunas'],
-                                                default => [],
-                                            };
-                                            $canUpdatePayment = $isAdmin && !empty($availableStatusTransitions);
+                                            $canManageStatus = auth()->user()?->isRole(\App\Enums\Role::ADMIN, \App\Enums\Role::MANAGER) === true;
+                                            $availableStatusTransitions = $canManageStatus
+                                                ? match ($b->status) {
+                                                    'WAITING_PAYMENT' => $b->confirmed_at
+                                                        ? ['CANCELLED' => 'Batalkan Pemesanan']
+                                                        : ['WAITING_PAYMENT' => 'Konfirmasi Pemesanan', 'CANCELLED' => 'Tolak Pemesanan'],
+                                                    'DP_PAID' => ['PAID' => 'Lunas'],
+                                                    default => [],
+                                                }
+                                                : [];
+                                            $canUpdatePayment = !empty($availableStatusTransitions);
                                             $addonCollection = collect($b->selected_addons);
                                             $addonPreview = $addonCollection->take(2);
                                             $remainingAddonCount = max(0, $addonCollection->count() - $addonPreview->count());
@@ -335,7 +334,7 @@
                                                                 <div class="pr-10">
                                                                     <p class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#8B7359]">
                                                                         <i class="fa-solid fa-clipboard-check text-[#D4A017]"></i>
-                                                                        Aksi Admin
+                                                                        Aksi Pemesanan
                                                                     </p>
                                                                     <h3 class="mt-2 text-xl font-semibold text-[#3F2B1B]">Pemesanan #{{ $b->id }}</h3>
                                                                     <p class="mt-1 text-sm text-[#7A5B3A]">{{ $b->client->name ?? '-' }} - {{ $b->package->name ?? '-' }}</p>
@@ -344,12 +343,7 @@
                                                                 @foreach($availableStatusTransitions as $statusValue => $statusLabel)
                                                                     @php
                                                                         $isDestructiveAction = $statusValue === 'CANCELLED';
-                                                                        $buttonText = match ($statusValue) {
-                                                                            'WAITING_PAYMENT' => 'Konfirmasi',
-                                                                            'PAID' => 'Tandai Lunas',
-                                                                            'CANCELLED' => str_starts_with($statusLabel, 'Tolak') ? 'Tolak' : 'Batalkan',
-                                                                            default => $statusLabel,
-                                                                        };
+                                                                        $buttonText = $statusLabel;
                                                                         $buttonIcon = match ($statusValue) {
                                                                             'WAITING_PAYMENT', 'PAID' => 'fa-solid fa-check',
                                                                             'CANCELLED' => 'fa-solid fa-xmark',

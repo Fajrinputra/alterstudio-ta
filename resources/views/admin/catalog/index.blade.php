@@ -10,7 +10,7 @@
                     Kategori & Paket Foto
                 </h2>
             </div>
-            @if(auth()->check() && (auth()->user()->role === \App\Enums\Role::ADMIN || auth()->user()->role === \App\Enums\Role::MANAGER || auth()->user()->role === \App\Enums\Role::OWNER))
+            @if(auth()->user()?->isRole(\App\Enums\Role::ADMIN, \App\Enums\Role::MANAGER))
                 <a href="{{ route('admin.catalog.create') }}" 
                    class="inline-flex w-full sm:w-auto items-center justify-center gap-2.5 rounded-2xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-[#D4A017]/25 transition-all hover:-translate-y-0.5 hover:shadow-xl">
                     <i class="fa-solid fa-plus text-xs"></i>
@@ -40,7 +40,7 @@
                             </div>
                         </div>
                         
-                        @if(auth()->check() && (auth()->user()->role === \App\Enums\Role::ADMIN || auth()->user()->role === \App\Enums\Role::MANAGER || auth()->user()->role === \App\Enums\Role::OWNER))
+                        @if(auth()->user()?->isRole(\App\Enums\Role::ADMIN, \App\Enums\Role::MANAGER))
                             <div class="flex gap-3">
                                 <button type="button"
                                         @click="editCategory = true"
@@ -129,7 +129,7 @@
                         <div class="text-center py-16">
                             <i class="fa-solid fa-box-open text-6xl text-[#8B7359] mb-6 opacity-40"></i>
                             <p class="text-[#7A5B3A]">Belum ada paket dalam kategori ini.</p>
-                            @if(auth()->check() && (auth()->user()->role === \App\Enums\Role::ADMIN || auth()->user()->role === \App\Enums\Role::MANAGER || auth()->user()->role === \App\Enums\Role::OWNER))
+                            @if(auth()->user()?->isRole(\App\Enums\Role::ADMIN, \App\Enums\Role::MANAGER))
                                 <a href="{{ route('admin.catalog.packages', $category) }}" 
                                    class="mt-6 inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-[#D4A017]/25">
                                     Tambah Paket Baru
@@ -139,7 +139,7 @@
                     @endif
                 </div>
 
-                @if(auth()->check() && (auth()->user()->role === \App\Enums\Role::ADMIN || auth()->user()->role === \App\Enums\Role::MANAGER || auth()->user()->role === \App\Enums\Role::OWNER))
+                @if(auth()->user()?->isRole(\App\Enums\Role::ADMIN, \App\Enums\Role::MANAGER))
                     <div x-show="editCategory" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60" x-transition.opacity>
                         <div class="w-full max-w-xl rounded-3xl bg-white p-8 shadow-2xl" @click.stop>
                             <div class="flex items-start justify-between gap-4 mb-6">
@@ -250,7 +250,7 @@
                 <i class="fa-solid fa-store-slash text-6xl text-[#8B7359] mb-6 opacity-40"></i>
                 <p class="text-[#3F2B1B] text-xl mb-2">Belum ada kategori layanan</p>
                 <p class="text-[#7A5B3A] mb-8">Silakan tambahkan kategori terlebih dahulu</p>
-                @if(auth()->check() && (auth()->user()->role === \App\Enums\Role::ADMIN || auth()->user()->role === \App\Enums\Role::MANAGER || auth()->user()->role === \App\Enums\Role::OWNER))
+                @if(auth()->user()?->isRole(\App\Enums\Role::ADMIN, \App\Enums\Role::MANAGER))
                     <a href="{{ route('admin.catalog.create') }}" 
                        class="inline-flex items-center gap-3 px-8 py-4 rounded-3xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] text-white font-semibold">
                         <i class="fa-solid fa-plus"></i>

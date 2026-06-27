@@ -17,16 +17,16 @@ skinparam sequence {
     GroupBackgroundColor transparent
 }
 
-actor "Admin" as Admin
+actor "Manajer" as Manajer
 boundary "Halaman Kelola Hero" as HalamanHero
 boundary "Form Tambah Slide Hero" as FormTambah
 control "LandingHeroController" as LandingHeroController
 control "StorageService" as StorageService
 entity "LandingHeroSlides Model" as LandingHeroSlide
 
-Admin -> HalamanHero : Membuka halaman kelola hero
+Manajer -> HalamanHero : Membuka halaman kelola hero
 HalamanHero -> FormTambah : tampilkan form tambah slide
-Admin -> FormTambah : Submit data slide dan gambar
+Manajer -> FormTambah : Submit data slide dan gambar
 FormTambah -> LandingHeroController : store(data)
 LandingHeroController -> LandingHeroController : validasi teks, urutan,\nstatus, dan gambar
 
@@ -38,10 +38,10 @@ alt Validasi berhasil
     LandingHeroController -> LandingHeroSlide : INSERT landing_hero_slides
     LandingHeroSlide --> LandingHeroController : slide tersimpan
     LandingHeroController --> HalamanHero : redirect dengan pesan berhasil
-    HalamanHero --> Admin : slide baru tampil pada daftar hero
+    HalamanHero --> Manajer : slide baru tampil pada daftar hero
 else Validasi gagal
     LandingHeroController --> FormTambah : tampilkan pesan error
-    FormTambah --> Admin : data slide tidak tersimpan
+    FormTambah --> Manajer : data slide tidak tersimpan
 end
 
 @enduml

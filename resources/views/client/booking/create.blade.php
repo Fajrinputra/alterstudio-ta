@@ -54,19 +54,6 @@
                     $oldTime = old('booking_time');
                 @endphp
 
-                @if ($errors->any())
-                    <div class="mb-8 rounded-3xl border border-red-200 bg-red-50 px-6 py-5">
-                        <div class="flex items-start gap-3 text-red-700">
-                            <i class="fa-solid fa-circle-exclamation mt-1"></i>
-                            <div class="space-y-1 text-sm">
-                                @foreach ($errors->all() as $error)
-                                    <p>{{ $error }}</p>
-                                @endforeach
-                            </div>
-                        </div>
-                    </div>
-                @endif
-
                 <form method="POST" action="{{ route('bookings.store') }}" class="space-y-10" id="booking-form" data-base-price="{{ $basePrice }}" data-availability-url="{{ route('bookings.availability') }}" data-package-id="{{ $selectedPackage->id }}" data-old-time="{{ $oldTime }}">
                     @csrf
                     <input type="hidden" name="package_id" value="{{ $selectedPackage->id }}">
@@ -203,7 +190,7 @@
                                 <input type="radio" name="payment_type" value="FULL" class="w-5 h-5 text-[#D4A017]">
                                 <div>
                                     <span class="font-semibold text-[#3F2B1B]">Bayar Lunas</span>
-                                    <p class="text-xs text-[#7A5B3A]">Bayar penuh setelah pemesanan dikonfirmasi admin</p>
+                                    <p class="text-xs text-[#7A5B3A]">Bayar penuh setelah pemesanan dikonfirmasi admin atau manajer</p>
                                 </div>
                             </label>
                         </div>
@@ -230,7 +217,7 @@
                             <span class="text-xl font-bold text-[#D4A017] sm:text-2xl">Rp <span id="grand-total">{{ number_format($basePrice) }}</span></span>
                         </div>
                         <div class="pt-4 border-t border-[#EDE0D0] text-sm text-[#7A5B3A]">
-                            Setelah formulir dikirim, pemesanan akan masuk ke admin untuk ditinjau. Pembayaran baru dibuka setelah admin mengonfirmasi pemesanan.
+                            Setelah formulir dikirim, pemesanan akan ditinjau admin atau manajer. Pembayaran baru dibuka setelah pemesanan dikonfirmasi.
                         </div>
                     </div>
 

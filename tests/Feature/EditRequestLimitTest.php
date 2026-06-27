@@ -65,6 +65,26 @@ class EditRequestLimitTest extends TestCase
             ->assertSessionHas('error', 'Link Drive foto mentah belum tersedia.');
     }
 
+    /** Form edit tidak dapat diproses setelah masa akses link mentah berakhir. */
+    public function test_client_cannot_submit_edit_request_after_raw_drive_expired(): void
+    {
+        [$project, $client] = $this->makeProject([
+            'raw_drive_url' => 'https://drive.google.com/drive/folders/raw-expired',
+            'raw_drive_uploaded_at' => now()->subDays(4),
+            'status' => Project::STATUS_SHOOT_DONE,
+        ]);
+
+        $this->actingAs($client)
+            ->post(route('projects.edit-request.store', $project), [
+                'edit_photo_codes' => 'D001',
+                'edit_request_note' => 'Edit natural.',
+            ])
+            ->assertRedirect()
+            ->assertSessionHas('error', 'Masa akses link Drive foto mentah sudah kedaluwarsa setelah 3 hari.');
+
+        $this->assertNull($project->fresh()->edit_requested_at);
+    }
+
     /**
      * Pengujian: batas maksimal kode foto yang dikirim klien.
      * Hasil yang diharapkan: sistem menolak permintaan jika kode foto lebih dari 10.

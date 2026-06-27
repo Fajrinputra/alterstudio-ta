@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\Role;
+use App\Http\Controllers\ReportController;
 use App\Models\Booking;
 use App\Models\Payment;
 use App\Models\Project;
@@ -11,11 +12,25 @@ use App\Models\ServicePackage;
 use App\Models\StudioLocation;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Mockery;
 use Tests\TestCase;
 
 class ReportExportTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_report_rejects_invalid_date_range_and_download_format(): void
+    {
+        $manager = User::factory()->create(['role' => Role::MANAGER]);
+
+        $this->actingAs($manager)
+            ->get(route('reports.index', [
+                'date_from' => '2026-06-20',
+                'date_to' => '2026-06-01',
+                'download' => 'xlsx',
+            ]))
+            ->assertSessionHasErrors(['date_to', 'download']);
+    }
 
     /**
      * Pengujian: Manajer melihat laporan dengan filter periode dan kategori.
@@ -96,6 +111,54 @@ class ReportExportTest extends TestCase
             ->assertSee($manager->name, false)
             ->assertSee('Kinerja Fotografer', false)
             ->assertSee('Kinerja Editor', false);
+    }
+
+    /** Kegagalan membentuk CSV harus dikembalikan sebagai pesan yang dapat dipahami pengguna. */
+    public function test_csv_export_failure_redirects_with_error_message(): void
+    {
+        [$manager, $category] = $this->seedReportScenario();
+        $controller = Mockery::mock(ReportController::class)
+            ->makePartial()
+            ->shouldAllowMockingProtectedMethods();
+        $controller->shouldReceive('buildCsv')
+            ->once()
+            ->andThrow(new \RuntimeException('Simulasi kegagalan CSV.'));
+        $this->app->instance(ReportController::class, $controller);
+
+        $filters = [
+            'date_from' => now()->subDay()->toDateString(),
+            'date_to' => now()->addDay()->toDateString(),
+            'category_id' => $category->id,
+        ];
+
+        $this->actingAs($manager)
+            ->get(route('reports.index', [...$filters, 'download' => 'csv']))
+            ->assertRedirect(route('reports.index', $filters))
+            ->assertSessionHas('error', 'Gagal membuat laporan CSV. Silakan coba kembali.');
+    }
+
+    /** Kegagalan merender PDF harus dikembalikan sebagai pesan yang dapat dipahami pengguna. */
+    public function test_pdf_export_failure_redirects_with_error_message(): void
+    {
+        [$manager, $category] = $this->seedReportScenario();
+        $controller = Mockery::mock(ReportController::class)
+            ->makePartial()
+            ->shouldAllowMockingProtectedMethods();
+        $controller->shouldReceive('renderPdfReport')
+            ->once()
+            ->andThrow(new \RuntimeException('Simulasi kegagalan PDF.'));
+        $this->app->instance(ReportController::class, $controller);
+
+        $filters = [
+            'date_from' => now()->subDay()->toDateString(),
+            'date_to' => now()->addDay()->toDateString(),
+            'category_id' => $category->id,
+        ];
+
+        $this->actingAs($manager)
+            ->get(route('reports.index', [...$filters, 'download' => 'pdf']))
+            ->assertRedirect(route('reports.index', $filters))
+            ->assertSessionHas('error', 'Gagal membuat laporan PDF. Silakan coba kembali.');
     }
 
     /**

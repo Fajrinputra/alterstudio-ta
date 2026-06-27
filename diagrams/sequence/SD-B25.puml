@@ -21,7 +21,6 @@ actor "Admin" as Admin
 boundary "Halaman Jadwal" as HalamanJadwal
 boundary "Form Jadwal Kru" as FormJadwal
 control "ScheduleController" as ScheduleController
-control "NotificationService" as NotificationService
 entity "Bookings Model" as Booking
 entity "Projects Model" as Project
 entity "ProjectSchedule" as ProjectSchedule
@@ -55,8 +54,6 @@ ScheduleController -> ScheduleController : cek project belum berjalan/pasca-prod
 alt Jadwal valid
     ScheduleController -> ProjectSchedule : update project schedule dan crew
     ProjectSchedule --> ScheduleController : jadwal diperbarui
-    ScheduleController -> NotificationService : kirim notifikasi tugas
-    NotificationService --> ScheduleController : notifikasi terkirim
     ScheduleController --> HalamanJadwal : tampilkan pesan berhasil
     HalamanJadwal --> Admin : jadwal diperbarui
 else Booking belum DP/PAID

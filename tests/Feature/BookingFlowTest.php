@@ -13,6 +13,7 @@ use App\Models\StudioRoom;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use ReflectionMethod;
 use Tests\TestCase;
@@ -149,6 +150,86 @@ class BookingFlowTest extends TestCase
         $response->assertJsonPath('display_status', 'Diajukan');
     }
 
+    /** Paket yang sudah nonaktif tidak boleh digunakan untuk membuat pemesanan baru. */
+    public function test_booking_creation_rejects_inactive_package(): void
+    {
+        config()->set('studio.closed_weekdays', []);
+
+        $package = ServicePackage::factory()->create(['is_active' => false]);
+        $location = StudioLocation::create([
+            'name' => 'Cabang Paket Nonaktif',
+            'slug' => 'cabang-paket-nonaktif',
+            'address' => 'Jl. Paket Nonaktif',
+            'is_active' => true,
+        ]);
+        StudioRoom::create([
+            'studio_location_id' => $location->id,
+            'name' => 'Studio Paket Nonaktif',
+            'is_active' => true,
+        ]);
+        $client = User::factory()->create(['role' => Role::CLIENT]);
+
+        $this->actingAs($client)
+            ->postJson('/bookings', [
+                'package_id' => $package->id,
+                'studio_location_id' => $location->id,
+                'booking_date' => Carbon::now()->addDays(2)->toDateString(),
+                'booking_time' => '13:00',
+                'payment_type' => Booking::PAYMENT_TYPE_FULL,
+            ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('package_id');
+
+        $this->assertDatabaseCount('bookings', 0);
+        $this->assertDatabaseCount('projects', 0);
+    }
+
+    /** Kegagalan membuat Project harus membatalkan Booking dalam transaksi yang sama. */
+    public function test_booking_is_rolled_back_when_project_creation_fails(): void
+    {
+        config()->set('studio.closed_weekdays', []);
+
+        $package = ServicePackage::factory()->create(['is_active' => true]);
+        $location = StudioLocation::create([
+            'name' => 'Cabang Rollback',
+            'slug' => 'cabang-rollback',
+            'address' => 'Jl. Rollback',
+            'is_active' => true,
+        ]);
+        StudioRoom::create([
+            'studio_location_id' => $location->id,
+            'name' => 'Studio Rollback',
+            'is_active' => true,
+        ]);
+        $client = User::factory()->create(['role' => Role::CLIENT]);
+        $eventName = 'eloquent.creating: '.Project::class;
+
+        Event::listen($eventName, static function (): void {
+            throw new \RuntimeException('Simulasi kegagalan membuat project.');
+        });
+
+        try {
+            $this->withoutExceptionHandling()
+                ->actingAs($client)
+                ->postJson('/bookings', [
+                    'package_id' => $package->id,
+                    'studio_location_id' => $location->id,
+                    'booking_date' => Carbon::now()->addDays(2)->toDateString(),
+                    'booking_time' => '13:00',
+                    'payment_type' => Booking::PAYMENT_TYPE_FULL,
+                ]);
+
+            $this->fail('Kegagalan pembuatan project seharusnya diteruskan oleh aplikasi.');
+        } catch (\RuntimeException $exception) {
+            $this->assertSame('Simulasi kegagalan membuat project.', $exception->getMessage());
+        } finally {
+            Event::forget($eventName);
+        }
+
+        $this->assertDatabaseCount('bookings', 0);
+        $this->assertDatabaseCount('projects', 0);
+    }
+
     /**
      * Fokus 7 - Menampilkan detail pemesanan.
      * Hasil yang diharapkan: klien hanya dapat melihat detail booking miliknya sendiri.
@@ -221,7 +302,7 @@ class BookingFlowTest extends TestCase
                 'type' => Payment::TYPE_FULL,
             ])
             ->assertStatus(422)
-            ->assertJsonPath('message', 'Pemesanan masih menunggu konfirmasi admin. Pembayaran belum dapat dilakukan.');
+            ->assertJsonPath('message', 'Pemesanan masih menunggu konfirmasi admin atau manajer. Pembayaran belum dapat dilakukan.');
     }
 
     /**
@@ -442,6 +523,8 @@ class BookingFlowTest extends TestCase
      */
     public function test_failed_settlement_does_not_remove_existing_dp_paid_status(): void
     {
+        config()->set('services.midtrans.server_key', 'test-server-key');
+
         $package = ServicePackage::factory()->create(['price' => 350000]);
         $location = StudioLocation::create([
             'name' => 'Cabang Timur',
@@ -480,9 +563,14 @@ class BookingFlowTest extends TestCase
             'snap_token' => 'snap-fail',
         ]);
 
+        $grossAmount = '315000.00';
+
         $this->postJson('/midtrans/webhook', [
             'order_id' => $settlement->order_id,
             'transaction_status' => 'expire',
+            'status_code' => '200',
+            'gross_amount' => $grossAmount,
+            'signature_key' => hash('sha512', $settlement->order_id.'200'.$grossAmount.'test-server-key'),
         ])->assertOk();
 
         $this->assertEquals(Booking::STATUS_DP_PAID, $booking->fresh()->status);
@@ -645,6 +733,8 @@ class BookingFlowTest extends TestCase
      */
     public function test_failed_initial_payment_returns_booking_to_waiting_payment(): void
     {
+        config()->set('services.midtrans.server_key', 'test-server-key');
+
         $package = ServicePackage::factory()->create(['price' => 280000]);
         $location = StudioLocation::create([
             'name' => 'Cabang Barat',
@@ -673,9 +763,14 @@ class BookingFlowTest extends TestCase
             'snap_token' => 'snap-deny',
         ]);
 
+        $grossAmount = '280000.00';
+
         $this->postJson('/midtrans/webhook', [
             'order_id' => $payment->order_id,
             'transaction_status' => 'deny',
+            'status_code' => '200',
+            'gross_amount' => $grossAmount,
+            'signature_key' => hash('sha512', $payment->order_id.'200'.$grossAmount.'test-server-key'),
         ])->assertOk();
 
         $this->assertEquals(Booking::STATUS_WAITING_PAYMENT, $booking->fresh()->status);

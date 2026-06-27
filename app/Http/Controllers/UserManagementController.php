@@ -7,8 +7,8 @@ use App\Models\Booking;
 use App\Models\Project;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 
 /**
  * CRUD user internal oleh owner + aktivasi/nonaktivasi akun.
@@ -36,6 +36,7 @@ class UserManagementController extends Controller
     public function create()
     {
         $roles = $this->assignableRoles();
+
         return view('admin.users.create', compact('roles'));
     }
 
@@ -43,6 +44,7 @@ class UserManagementController extends Controller
     public function edit(User $user)
     {
         $roles = $this->assignableRoles($user);
+
         return view('admin.users.edit', compact('user', 'roles'));
     }
 
@@ -53,20 +55,21 @@ class UserManagementController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'role' => ['required', Rule::in($this->assignableRoles())],
-            'password' => ['nullable', 'string', 'min:8'],
-            'no_hp' => ['nullable', 'string', 'max:30'],
+            'password' => ['required', 'string', 'min:8'],
+            'no_hp' => ['nullable', 'string', 'max:20', 'regex:/^(?:\+62|62|0)[0-9]{9,13}$/'],
         ]);
 
-        $password = $data['password'] ?? 'password';
-
-        User::create([
+        $user = User::create([
             'name' => $data['name'],
             'email' => $data['email'],
             'role' => $data['role'],
             'no_hp' => $data['no_hp'] ?? null,
-            'password' => Hash::make($password),
+            'password' => Hash::make($data['password']),
             'is_active' => true,
         ]);
+
+        // Akun yang dibuat Owner merupakan akun internal yang telah disahkan.
+        $user->markEmailAsVerified();
 
         return redirect()->route('admin.users.index')->with('user_status', 'Pengguna ditambahkan.');
     }
@@ -79,7 +82,7 @@ class UserManagementController extends Controller
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
             'role' => ['required', Rule::in($this->assignableRoles($user))],
             'password' => ['nullable', 'string', 'min:8'],
-            'no_hp' => ['nullable', 'string', 'max:30'],
+            'no_hp' => ['nullable', 'string', 'max:20', 'regex:/^(?:\+62|62|0)[0-9]{9,13}$/'],
             'is_active' => ['nullable', 'boolean'],
         ]);
 
@@ -90,7 +93,7 @@ class UserManagementController extends Controller
             'no_hp' => $data['no_hp'] ?? null,
         ];
 
-        if (!empty($data['password'])) {
+        if (! empty($data['password'])) {
             $payload['password'] = Hash::make($data['password']);
         }
 
@@ -100,7 +103,7 @@ class UserManagementController extends Controller
             $payload['is_active'] = true;
         } elseif (array_key_exists('is_active', $data)) {
             if ((bool) $data['is_active'] === false && $this->hasActiveOperationalWork($user)) {
-                return back()->with('status', 'Akun tidak dapat dinonaktifkan karena masih memiliki pemesanan atau project yang belum selesai.');
+                return back()->with('error', 'Akun tidak dapat dinonaktifkan karena masih memiliki pemesanan atau project yang belum selesai.');
             }
 
             $payload['is_active'] = (bool) $data['is_active'];
@@ -119,7 +122,7 @@ class UserManagementController extends Controller
     public function toggle(Request $request, User $user)
     {
         if ($user->role === Role::OWNER) {
-            return back()->with('status', 'Akun owner tidak boleh dinonaktifkan.');
+            return back()->with('error', 'Akun owner tidak boleh dinonaktifkan.');
         }
 
         $data = $request->validate([
@@ -127,7 +130,7 @@ class UserManagementController extends Controller
         ]);
 
         if ((bool) $data['is_active'] === false && $this->hasActiveOperationalWork($user)) {
-            return back()->with('status', 'Akun tidak dapat dinonaktifkan karena masih memiliki pemesanan atau project yang belum selesai.');
+            return back()->with('error', 'Akun tidak dapat dinonaktifkan karena masih memiliki pemesanan atau project yang belum selesai.');
         }
 
         $user->update(['is_active' => (bool) $data['is_active']]);
@@ -139,11 +142,11 @@ class UserManagementController extends Controller
     public function destroy(User $user)
     {
         if ($user->role === Role::OWNER) {
-            return back()->with('status', 'Akun owner tidak boleh dihapus.');
+            return back()->with('error', 'Akun owner tidak boleh dihapus.');
         }
 
         if ($this->hasActiveOperationalWork($user)) {
-            return back()->with('status', 'Akun tidak dapat dihapus karena masih memiliki pemesanan atau project yang belum selesai.');
+            return back()->with('error', 'Akun tidak dapat dihapus karena masih memiliki pemesanan atau project yang belum selesai.');
         }
 
         $user->delete();

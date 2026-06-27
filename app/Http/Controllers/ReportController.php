@@ -9,6 +9,7 @@ use App\Models\Project;
 use App\Models\ServiceCategory;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Modul laporan operasional untuk manajer dan owner.
@@ -17,8 +18,20 @@ class ReportController extends Controller
 {
     public function index(Request $request)
     {
-        $dateFrom = $request->input('date_from', now()->subDays(30)->toDateString());
-        $dateTo = $request->input('date_to', now()->toDateString());
+        $request->merge([
+            'date_from' => $request->input('date_from', now()->subDays(30)->toDateString()),
+            'date_to' => $request->input('date_to', now()->toDateString()),
+        ]);
+
+        $validated = $request->validate([
+            'date_from' => ['required', 'date'],
+            'date_to' => ['required', 'date', 'after_or_equal:date_from'],
+            'category_id' => ['nullable', 'integer', 'exists:service_categories,id'],
+            'download' => ['nullable', 'in:csv,pdf'],
+        ]);
+
+        $dateFrom = $validated['date_from'];
+        $dateTo = $validated['date_to'];
         $isOwnerReport = $request->user()?->isRole(Role::OWNER) === true;
         $canExportReport = $request->user()?->isRole(Role::MANAGER) === true;
         $categoryId = $isOwnerReport ? null : $request->input('category_id');
@@ -70,25 +83,29 @@ class ReportController extends Controller
         $fileBaseName = 'Laporan Kinerja Kru Alterstudio';
 
         if ($request->get('download') === 'csv') {
-            $csv = $this->buildCsv(
-                $dateFrom,
-                $dateTo,
-                $categoryLabel,
-                $exportedAt,
-                $exportedBy,
-                $bookings,
-                $photographerPerf,
-                $editorPerf,
-                $revenueTotal,
-                $totalOrders,
-                $assignedPhotographers,
-                $assignedEditors,
-                $activeClients,
-                $isOwnerReport,
-                $paymentBreakdown,
-                $statusSummary,
-                $reportTitle
-            );
+            try {
+                $csv = $this->buildCsv(
+                    $dateFrom,
+                    $dateTo,
+                    $categoryLabel,
+                    $exportedAt,
+                    $exportedBy,
+                    $bookings,
+                    $photographerPerf,
+                    $editorPerf,
+                    $revenueTotal,
+                    $totalOrders,
+                    $assignedPhotographers,
+                    $assignedEditors,
+                    $activeClients,
+                    $isOwnerReport,
+                    $paymentBreakdown,
+                    $statusSummary,
+                    $reportTitle
+                );
+            } catch (\Throwable $exception) {
+                return $this->exportFailureResponse($request, 'CSV', $exception);
+            }
 
             return response()->streamDownload(function () use ($csv) {
                 echo $csv;
@@ -107,7 +124,7 @@ class ReportController extends Controller
         ];
 
         if ($request->get('download') === 'pdf') {
-            return view('admin.reports.print', compact(
+            $pdfData = compact(
                 'dateFrom',
                 'dateTo',
                 'categoryId',
@@ -127,7 +144,13 @@ class ReportController extends Controller
                 'statusSummary',
                 'photographerPerf',
                 'editorPerf'
-            ));
+            );
+
+            try {
+                return response($this->renderPdfReport($pdfData));
+            } catch (\Throwable $exception) {
+                return $this->exportFailureResponse($request, 'PDF', $exception);
+            }
         }
 
         return view('admin.reports.index', compact(
@@ -155,6 +178,25 @@ class ReportController extends Controller
         ));
     }
 
+    /** @param array<string, mixed> $data */
+    protected function renderPdfReport(array $data): string
+    {
+        return view('admin.reports.print', $data)->render();
+    }
+
+    protected function exportFailureResponse(Request $request, string $format, \Throwable $exception)
+    {
+        Log::error('Report export failed.', [
+            'format' => $format,
+            'user_id' => $request->user()?->id,
+            'error' => $exception->getMessage(),
+        ]);
+
+        return redirect()
+            ->route('reports.index', $request->only(['date_from', 'date_to', 'category_id']))
+            ->with('error', "Gagal membuat laporan {$format}. Silakan coba kembali.");
+    }
+
     /**
      * Ringkasan performa per role berdasarkan jadwal yang aktif pada rentang laporan.
      */
@@ -162,7 +204,7 @@ class ReportController extends Controller
     {
         $projects = Project::with(['booking.package', 'scheduleRecord.users.user'])
             ->whereHas('scheduleRecord.users', fn ($q) => $q->where('role', $role->value))
-            ->whereBetween('start_at', [$start, $end . ' 23:59:59'])
+            ->whereBetween('start_at', [$start, $end.' 23:59:59'])
             ->when($categoryId, fn ($q) => $q->whereHas('booking.package', fn ($p) => $p->where('category_id', $categoryId)))
             ->get();
 
@@ -191,7 +233,7 @@ class ReportController extends Controller
     {
         return Project::query()
             ->whereHas('scheduleRecord.users', fn ($q) => $q->where('role', $role->value))
-            ->whereBetween('start_at', [$start, $end . ' 23:59:59'])
+            ->whereBetween('start_at', [$start, $end.' 23:59:59'])
             ->when($categoryId, fn ($q) => $q->whereHas('booking.package', fn ($p) => $p->where('category_id', $categoryId)))
             ->with('scheduleRecord.users')
             ->get()

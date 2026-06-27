@@ -39,24 +39,6 @@
             </div>
         @endif
 
-        @if(session('success'))
-            <div class="mb-4 p-4 bg-emerald-50 border border-emerald-200 rounded-2xl shadow-sm">
-                <div class="flex gap-3 text-emerald-700">
-                    <i class="fa-solid fa-circle-check text-emerald-500 mt-0.5 text-lg"></i>
-                    <p class="font-medium">{{ session('success') }}</p>
-                </div>
-            </div>
-        @endif
-        
-        @if(session('error'))
-            <div class="mb-4 p-4 bg-red-50 border border-red-200 rounded-2xl shadow-sm">
-                <div class="flex gap-3 text-red-700">
-                    <i class="fa-solid fa-circle-exclamation text-red-500 mt-0.5 text-lg"></i>
-                    <p class="font-medium">{{ session('error') }}</p>
-                </div>
-            </div>
-        @endif
-
         {{-- Daftar Pemesanan --}}
         <div class="space-y-4">
             @forelse($bookings as $booking)
@@ -70,6 +52,8 @@
                     $finalDriveUrl = $project?->final_drive_url ?: $rawDriveUrl;
                     $rawDriveExpiresAt = $project?->raw_drive_uploaded_at?->copy()->addDays(3);
                     $finalDriveExpiresAt = $project?->final_drive_uploaded_at?->copy()->addDays(3);
+                    $isRawDriveExpired = $project?->isRawDriveExpired() ?? false;
+                    $isFinalDriveExpired = $project?->isFinalDriveExpired() ?? false;
                     $productionBlockMessage = $project?->productionBlockMessage();
                     $canContinueProduction = $project && $productionBlockMessage === null;
                     
@@ -190,7 +174,7 @@
                                         </div>
                                         <div>
                                             <p class="font-semibold text-amber-800">Pemesanan Sudah Dikonfirmasi</p>
-                                            <p class="text-sm text-amber-600">Lanjutkan pembayaran dalam waktu 30 menit sejak konfirmasi admin agar sesi foto dapat diproses.</p>
+                                            <p class="text-sm text-amber-600">Lanjutkan pembayaran dalam waktu 30 menit setelah pemesanan dikonfirmasi admin atau manajer agar sesi foto dapat diproses.</p>
                                             <div class="mt-3 flex flex-wrap gap-2 text-xs font-medium">
                                                 <span class="inline-flex items-center gap-2 rounded-xl bg-white/80 px-3 py-1.5 text-amber-700 ring-1 ring-amber-200">
                                                     <i class="fa-solid fa-calendar-day"></i>
@@ -271,14 +255,26 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <a href="{{ $rawDriveUrl }}" target="_blank" rel="noopener"
-                                       class="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl border border-[#EDE0D0] text-sm hover:border-[#D4A017] hover:bg-white transition-all">
-                                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
-                                        Buka Drive
-                                    </a>
+                                    @if($isRawDriveExpired)
+                                        <span class="inline-flex items-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-2.5 text-sm font-medium text-rose-700">
+                                            <i class="fa-solid fa-clock-rotate-left"></i>
+                                            Link Kedaluwarsa
+                                        </span>
+                                    @else
+                                        <a href="{{ route('projects.raw.download', $project) }}" target="_blank" rel="noopener"
+                                           class="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl border border-[#EDE0D0] text-sm hover:border-[#D4A017] hover:bg-white transition-all">
+                                            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                                            Buka Drive
+                                        </a>
+                                    @endif
                                 </div>
 
                                 @if(!$project->hasEditRequest())
+                                    @if($isRawDriveExpired)
+                                        <div class="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
+                                            Masa akses link Drive foto mentah sudah kedaluwarsa setelah 3 hari. Hubungi Alter Studio jika masih memerlukan akses.
+                                        </div>
+                                    @else
                                     <form method="POST" action="{{ route('projects.edit-request.store', $project) }}" class="space-y-4">
                                         @csrf
                                         <div>
@@ -305,6 +301,7 @@
                                             </button>
                                         </div>
                                     </form>
+                                    @endif
                                 @else
                                     <div class="space-y-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
                                         <p class="font-semibold text-emerald-800">
@@ -348,12 +345,17 @@
                                             </p>
                                         </div>
                                     </div>
-                                    @if($finalDriveUrl)
-                                        <a href="{{ $finalDriveUrl }}" target="_blank" rel="noopener"
+                                    @if($finalDriveUrl && !$isFinalDriveExpired)
+                                        <a href="{{ route('projects.final.download', $project) }}" target="_blank" rel="noopener"
                                            class="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white border border-emerald-300 text-sm text-emerald-700 hover:border-emerald-500 hover:bg-emerald-50 transition-all">
                                             <i class="fa-solid fa-arrow-up-right-from-square"></i>
                                             Buka Drive Hasil
                                         </a>
+                                    @elseif($isFinalDriveExpired)
+                                        <span class="inline-flex items-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-2.5 text-sm font-medium text-rose-700">
+                                            <i class="fa-solid fa-clock-rotate-left"></i>
+                                            Link Hasil Kedaluwarsa
+                                        </span>
                                     @endif
                                 </div>
 

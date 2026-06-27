@@ -17,29 +17,29 @@ skinparam sequence {
     GroupBackgroundColor transparent
 }
 
-actor "Admin" as Admin
+actor "Admin / Manajer" as Operator
 boundary "Halaman Daftar Pemesanan" as HalamanDaftar
 boundary "Detail Pemesanan" as DetailPemesanan
 control "BookingController" as BookingController
 control "NotificationService" as NotificationService
 entity "Bookings Model" as Booking
 
-Admin -> HalamanDaftar : Membuka halaman daftar pemesanan
+Operator -> HalamanDaftar : Membuka halaman daftar pemesanan
 HalamanDaftar -> BookingController : index()
 BookingController -> Booking : ambil booking status diajukan
 Booking --> BookingController : data booking masuk
 BookingController --> HalamanDaftar : tampilkan daftar pemesanan
-HalamanDaftar --> Admin : daftar pemesanan tampil
+HalamanDaftar --> Operator : daftar pemesanan tampil
 
-Admin -> HalamanDaftar : Memilih pemesanan status diajukan
+Operator -> HalamanDaftar : Memilih pemesanan status diajukan
 HalamanDaftar -> DetailPemesanan : buka detail pemesanan
 DetailPemesanan -> BookingController : show(bookingId)
 BookingController -> Booking : ambil detail booking
 Booking --> BookingController : detail booking
 BookingController --> DetailPemesanan : tampilkan detail pemesanan
-DetailPemesanan --> Admin : detail pemesanan tampil
+DetailPemesanan --> Operator : detail pemesanan tampil
 
-Admin -> DetailPemesanan : Menekan aksi konfirmasi
+Operator -> DetailPemesanan : Menekan aksi konfirmasi
 DetailPemesanan -> BookingController : confirm(bookingId)
 BookingController -> Booking : validasi booking
 Booking --> BookingController : booking ditemukan
@@ -51,13 +51,13 @@ alt Booking valid dan status diajukan
     BookingController -> NotificationService : kirim notifikasi ke klien
     NotificationService --> BookingController : notifikasi terkirim
     BookingController --> DetailPemesanan : tampilkan informasi siap pembayaran
-    DetailPemesanan --> Admin : pemesanan berhasil dikonfirmasi
+    DetailPemesanan --> Operator : pemesanan berhasil dikonfirmasi
 else Booking tidak ditemukan
     BookingController --> DetailPemesanan : tampilkan pesan kesalahan
-    DetailPemesanan --> Admin : data pemesanan tidak ditemukan
+    DetailPemesanan --> Operator : data pemesanan tidak ditemukan
 else Status tidak valid untuk dikonfirmasi
     BookingController --> DetailPemesanan : tampilkan pesan status tidak valid
-    DetailPemesanan --> Admin : proses konfirmasi ditolak
+    DetailPemesanan --> Operator : proses konfirmasi ditolak
 end
 
 @enduml

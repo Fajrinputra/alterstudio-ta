@@ -38,31 +38,69 @@ class RoleAccessTest extends TestCase
             ->assertOk();
     }
 
-    /**
-     * Pengujian: pembatasan akses Manajer ke halaman manajemen jadwal.
-     * Hasil yang diharapkan: Manajer ditolak karena penjadwalan merupakan kewenangan Admin.
-     */
+    /** Manajer tidak memiliki akses ke halaman penjadwalan kru. */
     public function test_manager_cannot_access_schedule_management_page(): void
     {
         $manager = User::factory()->create(['role' => Role::MANAGER]);
 
         $this->actingAs($manager)
             ->get('/admin/schedules')
-            ->assertStatus(403);
+            ->assertForbidden();
     }
 
-    /**
-     * Pengujian: pembatasan Manajer saat menyimpan jadwal project.
-     * Hasil yang diharapkan: request penyimpanan jadwal oleh Manajer ditolak.
-     */
+    /** Manajer tidak dapat menyimpan jadwal project. */
     public function test_manager_cannot_store_project_schedule(): void
     {
         $manager = User::factory()->create(['role' => Role::MANAGER]);
         $project = Project::factory()->create();
-
         $this->actingAs($manager)
             ->postJson("/projects/{$project->id}/schedule", [])
+            ->assertForbidden();
+    }
+
+    /**
+     * Pengujian: pemindahan akses kelola hero landing dari Admin ke Manajer.
+     * Hasil yang diharapkan: Admin ditolak dan Manajer dapat membuka halaman kelola hero landing.
+     */
+    public function test_landing_hero_management_is_only_available_for_manager(): void
+    {
+        $admin = User::factory()->create(['role' => Role::ADMIN]);
+        $manager = User::factory()->create(['role' => Role::MANAGER]);
+
+        $this->actingAs($admin)
+            ->get(route('manager.landing.hero'))
             ->assertStatus(403);
+
+        $this->actingAs($manager)
+            ->get(route('manager.landing.hero'))
+            ->assertOk()
+            ->assertViewIs('admin.landing.hero');
+    }
+
+    /**
+     * Pengujian: kelola katalog, kategori, dan paket hanya untuk Admin dan Manajer.
+     * Hasil yang diharapkan: Owner, Klien, Fotografer, dan Editor ditolak dari menu kelola katalog.
+     */
+    public function test_catalog_management_is_only_available_for_admin_and_manager(): void
+    {
+        $admin = User::factory()->create(['role' => Role::ADMIN]);
+        $manager = User::factory()->create(['role' => Role::MANAGER]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.catalog'))
+            ->assertOk();
+
+        $this->actingAs($manager)
+            ->get(route('admin.catalog'))
+            ->assertOk();
+
+        foreach ([Role::OWNER, Role::CLIENT, Role::PHOTOGRAPHER, Role::EDITOR] as $role) {
+            $user = User::factory()->create(['role' => $role]);
+
+            $this->actingAs($user)
+                ->get(route('admin.catalog'))
+                ->assertStatus(403);
+        }
     }
 
     /**

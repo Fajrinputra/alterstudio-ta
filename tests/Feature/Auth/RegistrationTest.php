@@ -29,11 +29,29 @@ class RegistrationTest extends TestCase
         $response = $this->post('/register', [
             'name' => 'Test User',
             'email' => 'test@example.com',
+            'no_hp' => '081234567890',
             'password' => 'password',
             'password_confirmation' => 'password',
         ]);
 
         $this->assertAuthenticated();
         $response->assertRedirect(route('dashboard', absolute: false));
+        $this->assertDatabaseHas('users', [
+            'email' => 'test@example.com',
+            'no_hp' => '081234567890',
+        ]);
+    }
+
+    public function test_registration_rejects_invalid_phone_number(): void
+    {
+        $this->post('/register', [
+            'name' => 'Test User',
+            'email' => 'phone@example.com',
+            'no_hp' => 'nomor-tidak-valid',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ])->assertSessionHasErrors('no_hp');
+
+        $this->assertDatabaseMissing('users', ['email' => 'phone@example.com']);
     }
 }

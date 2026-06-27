@@ -25,7 +25,8 @@ class NotificationDispatchTest extends TestCase
 
     /**
      * Pengujian: pengiriman notifikasi saat booking baru dibuat.
-     * Hasil yang diharapkan: klien, admin, dan owner menerima notifikasi booking baru.
+     * Hasil yang diharapkan: klien, admin, dan manajer menerima notifikasi booking baru;
+     * owner tidak menerima notifikasi operasional tersebut.
      */
     public function test_booking_creation_dispatches_notification_to_client_and_ops(): void
     {
@@ -46,6 +47,7 @@ class NotificationDispatchTest extends TestCase
         ]);
         $client = User::factory()->create(['role' => Role::CLIENT]);
         $admin = User::factory()->create(['role' => Role::ADMIN]);
+        $manager = User::factory()->create(['role' => Role::MANAGER]);
         $owner = User::factory()->create(['role' => Role::OWNER]);
 
         $this->actingAs($client)
@@ -60,7 +62,8 @@ class NotificationDispatchTest extends TestCase
 
         Notification::assertSentTo($client, BookingCreatedNotification::class);
         Notification::assertSentTo($admin, BookingCreatedNotification::class);
-        Notification::assertSentTo($owner, BookingCreatedNotification::class);
+        Notification::assertSentTo($manager, BookingCreatedNotification::class);
+        Notification::assertNotSentTo($owner, BookingCreatedNotification::class);
     }
 
     /**

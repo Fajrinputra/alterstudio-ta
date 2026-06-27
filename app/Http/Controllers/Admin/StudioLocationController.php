@@ -7,6 +7,7 @@ use App\Models\StudioLocation;
 use App\Models\StudioRoom;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 /**
@@ -114,6 +115,30 @@ class StudioLocationController extends Controller
 
     public function destroy(StudioLocation $studioLocation)
     {
+        $hasBookingHistory = $studioLocation->bookings()->exists()
+            || $studioLocation->rooms()->whereHas('bookings')->exists();
+
+        if ($hasBookingHistory) {
+            $studioLocation->update(['is_active' => false]);
+            $studioLocation->rooms()->update(['is_active' => false]);
+            Cache::forget('landing.page.data.v2');
+
+            $message = 'Cabang sudah digunakan pada pemesanan, sehingga dinonaktifkan untuk menjaga riwayat transaksi.';
+
+            return request()->wantsJson()
+                ? response()->json(['message' => $message])
+                : redirect()->route('admin.locations.manage')->with('status', $message);
+        }
+
+        foreach ($studioLocation->photo_gallery as $photo) {
+            Storage::disk('public')->delete($photo);
+        }
+        foreach ($studioLocation->rooms as $room) {
+            if ($room->photo_path) {
+                Storage::disk('public')->delete($room->photo_path);
+            }
+        }
+
         $studioLocation->delete();
         Cache::forget('landing.page.data.v2');
 

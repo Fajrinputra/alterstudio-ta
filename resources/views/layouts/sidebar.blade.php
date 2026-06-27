@@ -11,8 +11,8 @@
     if ($user?->isRole(Role::ADMIN, Role::MANAGER)) {
         $menu[] = ['label' => 'Pemesanan', 'href' => url('/admin/bookings'), 'icon' => 'fa-solid fa-receipt', 'active' => ['admin/bookings*', 'projects/*']];
         $menu[] = ['label' => 'Katalog', 'href' => url('/admin/catalog'), 'icon' => 'fa-solid fa-box-open', 'active' => ['admin/catalog*', 'catalog']];
-        if ($user?->isRole(Role::ADMIN)) {
-            $menu[] = ['label' => 'Hero Landing', 'href' => route('admin.landing.hero'), 'icon' => 'fa-solid fa-images', 'active' => ['admin/landing/hero*']];
+        if ($user?->isRole(Role::MANAGER)) {
+            $menu[] = ['label' => 'Hero Landing', 'href' => route('manager.landing.hero'), 'icon' => 'fa-solid fa-images', 'active' => ['manager/landing/hero*']];
         }
     }
     if ($user?->isRole(Role::OWNER)) {

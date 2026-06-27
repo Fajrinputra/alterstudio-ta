@@ -21,24 +21,6 @@
 
     <div class="py-8 bg-[#FAF6F0]">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-            @if (session('status'))
-                <div class="flex items-center gap-3 p-5 rounded-3xl bg-emerald-50 border border-emerald-200 text-emerald-700 shadow-sm">
-                    <i class="fa-solid fa-circle-check text-2xl"></i>
-                    <span class="font-medium">{{ session('status') }}</span>
-                </div>
-            @endif
-
-            @if($errors->any())
-                <div class="rounded-3xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700">
-                    <p class="font-semibold">Data belum bisa disimpan.</p>
-                    <ul class="mt-2 list-disc pl-5">
-                        @foreach($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
-
             <section class="grid xl:grid-cols-[minmax(0,1fr)_420px] gap-8">
                 <form method="POST" action="{{ route('admin.locations.update', $studioLocation) }}" enctype="multipart/form-data" class="bg-white/85 border border-[#EDE0D0] rounded-3xl p-8 md:p-10 shadow-2xl space-y-7">
                     @csrf

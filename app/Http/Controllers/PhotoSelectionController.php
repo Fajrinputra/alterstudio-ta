@@ -26,6 +26,10 @@ class PhotoSelectionController extends Controller
             return $this->respondBack($request, 'Link Drive foto mentah belum tersedia.', 422);
         }
 
+        if ($project->isRawDriveExpired()) {
+            return $this->respondBack($request, 'Masa akses link Drive foto mentah sudah kedaluwarsa setelah 3 hari.', 422);
+        }
+
         if ($project->hasEditRequest()) {
             return $this->respondBack($request, 'Permintaan edit sudah dikirim dan tidak dapat diubah.', 422);
         }

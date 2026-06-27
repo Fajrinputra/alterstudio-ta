@@ -7,20 +7,21 @@ use App\Models\Booking;
 use App\Models\Payment;
 use App\Models\Project;
 use App\Models\ServicePackage;
+use App\Models\StudioRoom;
 use App\Support\BookingAvailability;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\Rule;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 /**
  * Menangani alur pemesanan klien serta pemantauan status untuk admin dan manajer.
  */
 class BookingController extends Controller
 {
-    public function __construct(protected BookingAvailability $availability)
-    {
-    }
+    public function __construct(protected BookingAvailability $availability) {}
 
     /** Menampilkan daftar pemesanan sesuai peran pengguna. */
     public function index(Request $request)
@@ -79,8 +80,8 @@ class BookingController extends Controller
                 $keyword = $request->get('q');
                 $query->where(function ($q) use ($keyword) {
                     $q->where('id', $keyword)
-                      ->orWhereHas('client', fn($c) => $c->where('name', 'like', "%{$keyword}%"))
-                      ->orWhereHas('package', fn($p) => $p->where('name', 'like', "%{$keyword}%"));
+                        ->orWhereHas('client', fn ($c) => $c->where('name', 'like', "%{$keyword}%"))
+                        ->orWhereHas('package', fn ($p) => $p->where('name', 'like', "%{$keyword}%"));
                 });
             }
         }
@@ -104,7 +105,8 @@ class BookingController extends Controller
         ];
         $clients = \App\Models\User::where('role', Role::CLIENT)->orderBy('name')->get();
         $packages = ServicePackage::orderBy('name')->get();
-        return view('admin.booking.index', compact('bookings','statuses','clients','packages'));
+
+        return view('admin.booking.index', compact('bookings', 'statuses', 'clients', 'packages'));
     }
 
     /** Menampilkan form pemesanan untuk klien. */
@@ -117,7 +119,7 @@ class BookingController extends Controller
             $selectedPackage = ServicePackage::where('is_active', true)->find($request->integer('package_id'));
         }
 
-        if (!$selectedPackage && $packages->count() === 1) {
+        if (! $selectedPackage && $packages->count() === 1) {
             $selectedPackage = $packages->first();
         }
 
@@ -133,7 +135,12 @@ class BookingController extends Controller
         $maxBookingDate = Carbon::today()->addMonth()->toDateString();
 
         $validated = $request->validate([
-            'package_id' => ['required', Rule::exists(ServicePackage::class, 'id')],
+            'package_id' => [
+                'required',
+                Rule::exists(ServicePackage::class, 'id')->where(fn ($query) => $query
+                    ->where('is_active', true)
+                    ->whereNull('deleted_at')),
+            ],
             'studio_location_id' => ['required', 'exists:studio_locations,id'],
             'booking_date' => ['required', 'date', 'after_or_equal:today', 'before_or_equal:'.$maxBookingDate],
             'selected_addons' => ['nullable', 'array'],
@@ -180,12 +187,17 @@ class BookingController extends Controller
         $maxBookingDate = Carbon::today()->addMonth()->toDateString();
 
         $validated = $request->validate([
-            'package_id' => ['required', Rule::exists(ServicePackage::class, 'id')],
+            'package_id' => [
+                'required',
+                Rule::exists(ServicePackage::class, 'id')->where(fn ($query) => $query
+                    ->where('is_active', true)
+                    ->whereNull('deleted_at')),
+            ],
             'booking_date' => ['required', 'date', 'after_or_equal:today', 'before_or_equal:'.$maxBookingDate],
             'booking_time' => ['required', 'date_format:H:i'],
             'studio_location_id' => ['required', 'exists:studio_locations,id'],
             'notes' => ['nullable', 'string'],
-            'payment_type' => ['required', 'in:' . Booking::PAYMENT_TYPE_DP . ',' . Booking::PAYMENT_TYPE_FULL],
+            'payment_type' => ['required', 'in:'.Booking::PAYMENT_TYPE_DP.','.Booking::PAYMENT_TYPE_FULL],
             'selected_addons' => ['nullable', 'array'],
             'selected_addons.*' => ['string'],
             'addon_quantities' => ['nullable', 'array'],
@@ -196,10 +208,7 @@ class BookingController extends Controller
             'booking_date.before_or_equal' => 'Tanggal pemesanan hanya dapat dipilih maksimal 1 bulan ke depan.',
         ]);
 
-        $package = ServicePackage::findOrFail($validated['package_id']);
         $bookingDate = Carbon::parse($validated['booking_date']);
-        $chosenAddons = $this->chosenAddonsFromRequest($package, $validated);
-        $extraDuration = Booking::extraDurationMinutesFromAddons($chosenAddons);
 
         if ($this->availability->isClosedDate($bookingDate, (int) $validated['studio_location_id'])) {
             return back()
@@ -207,52 +216,76 @@ class BookingController extends Controller
                 ->withErrors(['booking_date' => $this->availability->closedReason($bookingDate, (int) $validated['studio_location_id'])]);
         }
 
-        $availableRoom = $this->availability->availableRoomForSlot(
-            $package,
-            (int) $validated['studio_location_id'],
-            $bookingDate,
-            $validated['booking_time'],
-            $extraDuration
-        );
+        $booking = DB::transaction(function () use ($validated, $bookingDate, $user) {
+            $package = ServicePackage::query()
+                ->whereKey($validated['package_id'])
+                ->where('is_active', true)
+                ->lockForUpdate()
+                ->first();
 
-        if (! $availableRoom) {
-            return back()
-                ->withInput()
-                ->withErrors(['booking_time' => 'Jam yang dipilih sudah tidak tersedia. Silakan pilih slot lain yang masih kosong.']);
-        }
+            if (! $package) {
+                throw ValidationException::withMessages([
+                    'package_id' => 'Paket layanan sudah tidak aktif atau tidak tersedia.',
+                ]);
+            }
 
-        $addonTotal = (int) collect($chosenAddons)->sum('subtotal');
-        $totalPrice = (int) $package->price + $addonTotal;
+            // Mengunci kapasitas cabang agar dua request bersamaan tidak mengambil slot yang sama.
+            StudioRoom::query()
+                ->where('studio_location_id', $validated['studio_location_id'])
+                ->where('is_active', true)
+                ->orderBy('id')
+                ->lockForUpdate()
+                ->get();
 
-        $booking = Booking::create([
-            'client_id' => $user->id,
-            'package_id' => $package->id,
-            'studio_location_id' => $validated['studio_location_id'],
-            'studio_room_id' => $availableRoom->id,
-            'booking_date' => $validated['booking_date'],
-            'booking_time' => $validated['booking_time'],
-            'notes' => $validated['notes'] ?? null,
-            'status' => Booking::STATUS_WAITING_PAYMENT,
-            'confirmed_at' => null,
-            'payment_started_at' => null,
-            'payment_type' => $validated['payment_type'],
-            'addon_total' => $addonTotal,
-            'total_price' => $totalPrice,
-        ]);
-        $this->syncBookingAddons($booking, $chosenAddons);
+            $chosenAddons = $this->chosenAddonsFromRequest($package, $validated);
+            $extraDuration = Booking::extraDurationMinutesFromAddons($chosenAddons);
+            $availableRoom = $this->availability->availableRoomForSlot(
+                $package,
+                (int) $validated['studio_location_id'],
+                $bookingDate,
+                $validated['booking_time'],
+                $extraDuration
+            );
 
-        Project::create([
-            'booking_id' => $booking->id,
-            'status' => Project::STATUS_DRAFT,
-        ]);
+            if (! $availableRoom) {
+                throw ValidationException::withMessages([
+                    'booking_time' => 'Jam yang dipilih sudah tidak tersedia. Silakan pilih slot lain yang masih kosong.',
+                ]);
+            }
+
+            $addonTotal = (int) collect($chosenAddons)->sum('subtotal');
+            $booking = Booking::create([
+                'client_id' => $user->id,
+                'package_id' => $package->id,
+                'studio_location_id' => $validated['studio_location_id'],
+                'studio_room_id' => $availableRoom->id,
+                'booking_date' => $validated['booking_date'],
+                'booking_time' => $validated['booking_time'],
+                'notes' => $validated['notes'] ?? null,
+                'status' => Booking::STATUS_WAITING_PAYMENT,
+                'confirmed_at' => null,
+                'payment_started_at' => null,
+                'payment_type' => $validated['payment_type'],
+                'addon_total' => $addonTotal,
+                'total_price' => (int) $package->price + $addonTotal,
+            ]);
+            $this->syncBookingAddons($booking, $chosenAddons);
+
+            Project::create([
+                'booking_id' => $booking->id,
+                'status' => Project::STATUS_DRAFT,
+            ]);
+
+            return $booking;
+        }, 3);
 
         // Kirim notifikasi bahwa ada pemesanan baru yang perlu ditinjau.
-        $admins = \App\Models\User::whereIn('role', [Role::ADMIN, Role::OWNER])->get();
+        $operators = \App\Models\User::whereIn('role', [Role::ADMIN, Role::MANAGER])->get();
         $notification = new \App\Notifications\BookingCreatedNotification(
             $booking->load(['package', 'client', 'studioLocation', 'studioRoom'])
         );
         $user->notify($notification);
-        \Illuminate\Support\Facades\Notification::send($admins, $notification);
+        \Illuminate\Support\Facades\Notification::send($operators, $notification);
 
         if ($request->wantsJson()) {
             $booking->load(['package', 'project']);
@@ -275,7 +308,7 @@ class BookingController extends Controller
 
         return redirect()
             ->route('bookings.index')
-            ->with('success', 'Pemesanan berhasil dikirim. Admin akan meninjau terlebih dahulu sebelum pembayaran dibuka.');
+            ->with('success', 'Pemesanan berhasil dikirim. Admin atau manajer akan meninjau sebelum pembayaran dibuka.');
     }
 
     /** Menampilkan detail pemesanan; klien hanya boleh melihat miliknya sendiri. */
@@ -290,11 +323,11 @@ class BookingController extends Controller
         return response()->json($booking->load(['package', 'project', 'payments']));
     }
 
-    /** Admin mengubah status pemesanan: konfirmasi, pelunasan manual, atau pembatalan. */
+    /** Admin dan manajer mengelola konfirmasi, pembatalan, serta pelunasan manual. */
     public function updateStatus(Request $request, Booking $booking)
     {
         $request->validate([
-            'status' => ['required', 'in:' . implode(',', [
+            'status' => ['required', 'in:'.implode(',', [
                 Booking::STATUS_WAITING_PAYMENT,
                 Booking::STATUS_DP_PAID,
                 Booking::STATUS_PAID,
@@ -362,7 +395,7 @@ class BookingController extends Controller
                 ->where('status', Payment::STATUS_PENDING)
                 ->update([
                     'status' => Payment::STATUS_FAILED,
-                    'transaction_status' => 'cancelled_by_admin',
+                    'transaction_status' => 'cancelled_by_operator',
                     'paid_at' => null,
                 ]);
         }
@@ -389,7 +422,7 @@ class BookingController extends Controller
         if ($booking->isSubmitted()) {
             return redirect()
                 ->route('bookings.index')
-                ->with('error', 'Pemesanan masih menunggu konfirmasi admin. Pembayaran baru bisa dilakukan setelah pemesanan dikonfirmasi.');
+                ->with('error', 'Pemesanan masih menunggu konfirmasi admin atau manajer. Pembayaran baru bisa dilakukan setelah pemesanan dikonfirmasi.');
         }
 
         if ($booking->isConfirmedAwaitingPayment() && ! $booking->hasPaymentWindowStarted()) {
@@ -438,6 +471,7 @@ class BookingController extends Controller
                     'price' => max(0, $price),
                     'unit' => trim((string) ($item['unit'] ?? '')),
                 ];
+
                 continue;
             }
 
@@ -495,6 +529,7 @@ class BookingController extends Controller
         if (preg_match('/^(.*?)\s*(?:\||:|-)\s*([0-9][0-9\.,]*)$/', $raw, $matches)) {
             $label = trim($matches[1]) !== '' ? trim($matches[1]) : $raw;
             $price = (int) preg_replace('/[^0-9]/', '', $matches[2]);
+
             return [$label, $price];
         }
 
@@ -513,6 +548,7 @@ class BookingController extends Controller
                 $token = trim($matches[0]);
                 $label = trim(str_ireplace($token, '', $raw));
                 $label = $label !== '' ? trim(preg_replace('/[\-:|]+$/', '', $label)) : $raw;
+
                 return [$label, $price];
             }
         }

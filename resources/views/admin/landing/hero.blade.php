@@ -20,24 +20,6 @@
     <div class="py-8 bg-[#FAF6F0]" x-data="{ showDelete: false, deleteUrl: '', deleteTitle: '' }">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
             
-            @if(session('success'))
-                <div class="p-5 rounded-3xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm flex items-center gap-3 shadow-sm">
-                    <i class="fa-solid fa-circle-check text-xl"></i>
-                    {{ session('success') }}
-                </div>
-            @endif
-
-            @if($errors->any())
-                <div class="p-5 rounded-3xl bg-rose-50 border border-rose-200 text-rose-700 text-sm shadow-sm">
-                    <p class="font-semibold">Data slide belum bisa disimpan.</p>
-                    <ul class="mt-2 list-disc pl-5">
-                        @foreach($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
-
             <div class="grid lg:grid-cols-3 gap-8">
                 {{-- Form Tambah Slide Baru - Modern Card --}}
                 <div class="lg:col-span-1">
@@ -50,7 +32,7 @@
                                 <h3 class="font-display text-2xl font-semibold text-[#3F2B1B]">Tambah Slide Baru</h3>
                             </div>
                             
-                            <form method="POST" action="{{ route('admin.landing.hero.store') }}" enctype="multipart/form-data" class="space-y-6">
+                            <form method="POST" action="{{ route('manager.landing.hero.store') }}" enctype="multipart/form-data" class="space-y-6">
                                 @csrf
                                 <div>
                                     <label class="text-xs font-medium text-[#7A5B3A] tracking-widest block mb-2">JUDUL KECIL (EYEBROW)</label>
@@ -84,6 +66,9 @@
                                                 </option>
                                             @endfor
                                         </select>
+                                        @if(count($usedOrders))
+                                            <p class="mt-2 text-xs leading-5 text-[#8B7359]">Nomor yang tidak dapat dipilih sedang digunakan oleh slide lain.</p>
+                                        @endif
                                     </div>
                                     <div class="flex h-11 items-center">
                                         <label class="inline-flex items-center gap-2 text-sm text-[#7A5B3A]">
@@ -138,7 +123,7 @@
                                         
                                         <!-- Form Edit -->
                                         <div class="min-w-0 space-y-5">
-                                            <form method="POST" action="{{ route('admin.landing.hero.update', $slide) }}" enctype="multipart/form-data" class="space-y-5">
+                                            <form method="POST" action="{{ route('manager.landing.hero.update', $slide) }}" enctype="multipart/form-data" class="space-y-5">
                                                 @csrf
                                                 @method('PUT')
                                                 
@@ -178,6 +163,7 @@
                                                                 </option>
                                                             @endfor
                                                         </select>
+                                                        <p class="mt-2 text-xs leading-5 text-[#8B7359]">Nomor yang tidak dapat dipilih sedang digunakan oleh slide lain.</p>
                                                     </div>
                                                     
                                                     <div x-data="{ active: {{ $slide->is_active ? 'true' : 'false' }} }" class="w-28">
@@ -214,7 +200,7 @@
                                                     </button>
                                                     
                                                     <button type="button"
-                                                            @click="showDelete = true; deleteUrl='{{ route('admin.landing.hero.destroy', $slide) }}'; deleteTitle=@js($slide->title)"
+                                                            @click="showDelete = true; deleteUrl='{{ route('manager.landing.hero.destroy', $slide) }}'; deleteTitle=@js($slide->title)"
                                                             class="px-8 py-3.5 rounded-3xl bg-white border-2 border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400 transition-all font-semibold">
                                                         <i class="fa-solid fa-trash"></i>
                                                     </button>

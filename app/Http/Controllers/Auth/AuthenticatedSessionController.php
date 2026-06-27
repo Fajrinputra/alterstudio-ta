@@ -36,6 +36,9 @@ class AuthenticatedSessionController extends Controller
         // Hard stop untuk akun nonaktif walau password benar.
         if (!$request->user()->is_active) {
             Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
             return back()->withErrors([
                 'email' => 'Akun Anda dinonaktifkan. Hubungi admin.',
             ]);

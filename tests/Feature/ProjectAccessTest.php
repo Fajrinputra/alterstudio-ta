@@ -70,6 +70,30 @@ class ProjectAccessTest extends TestCase
             ->assertForbidden();
     }
 
+    /** Link Drive mentah dan final tidak dapat diakses setelah tiga hari. */
+    public function test_client_drive_links_expire_after_three_days(): void
+    {
+        [$project, , , $client] = $this->makeProject([
+            'raw_drive_url' => 'https://drive.google.com/drive/folders/raw-expired',
+            'raw_drive_uploaded_at' => now()->subDays(4),
+            'final_drive_url' => 'https://drive.google.com/drive/folders/final-expired',
+            'final_drive_uploaded_at' => now()->subDays(4),
+            'status' => Project::STATUS_FINAL,
+        ]);
+
+        $this->actingAs($client)
+            ->from(route('bookings.index'))
+            ->get(route('projects.raw.download', $project))
+            ->assertRedirect(route('bookings.index'))
+            ->assertSessionHas('error', 'Masa akses link Drive foto mentah sudah kedaluwarsa setelah 3 hari.');
+
+        $this->actingAs($client)
+            ->from(route('bookings.index'))
+            ->get(route('projects.final.download', $project))
+            ->assertRedirect(route('bookings.index'))
+            ->assertSessionHas('error', 'Masa akses link Drive hasil final sudah kedaluwarsa setelah 3 hari.');
+    }
+
     /**
      * @param array<string, mixed> $projectAttributes
      * @return array{0: Project, 1: User, 2: User, 3: User}

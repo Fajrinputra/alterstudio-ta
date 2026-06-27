@@ -33,7 +33,7 @@ class PaymentController extends Controller
 
         if ($booking->isSubmitted()) {
             return response()->json([
-                'message' => 'Pemesanan masih menunggu konfirmasi admin. Pembayaran belum dapat dilakukan.',
+                'message' => 'Pemesanan masih menunggu konfirmasi admin atau manajer. Pembayaran belum dapat dilakukan.',
             ], 422);
         }
 
@@ -199,13 +199,49 @@ class PaymentController extends Controller
     /** Menerima webhook Midtrans dan menyamakan status internal. */
     public function webhook(Request $request)
     {
-        $orderId = $request->input('order_id');
-        $transactionStatus = $request->input('transaction_status');
+        $data = $request->validate([
+            'order_id' => ['required', 'string', 'max:100'],
+            'transaction_status' => ['required', 'string', 'max:50'],
+            'status_code' => ['required', 'string', 'max:10'],
+            'gross_amount' => ['required', 'numeric', 'min:0'],
+            'signature_key' => ['required', 'string', 'size:128'],
+        ]);
 
-        $payment = Payment::where('order_id', $orderId)->firstOrFail();
-        $this->applyStatus($payment, $transactionStatus);
+        $serverKey = config('services.midtrans.server_key');
+        if (! is_string($serverKey) || trim($serverKey) === '') {
+            Log::error('Midtrans webhook rejected because server key is missing.');
 
-        Log::info('Midtrans webhook handled', ['order_id' => $orderId, 'status' => $transactionStatus]);
+            return response()->json(['message' => 'Konfigurasi Midtrans belum lengkap.'], 503);
+        }
+
+        $expectedSignature = hash(
+            'sha512',
+            $data['order_id'].$data['status_code'].$data['gross_amount'].$serverKey
+        );
+
+        if (! hash_equals($expectedSignature, $data['signature_key'])) {
+            Log::warning('Invalid Midtrans webhook signature.', ['order_id' => $data['order_id']]);
+
+            return response()->json(['message' => 'Signature webhook tidak valid.'], 403);
+        }
+
+        $payment = Payment::where('order_id', $data['order_id'])->firstOrFail();
+        if (abs((float) $payment->amount - (float) $data['gross_amount']) > 0.01) {
+            Log::warning('Midtrans webhook amount mismatch.', [
+                'order_id' => $data['order_id'],
+                'expected_amount' => $payment->amount,
+                'received_amount' => $data['gross_amount'],
+            ]);
+
+            return response()->json(['message' => 'Nominal webhook tidak sesuai.'], 422);
+        }
+
+        $this->applyStatus($payment, $data['transaction_status']);
+
+        Log::info('Midtrans webhook handled', [
+            'order_id' => $data['order_id'],
+            'status' => $data['transaction_status'],
+        ]);
 
         return response()->json(['message' => 'ok']);
     }
@@ -224,7 +260,7 @@ class PaymentController extends Controller
 
         if ($booking->isSubmitted()) {
             return response()->json([
-                'message' => 'Pemesanan masih menunggu konfirmasi admin.',
+                'message' => 'Pemesanan masih menunggu konfirmasi admin atau manajer.',
                 'booking_status' => $booking->status,
             ], 422);
         }

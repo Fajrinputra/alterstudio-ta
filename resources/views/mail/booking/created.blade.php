@@ -20,7 +20,7 @@ Terdapat pemesanan baru yang masuk ke sistem Alter Studio. Berikut detailnya.
 @endcomponent
 
 @if($isClientRecipient)
-Pemesanan Anda sudah kami terima dan sedang menunggu konfirmasi admin. Setelah admin mengonfirmasi jadwal, Anda dapat melanjutkan pembayaran dari halaman pemesanan.
+Pemesanan Anda sudah kami terima dan sedang menunggu konfirmasi admin atau manajer. Setelah pemesanan dikonfirmasi, Anda dapat melanjutkan pembayaran dari halaman pemesanan.
 
 @component('mail::button', ['url' => route('bookings.index')])
 Lihat Status Pemesanan

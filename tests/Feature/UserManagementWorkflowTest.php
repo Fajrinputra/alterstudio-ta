@@ -16,6 +16,32 @@ class UserManagementWorkflowTest extends TestCase
 {
     use RefreshDatabase;
 
+    /** Password akun internal wajib diisi dan minimal delapan karakter. */
+    public function test_owner_must_provide_valid_password_when_creating_user(): void
+    {
+        $owner = User::factory()->create(['role' => Role::OWNER]);
+
+        $this->actingAs($owner)
+            ->post(route('admin.users.store'), [
+                'name' => 'Crew Tanpa Password',
+                'email' => 'crew-no-password@example.test',
+                'role' => Role::EDITOR->value,
+            ])
+            ->assertSessionHasErrors(['password']);
+
+        $this->actingAs($owner)
+            ->post(route('admin.users.store'), [
+                'name' => 'Crew Password Pendek',
+                'email' => 'crew-short-password@example.test',
+                'role' => Role::EDITOR->value,
+                'password' => 'short',
+            ])
+            ->assertSessionHasErrors(['password']);
+
+        $this->assertDatabaseMissing('users', ['email' => 'crew-no-password@example.test']);
+        $this->assertDatabaseMissing('users', ['email' => 'crew-short-password@example.test']);
+    }
+
     /**
      * Pengujian: Owner membuat pengguna internal dengan satu role.
      * Hasil yang diharapkan: akun tersimpan aktif dengan role utama yang sesuai.
@@ -39,6 +65,7 @@ class UserManagementWorkflowTest extends TestCase
         $this->assertTrue(Hash::check('secret123', $user->password));
         $this->assertSame(Role::PHOTOGRAPHER, $user->role);
         $this->assertTrue($user->is_active);
+        $this->assertTrue($user->hasVerifiedEmail());
     }
 
     /**
@@ -85,13 +112,13 @@ class UserManagementWorkflowTest extends TestCase
 
         $this->actingAs($owner)
             ->post(route('admin.users.toggle', $otherOwner), ['is_active' => false])
-            ->assertSessionHas('status', 'Akun owner tidak boleh dinonaktifkan.');
+            ->assertSessionHas('error', 'Akun owner tidak boleh dinonaktifkan.');
 
         $this->assertTrue($otherOwner->fresh()->is_active);
 
         $this->actingAs($owner)
             ->delete(route('admin.users.destroy', $otherOwner))
-            ->assertSessionHas('status', 'Akun owner tidak boleh dihapus.');
+            ->assertSessionHas('error', 'Akun owner tidak boleh dihapus.');
 
         $this->assertDatabaseHas('users', ['id' => $otherOwner->id]);
 
@@ -126,13 +153,13 @@ class UserManagementWorkflowTest extends TestCase
 
         $this->actingAs($owner)
             ->post(route('admin.users.toggle', $client), ['is_active' => false])
-            ->assertSessionHas('status', 'Akun tidak dapat dinonaktifkan karena masih memiliki pemesanan atau project yang belum selesai.');
+            ->assertSessionHas('error', 'Akun tidak dapat dinonaktifkan karena masih memiliki pemesanan atau project yang belum selesai.');
 
         $this->assertTrue($client->fresh()->is_active);
 
         $this->actingAs($owner)
             ->delete(route('admin.users.destroy', $client))
-            ->assertSessionHas('status', 'Akun tidak dapat dihapus karena masih memiliki pemesanan atau project yang belum selesai.');
+            ->assertSessionHas('error', 'Akun tidak dapat dihapus karena masih memiliki pemesanan atau project yang belum selesai.');
 
         $this->assertDatabaseHas('users', ['id' => $client->id]);
     }
@@ -191,7 +218,7 @@ class UserManagementWorkflowTest extends TestCase
 
         $this->actingAs($owner)
             ->delete(route('admin.users.destroy', $photographer))
-            ->assertSessionHas('status', 'Akun tidak dapat dihapus karena masih memiliki pemesanan atau project yang belum selesai.');
+            ->assertSessionHas('error', 'Akun tidak dapat dihapus karena masih memiliki pemesanan atau project yang belum selesai.');
 
         $this->assertDatabaseHas('users', ['id' => $photographer->id]);
     }

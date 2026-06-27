@@ -17,19 +17,19 @@ skinparam sequence {
     GroupBackgroundColor transparent
 }
 
-actor "Admin" as Admin
+actor "Manajer" as Manajer
 boundary "Halaman Kelola Hero" as HalamanHero
 boundary "Form Edit Slide Hero" as FormEdit
 control "LandingHeroController" as LandingHeroController
 control "StorageService" as StorageService
 entity "LandingHeroSlides Model" as LandingHeroSlide
 
-Admin -> HalamanHero : Klik edit pada slide hero
+Manajer -> HalamanHero : Klik edit pada slide hero
 HalamanHero -> LandingHeroController : edit(slideId)
 LandingHeroController -> LandingHeroSlide : SELECT landing_hero_slides
 LandingHeroSlide --> LandingHeroController : data slide
 LandingHeroController --> FormEdit : tampilkan form edit slide
-Admin -> FormEdit : Submit perubahan slide hero
+Manajer -> FormEdit : Submit perubahan slide hero
 FormEdit -> LandingHeroController : update(slideId, data)
 LandingHeroController -> LandingHeroController : validasi data perubahan
 
@@ -43,10 +43,10 @@ alt Validasi berhasil
     LandingHeroController -> LandingHeroSlide : UPDATE landing_hero_slides
     LandingHeroSlide --> LandingHeroController : slide diperbarui
     LandingHeroController --> HalamanHero : redirect dengan pesan berhasil
-    HalamanHero --> Admin : slide hero terbaru tampil
+    HalamanHero --> manajer : slide hero terbaru tampil
 else Validasi gagal
     LandingHeroController --> FormEdit : tampilkan pesan error
-    FormEdit --> Admin : perubahan tidak disimpan
+    FormEdit --> Manajer : perubahan tidak disimpan
 end
 
 @enduml
