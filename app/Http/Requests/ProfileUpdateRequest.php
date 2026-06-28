@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Models\User;
+use App\Support\ImageUploadValidation;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -30,7 +31,7 @@ class ProfileUpdateRequest extends FormRequest
                 Rule::unique(User::class)->ignore($this->user()->id),
             ],
             'no_hp' => ['nullable', 'string', 'max:20', 'regex:/^(?:\+62|62|0)[0-9]{9,13}$/'],
-            'avatar' => ['nullable', 'image', 'max:2048'],
+            'avatar' => ImageUploadValidation::rules(maxKb: 2048),
         ];
     }
 
@@ -43,8 +44,7 @@ class ProfileUpdateRequest extends FormRequest
     {
         return [
             'no_hp.regex' => 'Nomor HP harus menggunakan format Indonesia, misalnya 081234567890 atau +6281234567890.',
-            'avatar.image' => 'Foto profil harus berupa file gambar.',
-            'avatar.max' => 'Ukuran foto profil maksimal 2 MB.',
+            ...ImageUploadValidation::messages(['avatar'], '2 MB'),
         ];
     }
 }

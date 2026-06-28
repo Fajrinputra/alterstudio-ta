@@ -11,11 +11,11 @@ use App\Models\ServicePackage;
 use App\Models\StudioRoom;
 use App\Models\User;
 use App\Notifications\ScheduleAssignedNotification;
+use App\Support\DeferredNotification;
 use Carbon\Carbon;
 use DateTimeInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Notification;
 
 /**
  * Pengaturan jadwal kru (fotografer/editor) per project.
@@ -230,7 +230,7 @@ class ScheduleController extends Controller
 
         $recipients = collect([$project->photographer, $project->editor])->filter();
         if ($recipients->isNotEmpty()) {
-            Notification::send($recipients, new ScheduleAssignedNotification($project->id));
+            DeferredNotification::send($recipients, new ScheduleAssignedNotification($project->id));
         }
 
         if ($request->wantsJson()) {
@@ -313,7 +313,7 @@ class ScheduleController extends Controller
 
         $recipients = collect([$project->photographer, $project->editor])->filter();
         if ($recipients->isNotEmpty()) {
-            Notification::send($recipients, new ScheduleAssignedNotification($project->id));
+            DeferredNotification::send($recipients, new ScheduleAssignedNotification($project->id));
         }
 
         return $request->wantsJson()

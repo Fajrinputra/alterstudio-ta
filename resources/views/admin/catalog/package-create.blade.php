@@ -13,7 +13,6 @@
             </div>
             <a href="{{ route('admin.catalog.packages', $category) }}"
                class="inline-flex items-center gap-3 px-6 py-3 rounded-3xl border border-[#E1D3C5] text-[#5C432C] hover:bg-white hover:shadow-md transition-all">
-                <i class="fa-solid fa-arrow-left"></i>
                 Kembali
             </a>
         </div>
@@ -169,7 +168,7 @@
                             <i class="fa-solid fa-image text-[#D4A017]"></i>
                             Foto Overview (1 buah, maks 20 MB)
                         </label>
-                        <input type="file" name="overview_image" accept="image/*"
+                        <input type="file" name="overview_image" accept="{{ \App\Support\ImageUploadValidation::ACCEPT_ATTRIBUTE }}"
                                class="w-full text-sm file:mr-4 file:py-3 file:px-6 file:rounded-3xl file:border-0 file:bg-[#D4A017] file:text-white file:font-medium">
                         @error('overview_image')
                             <p class="text-xs text-red-600 flex items-center gap-1 mt-1"><i class="fa-solid fa-circle-exclamation"></i> {{ $message }}</p>
@@ -182,7 +181,7 @@
                             <i class="fa-solid fa-images text-[#D4A017]"></i>
                             Galeri Foto (maks 20)
                         </label>
-                        <input type="file" name="gallery[]" multiple accept="image/*"
+                        <input type="file" name="gallery[]" multiple accept="{{ \App\Support\ImageUploadValidation::ACCEPT_ATTRIBUTE }}"
                                class="w-full text-sm file:mr-4 file:py-3 file:px-6 file:rounded-3xl file:border-0 file:bg-[#D4A017] file:text-white file:font-medium">
                         @error('gallery')
                             <p class="text-xs text-red-600">{{ $message }}</p>

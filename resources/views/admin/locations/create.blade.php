@@ -10,7 +10,6 @@
             </div>
             <a href="{{ route('admin.locations.manage') }}"
                class="inline-flex items-center justify-center gap-3 px-6 py-3 rounded-3xl border border-[#E1D3C5] text-[#5C432C] hover:bg-white hover:border-[#D4A017] transition-all">
-                <i class="fa-solid fa-arrow-left"></i>
                 Kembali
             </a>
         </div>
@@ -44,8 +43,8 @@
 
                 <div class="space-y-3">
                     <label class="block text-xs font-medium text-[#7A5B3A] tracking-widest">Foto Lokasi</label>
-                    <input type="file" name="photos[]" accept="image/*" multiple class="w-full text-sm file:mr-6 file:py-4 file:px-8 file:rounded-3xl file:border-0 file:bg-[#FAF6F0] file:text-[#3F2B1B] file:font-medium hover:file:bg-white">
-                    <p class="text-xs text-[#8B7359]">Maksimal 10 foto lokasi.</p>
+                    <input type="file" name="photos[]" accept="{{ \App\Support\ImageUploadValidation::ACCEPT_ATTRIBUTE }}" multiple class="w-full text-sm file:mr-6 file:py-4 file:px-8 file:rounded-3xl file:border-0 file:bg-[#FAF6F0] file:text-[#3F2B1B] file:font-medium hover:file:bg-white">
+                    <p class="text-xs text-[#8B7359]">Maksimal 10 foto lokasi, 20 MB per foto. Format JPG, JPEG, PNG, WEBP, atau GIF. Video tidak diperbolehkan.</p>
                 </div>
 
                 <label class="flex items-center gap-3 rounded-3xl border border-[#EDE0D0] bg-[#FAF6F0] px-5 py-4 text-[#3F2B1B]">

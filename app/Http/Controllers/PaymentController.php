@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Booking;
 use App\Models\Payment;
 use App\Notifications\PaymentConfirmedNotification;
+use App\Support\DeferredNotification;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -356,7 +357,7 @@ class PaymentController extends Controller
             $booking->save();
 
             if ($previousStatus !== Payment::STATUS_PAID) {
-                $booking->client?->notify(new PaymentConfirmedNotification($payment->id));
+                DeferredNotification::to($booking->client, new PaymentConfirmedNotification($payment->id));
             }
         } elseif (in_array($newStatus, [Payment::STATUS_EXPIRED, Payment::STATUS_FAILED], true)) {
             $booking->status = $booking->remainingAmount() > 0 && $booking->paidAmount() > 0

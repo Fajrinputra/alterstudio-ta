@@ -59,7 +59,6 @@
                 <div class="text-center mt-8">
                     <a href="/" 
                        class="text-sm text-[#8B7359] hover:text-[#D4A017] transition-colors inline-flex items-center gap-2">
-                        <i class="fa-solid fa-arrow-left"></i>
                         Kembali ke Beranda
                     </a>
                 </div>

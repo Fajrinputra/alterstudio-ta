@@ -89,11 +89,11 @@
                 </div>
 
                 <div class="flex-1">
-                    <input id="avatar" name="avatar" type="file" accept="image/*"
+                    <input id="avatar" name="avatar" type="file" accept="{{ \App\Support\ImageUploadValidation::ACCEPT_ATTRIBUTE }}"
                            class="w-full text-sm file:mr-6 file:py-4 file:px-8 file:rounded-3xl file:border-0 file:bg-[#FAF6F0] file:text-[#3F2B1B] file:font-medium hover:file:bg-white">
                     <p class="text-xs text-[#7A5B3A] mt-3">
                         <i class="fa-solid fa-circle-info"></i>
-                        Format: JPG, PNG • Maksimal 2 MB
+                        Format: JPG, JPEG, PNG, WEBP, atau GIF. Video tidak diperbolehkan. Maksimal 2 MB.
                     </p>
                 </div>
             </div>

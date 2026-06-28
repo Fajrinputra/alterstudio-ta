@@ -13,7 +13,6 @@
             </div>
             <a href="{{ route('admin.catalog') }}"
                class="inline-flex items-center gap-3 px-6 py-3 rounded-3xl border border-[#E1D3C5] text-[#5C432C] hover:bg-white hover:shadow-md transition-all">
-                <i class="fa-solid fa-arrow-left"></i>
                 Kembali
             </a>
         </div>
@@ -137,12 +136,12 @@
                                 <div class="grid md:grid-cols-2 gap-6">
                                     <div class="space-y-2">
                                         <label class="text-sm font-medium text-[#5C432C]">Foto Overview</label>
-                                        <input type="file" name="packages[__index__][overview_image]" accept="image/*"
+                                        <input type="file" name="packages[__index__][overview_image]" accept="{{ \App\Support\ImageUploadValidation::ACCEPT_ATTRIBUTE }}"
                                                class="w-full text-sm file:mr-4 file:py-3 file:px-6 file:rounded-3xl file:border-0 file:bg-[#D4A017] file:text-white">
                                     </div>
                                     <div class="space-y-2">
                                         <label class="text-sm font-medium text-[#5C432C]">Galeri Foto (maks 20)</label>
-                                        <input type="file" name="packages[__index__][gallery][]" multiple accept="image/*"
+                                        <input type="file" name="packages[__index__][gallery][]" multiple accept="{{ \App\Support\ImageUploadValidation::ACCEPT_ATTRIBUTE }}"
                                                class="w-full text-sm file:mr-4 file:py-3 file:px-6 file:rounded-3xl file:border-0 file:bg-[#D4A017] file:text-white">
                                     </div>
                                 </div>
@@ -206,12 +205,12 @@
                             <div class="grid md:grid-cols-2 gap-6">
                                 <div class="space-y-2">
                                     <label class="text-sm font-medium text-[#5C432C]">Foto Overview</label>
-                                    <input type="file" name="packages[0][overview_image]" accept="image/*"
+                                    <input type="file" name="packages[0][overview_image]" accept="{{ \App\Support\ImageUploadValidation::ACCEPT_ATTRIBUTE }}"
                                            class="w-full text-sm file:mr-4 file:py-3 file:px-6 file:rounded-3xl file:border-0 file:bg-[#D4A017] file:text-white">
                                 </div>
                                 <div class="space-y-2">
                                     <label class="text-sm font-medium text-[#5C432C]">Galeri Foto (maks 20)</label>
-                                    <input type="file" name="packages[0][gallery][]" multiple accept="image/*"
+                                    <input type="file" name="packages[0][gallery][]" multiple accept="{{ \App\Support\ImageUploadValidation::ACCEPT_ATTRIBUTE }}"
                                            class="w-full text-sm file:mr-4 file:py-3 file:px-6 file:rounded-3xl file:border-0 file:bg-[#D4A017] file:text-white">
                                 </div>
                             </div>

@@ -82,12 +82,12 @@
                                 <div>
                                     <label class="text-xs font-medium text-[#7A5B3A] tracking-widest block mb-2">FOTO BACKGROUND HERO</label>
                                     <div class="mt-1 border-2 border-dashed border-[#E1D3C5] rounded-3xl p-8 text-center hover:border-[#D4A017] transition-colors">
-                                        <input type="file" name="image" accept="image/*" required
+                                        <input type="file" name="image" accept="{{ \App\Support\ImageUploadValidation::ACCEPT_ATTRIBUTE }}" required
                                                class="hidden" id="hero-image">
                                         <label for="hero-image" class="cursor-pointer block">
                                             <i class="fa-solid fa-cloud-arrow-up text-4xl text-[#D4A017] mb-3"></i>
                                             <p class="text-sm font-medium text-[#3F2B1B]">Klik untuk upload foto</p>
-                                            <p class="text-xs text-[#8B7359] mt-1">Format gambar bebas, sistem akan menyesuaikan tampilan hero.</p>
+                                            <p class="text-xs text-[#8B7359] mt-1">Maksimal 20 MB. Format JPG, JPEG, PNG, WEBP, atau GIF. Video tidak diperbolehkan.</p>
                                         </label>
                                     </div>
                                 </div>
@@ -180,7 +180,7 @@
                                                      
                                                     <div x-data="{ fileName: '' }" class="w-40">
                                                         <label class="text-xs font-medium text-[#7A5B3A] tracking-widest block mb-2">GANTI FOTO</label>
-                                                        <input type="file" name="image" accept="image/*"
+                                                        <input type="file" name="image" accept="{{ \App\Support\ImageUploadValidation::ACCEPT_ATTRIBUTE }}"
                                                                class="hidden"
                                                                id="slide-image-{{ $slide->id }}"
                                                                @change="fileName = $event.target.files[0]?.name || ''">
@@ -189,6 +189,7 @@
                                                             <i class="fa-solid fa-image text-[#D4A017]"></i>
                                                             Pilih Foto
                                                         </label>
+                                                        <p class="mt-2 text-xs leading-5 text-[#8B7359]">Maksimal 20 MB. Format JPG, JPEG, PNG, WEBP, atau GIF.</p>
                                                         <p x-show="fileName" x-text="fileName" class="mt-2 truncate text-xs text-[#8B7359]"></p>
                                                     </div>
                                                 </div>

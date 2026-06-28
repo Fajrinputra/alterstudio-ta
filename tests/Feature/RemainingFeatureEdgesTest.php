@@ -513,7 +513,7 @@ class RemainingFeatureEdgesTest extends TestCase
             ->assertSessionHas('status');
         \Illuminate\Support\Facades\Notification::assertSentTo(
             $user,
-            \Illuminate\Auth\Notifications\ResetPassword::class
+            \App\Notifications\ResetPasswordNotification::class
         );
 
         config([

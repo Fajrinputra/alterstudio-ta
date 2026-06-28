@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\LandingHeroSlide;
+use App\Support\ImageUploadValidation;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Cache;
@@ -44,8 +45,8 @@ class LandingHeroController extends Controller
                 Rule::unique('landing_hero_slides', 'sort_order'),
             ],
             'is_active' => ['nullable', 'boolean'],
-            'image' => ['required', 'image', 'max:20480'],
-        ]);
+            'image' => ImageUploadValidation::rules(required: true),
+        ], ImageUploadValidation::messages(['image']));
 
         $imagePath = $request->file('image')->storePublicly('landing/hero', 'public');
 
@@ -78,8 +79,8 @@ class LandingHeroController extends Controller
                 Rule::unique('landing_hero_slides', 'sort_order')->ignore($slide->id),
             ],
             'is_active' => ['nullable', 'boolean'],
-            'image' => ['nullable', 'image', 'max:20480'],
-        ]);
+            'image' => ImageUploadValidation::rules(),
+        ], ImageUploadValidation::messages(['image']));
 
         if ($request->hasFile('image')) {
             // Ganti file lama agar tidak menyisakan orphan file.

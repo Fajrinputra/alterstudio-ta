@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Notifications\ResetPasswordNotification;
+use App\Notifications\VerifyEmailNotification;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -56,6 +58,22 @@ class User extends Authenticatable implements MustVerifyEmail
             'is_active' => 'boolean',
             'avatar_path' => 'string',
         ];
+    }
+
+    /**
+     * Kirim email reset kata sandi dengan template bahasa Indonesia.
+     */
+    public function sendPasswordResetNotification($token): void
+    {
+        $this->notify(new ResetPasswordNotification($token));
+    }
+
+    /**
+     * Kirim email verifikasi akun dengan template bahasa Indonesia.
+     */
+    public function sendEmailVerificationNotification(): void
+    {
+        $this->notify(new VerifyEmailNotification);
     }
 
     /**

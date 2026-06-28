@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\Role;
 use App\Models\User;
-use Illuminate\Auth\Notifications\ResetPassword;
+use App\Notifications\ResetPasswordNotification;
 use Illuminate\Contracts\Notifications\Dispatcher;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
@@ -137,7 +137,7 @@ class UseCaseScenarioA01A11Test extends TestCase
         $this->post(route('password.email'), ['email' => $user->email])
             ->assertSessionHas('status');
 
-        Notification::assertSentTo($user, ResetPassword::class);
+        Notification::assertSentTo($user, ResetPasswordNotification::class);
     }
 
     public function test_forgot_password_reports_email_delivery_failure(): void

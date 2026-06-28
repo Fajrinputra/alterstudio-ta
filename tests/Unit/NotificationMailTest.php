@@ -14,7 +14,9 @@ use App\Notifications\EditRequestSubmittedNotification;
 use App\Notifications\FinalPhotosReadyNotification;
 use App\Notifications\PaymentConfirmedNotification;
 use App\Notifications\RawPhotosUploadedNotification;
+use App\Notifications\ResetPasswordNotification;
 use App\Notifications\ScheduleAssignedNotification;
+use App\Notifications\VerifyEmailNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -129,6 +131,26 @@ class NotificationMailTest extends TestCase
         $this->assertSame('[Alter Studio] Foto final Anda sudah siap', $finalMail->subject);
         $this->assertContains('Editor sudah menandai hasil edit final tersedia di folder Drive project.', $finalMail->introLines);
         $this->assertContains('Link Drive hasil final berlaku selama 3 hari sejak hasil dibagikan. Silakan segera buka dan unduh file Anda.', $finalMail->introLines);
+    }
+
+    /**
+     * Pengujian: email bawaan akun sudah memakai bahasa Indonesia.
+     * Hasil yang diharapkan: email reset password dan verifikasi akun tidak memakai teks default bahasa Inggris.
+     */
+    public function test_auth_notifications_are_written_in_indonesian(): void
+    {
+        $client = User::factory()->create(['role' => Role::CLIENT, 'name' => 'Client Email']);
+
+        $resetMail = (new ResetPasswordNotification('reset-token'))->toMail($client);
+        $verifyMail = (new VerifyEmailNotification)->toMail($client);
+
+        $this->assertSame('[Alter Studio] Reset Kata Sandi', $resetMail->subject);
+        $this->assertContains('Kami menerima permintaan reset kata sandi untuk akun Alter Studio Anda.', $resetMail->introLines);
+        $this->assertSame('Reset Kata Sandi', $resetMail->actionText);
+
+        $this->assertSame('[Alter Studio] Verifikasi Email Akun', $verifyMail->subject);
+        $this->assertContains('Terima kasih sudah mendaftar di Alter Studio.', $verifyMail->introLines);
+        $this->assertSame('Verifikasi Email', $verifyMail->actionText);
     }
 
     /**

@@ -1,202 +1,137 @@
-# AlterStudio Workflow Management System
+# Alter Studio Workflow Management System
 
-**Sistem Informasi Manajemen Alur Kerja Terintegrasi untuk Alter Studio**
-Dibangun sebagai Tugas Akhir menggunakan Laravel 12 & MySQL.
+Sistem informasi manajemen alur kerja studio fotografi untuk Alter Studio. Aplikasi ini dibangun dengan Laravel 12, Blade, Tailwind CSS, MySQL/MariaDB, Midtrans Sandbox, dan Mailtrap Sandbox.
 
----
+## Gambaran Sistem
 
-## 🧩 Gambaran Umum Sistem
+Alter Studio membantu mengelola proses layanan fotografi dari awal sampai akhir:
 
-AlterStudio adalah sistem informasi berbasis web yang dirancang untuk **mengelola seluruh alur kerja bisnis studio foto** secara terintegrasi — mulai dari pemesanan oleh klien, pembayaran via Midtrans, penjadwalan kru fotografer/editor, hingga pengiriman hasil foto final kepada klien.
+1. Klien melihat katalog dan membuat pemesanan.
+2. Admin atau Manajer mengonfirmasi/menolak pemesanan.
+3. Klien melakukan pembayaran DP 10% atau lunas melalui Midtrans.
+4. Admin menjadwalkan fotografer, editor, dan ruangan studio.
+5. Fotografer menyimpan link Google Drive foto mentah.
+6. Klien mengirim kode foto dan deskripsi permintaan edit.
+7. Editor menyimpan link/pesan hasil final.
+8. Manajer dan Owner melihat laporan operasional.
 
-Sistem ini menyelesaikan masalah pengelolaan yang sebelumnya dilakukan secara manual (via Notion/catatan) menjadi sebuah platform digital terpusat yang dapat diakses oleh semua pihak sesuai peran masing-masing.
+## Role dan Hak Akses
 
----
-
-## 👥 Peran Pengguna (Multi-Role)
-
-| Peran | Kemampuan Utama |
+| Role | Fungsi Utama |
 |---|---|
-| **Owner** | Kelola semua pengguna, cabang, laporan lengkap |
-| **Admin** | Konfirmasi booking, kelola jadwal kru, landing page |
-| **Manager** | Lihat laporan, pantau booking & project, ekspor CSV/PDF |
-| **Client** | Buat pemesanan, bayar via Midtrans, pilih foto, download hasil |
-| **Photographer** | Lihat jadwal, upload link Google Drive foto mentah |
-| **Editor** | Lihat jadwal, upload link Google Drive hasil edit final |
+| Owner | Mengelola akun pengguna, cabang studio, ruangan studio, melihat dashboard, melihat laporan owner, dan mengelola profil. |
+| Admin | Mengelola kategori/paket layanan, melihat pemesanan, mengonfirmasi/menolak pemesanan, menandai pelunasan di lokasi, menjadwalkan kru, memantau project, dan mengelola profil. |
+| Manajer | Melihat dashboard operasional, mengelola laporan, mengekspor laporan, mengelola hero landing page, mengelola status pemesanan, dan mengelola profil. |
+| Klien | Registrasi, login, membuat pemesanan, membayar melalui Midtrans, melihat status pemesanan, mengakses link Drive, mengirim permintaan edit, dan mengelola profil. |
+| Fotografer | Melihat jadwal/project yang ditugaskan, menyimpan link Google Drive foto mentah, melihat status pekerjaan, dan mengelola profil. |
+| Editor | Melihat jadwal/project yang ditugaskan, melihat permintaan edit klien, menyimpan link/pesan hasil final, melihat status pekerjaan, dan mengelola profil. |
 
-> Satu pengguna dapat memiliki **dua peran kru sekaligus** (contoh: Fotografer + Editor).
-
----
-
-## ⚙️ Tech Stack
+## Teknologi
 
 | Komponen | Teknologi |
 |---|---|
-| Backend | PHP 8.2 + Laravel 12 |
-| Database | MySQL 8.x |
+| Backend | PHP 8.2, Laravel 12 |
+| Frontend | Blade, Tailwind CSS, Vite |
+| Database | MySQL/MariaDB |
 | Autentikasi | Laravel Breeze |
-| Frontend | Blade + Tailwind CSS + Vite |
-| Payment Gateway | Midtrans Snap API |
-| Storage | Google Drive (via link URL) |
-| Testing | PHPUnit 11 + Xdebug |
-| Version Control | Git + GitHub |
+| Email | Mailtrap Sandbox / SMTP |
+| Payment Gateway | Midtrans Snap API Sandbox |
+| Testing | PHPUnit, Feature Test, Unit Test, Integration Test |
+| Version Control | Git dan GitHub |
 
----
+## Struktur Folder Penting
 
-## 🗂️ Alur Kerja Utama Sistem
+```text
+app/
+  Console/Commands/              Scheduled command pembersihan data
+  Enums/Role.php                 Daftar role sistem
+  Http/Controllers/              Controller utama sistem
+  Http/Middleware/RoleMiddleware.php
+  Models/                        Model Eloquent
+  Notifications/                 Notifikasi email
+  Support/BookingAvailability.php
 
-```
-Klien membuat booking
-        ↓
-Admin konfirmasi booking
-        ↓
-Klien melakukan pembayaran DP/FULL via Midtrans
-        ↓
-Webhook Midtrans → status diperbarui otomatis
-        ↓
-Admin membuat jadwal (assign Fotografer + Editor + waktu)
-        ↓
-Notifikasi otomatis ke kru yang ditugaskan
-        ↓
-Fotografer upload link Google Drive (foto mentah)
-        ↓
-Klien memilih foto yang ingin diedit (+ catatan permintaan edit)
-        ↓
-Editor upload link Google Drive (hasil edit final)
-        ↓
-Klien download hasil final
-        ↓
-Manager/Owner lihat laporan kinerja & pendapatan
+database/
+  migrations/                    Struktur tabel
+  factories/                     Data factory untuk pengujian
+  seeders/                       Data awal
+
+resources/views/                 Halaman Blade
+routes/web.php                   Route utama dan pembatasan role
+routes/auth.php                  Route autentikasi
+tests/                           Unit, feature, dan integration test
+diagrams/sequence/               File PlantUML sequence diagram
 ```
 
----
-
-## 📁 Struktur Direktori Penting
-
-```
-alterstudio-ta/
-├── app/
-│   ├── Console/Commands/          # Scheduled commands (cleanup, cancel expired)
-│   ├── Enums/Role.php             # Enum semua peran pengguna
-│   ├── Http/
-│   │   ├── Controllers/
-│   │   │   ├── Admin/             # Controller khusus admin/owner
-│   │   │   ├── Auth/              # Controller autentikasi
-│   │   │   ├── BookingController  # Alur pemesanan
-│   │   │   ├── PaymentController  # Integrasi Midtrans
-│   │   │   ├── ScheduleController # Penjadwalan kru
-│   │   │   ├── MediaAssetController    # Upload/download Google Drive
-│   │   │   ├── PhotoSelectionController # Pilih foto oleh klien
-│   │   │   ├── ReportController   # Laporan kinerja kru
-│   │   │   └── DashboardController     # Dashboard per role
-│   │   └── Middleware/RoleMiddleware.php # Guard akses per peran
-│   ├── Models/                    # Eloquent models
-│   ├── Notifications/             # Email notifikasi otomatis
-│   └── Support/BookingAvailability.php  # Cek ketersediaan jadwal
-├── database/
-│   ├── migrations/                # Semua migrasi tabel
-│   ├── factories/                 # Data dummy untuk testing
-│   └── seeders/                   # Data awal
-├── routes/
-│   ├── web.php                    # Semua route web (auth + role middleware)
-│   └── auth.php                   # Route autentikasi Breeze
-├── tests/Feature/                 # Feature tests (118 skenario)
-├── resources/views/               # Blade templates
-└── .env                           # Konfigurasi environment
-```
-
----
-
-## 🗄️ Struktur Database (11 Tabel Utama)
+## Database Utama
 
 | Tabel | Fungsi |
 |---|---|
-| `users` | Data semua pengguna & peran |
-| `password_reset_tokens` | Token reset password |
-| `service_categories` | Kategori layanan foto |
-| `service_packages` | Paket layanan beserta harga & fitur |
-| `studio_locations` | Data cabang studio |
-| `studio_rooms` | Ruangan per cabang |
-| `bookings` | Data pemesanan klien |
-| `payments` | Transaksi pembayaran (DP/FULL) |
-| `projects` | Project pascaproduksi per booking |
-| `media_assets` | Aset media (foto mentah/final) |
-| `photo_selections` | Pilihan foto oleh klien |
-| `landing_hero_slides` | Slide hero halaman utama |
+| `users` | Data akun pengguna dan role. |
+| `password_reset_tokens` | Token reset password. |
+| `service_categories` | Kategori layanan fotografi. |
+| `service_packages` | Paket layanan, harga, fitur, add-on, galeri. |
+| `studio_locations` | Data cabang studio. |
+| `studio_rooms` | Data ruangan per cabang. |
+| `landing_hero_slides` | Slide hero landing page. |
+| `bookings` | Data pemesanan klien. |
+| `payments` | Data pembayaran DP/lunas. |
+| `projects` | Data project produksi/pasca-produksi. |
+| `project_schedules` | Jadwal project. |
+| `project_schedule_users` | Fotografer/editor yang ditugaskan. |
+| `media_assets` | Link media foto mentah/final. |
+| `photo_selections` | Kode foto dan permintaan edit klien. |
 
----
+## Notifikasi Email
 
-## 🔔 Notifikasi Otomatis (Email)
-
-| Event | Dikirim ke |
+| Event | Penerima |
 |---|---|
-| Booking baru dibuat | Klien + Admin/Owner |
-| Booking dikonfirmasi | Klien |
+| Pemesanan baru dibuat | Klien, Admin, Manajer |
+| Pemesanan dikonfirmasi | Klien |
 | Pembayaran berhasil | Klien |
-| Jadwal kru ditetapkan | Fotografer + Editor |
-| Link foto mentah diupload | Klien |
+| Jadwal kru dibuat/diubah | Fotografer, Editor |
+| Link foto mentah tersedia | Klien |
 | Permintaan edit dikirim | Editor |
-| Hasil final siap | Klien |
-| Akun klien tidak aktif dihapus | Klien |
+| Hasil final tersedia | Klien |
+| Akun klien tidak aktif akan/dihapus | Klien |
 
----
+## Prasyarat Lokal
 
-## 📊 Laporan Kinerja (Manager/Owner)
+Pastikan perangkat sudah memiliki:
 
-- Filter berdasarkan rentang tanggal & cabang
-- Metrik: total booking, pendapatan DP & FULL, jumlah project selesai
-- Daftar performa kru (Fotografer & Editor) per periode
-- Ekspor ke **CSV** (dengan letterhead metadata)
-- Ekspor ke **PDF** (tampilan cetak)
+- PHP 8.2 atau lebih baru
+- Composer 2.x
+- Node.js 22/24 dan npm
+- MySQL/MariaDB, misalnya dari XAMPP
+- Git
+- Ekstensi PHP umum: `pdo_mysql`, `mbstring`, `openssl`, `zip`, `fileinfo`, `gd`, `curl`
+- Xdebug atau PCOV hanya diperlukan jika ingin menjalankan test coverage
 
----
+## Instalasi Lokal
 
-## ⚙️ Perintah Instalasi Lengkap
-
-### Prasyarat
-Pastikan sudah terinstall:
-- **PHP 8.2+** dengan ekstensi: `pdo_mysql`, `mbstring`, `gd`, `xdebug`
-- **Composer 2.x**
-- **Node.js 22 LTS** + npm
-- **MySQL 8.x** (atau MariaDB 10.x)
-- **Git**
-
----
-
-### Langkah 1 — Clone Repository
-
-```bash
+```powershell
 git clone https://github.com/Fajrinputra/alterstudio-ta.git
 cd alterstudio-ta
-```
-
----
-
-### Langkah 2 — Install Dependensi PHP
-
-```bash
 composer install
-```
-
----
-
-### Langkah 3 — Konfigurasi Environment
-
-```bash
-# Salin file contoh konfigurasi
+npm install
 copy .env.example .env
-
-# Generate Application Key
 php artisan key:generate
 ```
 
-Lalu edit file `.env` dan sesuaikan konfigurasi berikut:
+Buat database:
+
+```sql
+CREATE DATABASE alterstudio_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+```
+
+Sesuaikan `.env`:
 
 ```env
-APP_NAME="AlterStudio"
-APP_URL=http://localhost:8000
+APP_NAME="Alter Studio"
+APP_ENV=local
+APP_DEBUG=true
+APP_URL=http://127.0.0.1:8000
 
-# Koneksi Database MySQL
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
 DB_PORT=3306
@@ -204,138 +139,192 @@ DB_DATABASE=alterstudio_db
 DB_USERNAME=root
 DB_PASSWORD=
 
-# Konfigurasi Email (untuk notifikasi)
-MAIL_MAILER=smtp
-MAIL_HOST=smtp.gmail.com
-MAIL_PORT=587
-MAIL_USERNAME=your-email@gmail.com
-MAIL_PASSWORD=your-app-password
-MAIL_ENCRYPTION=tls
-MAIL_FROM_ADDRESS=your-email@gmail.com
-MAIL_FROM_NAME="AlterStudio"
+MAIL_MAILER=failover
+MAIL_SCHEME=smtp
+MAIL_HOST=sandbox.smtp.mailtrap.io
+MAIL_PORT=2525
+MAIL_USERNAME=isi_dari_mailtrap
+MAIL_PASSWORD=isi_dari_mailtrap
+MAIL_FROM_ADDRESS="noreply@alterstudio.test"
+MAIL_FROM_NAME="${APP_NAME}"
 
-# Konfigurasi Midtrans (Payment Gateway)
-MIDTRANS_SERVER_KEY=your-server-key
-MIDTRANS_CLIENT_KEY=your-client-key
-MIDTRANS_IS_PRODUCTION=false
+MIDTRANS_SERVER_KEY=isi_dari_midtrans
+MIDTRANS_CLIENT_KEY=isi_dari_midtrans
+MIDTRANS_MERCHANT_ID=isi_dari_midtrans
+MIDTRANS_SANDBOX=true
 ```
 
----
+Jalankan migrasi dan seeder:
 
-### Langkah 4 — Buat Database MySQL
-
-Buka MySQL dan jalankan:
-
-```sql
-CREATE DATABASE alterstudio_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+```powershell
+php artisan migrate --seed
 ```
 
----
+Build aset frontend:
 
-### Langkah 5 — Jalankan Migration & Seeder
-
-```bash
-# Jalankan semua migration (buat semua tabel)
-php artisan migrate
-
-# (Opsional) Isi data awal/dummy
-php artisan db:seed
-```
-
----
-
-### Langkah 6 — Install Dependensi Frontend & Build Asset
-
-```bash
-npm install
+```powershell
 npm run build
 ```
 
----
+Jalankan aplikasi:
 
-### Langkah 7 — Jalankan Aplikasi
-
-```bash
-# Jalankan server Laravel
+```powershell
 php artisan serve
 ```
 
-Akses di browser: **http://localhost:8000**
+Akses aplikasi di:
 
----
-
-### (Opsional) Jalankan Semua Sekaligus (Mode Development)
-
-```bash
-composer run dev
+```text
+http://127.0.0.1:8000
 ```
 
-Perintah ini akan menjalankan sekaligus:
-- `php artisan serve` (server)
-- `php artisan queue:listen` (antrian notifikasi)
-- `php artisan pail` (log real-time)
-- `npm run dev` (Vite hot-reload)
+Untuk development dengan Vite hot reload:
 
----
+```powershell
+npm run dev
+```
 
-## 🧪 Perintah Testing
+## Testing
 
-```bash
-# Jalankan semua test
+Jalankan seluruh pengujian:
+
+```powershell
 php artisan test
-
-# Jalankan coverage secara khusus; Xdebug tetap nonaktif saat aplikasi dipakai
-php -d xdebug.mode=coverage artisan test --coverage
-
-# Buat laporan coverage HTML
-php -d xdebug.mode=coverage artisan test --coverage-html coverage
-
-# Jalankan test file tertentu saja
-php artisan test --filter BookingFlowTest
 ```
 
----
+Jalankan integration test alur pemesanan sampai final:
 
-## 🔧 Perintah Artisan Berguna Lainnya
+```powershell
+php artisan test tests/Feature/Integration/BookingServiceLifecycleIntegrationTest.php
+```
+
+Jalankan test dengan coverage:
+
+```powershell
+php -d xdebug.mode=coverage artisan test --coverage
+```
+
+Buat laporan coverage HTML:
+
+```powershell
+php -d xdebug.mode=coverage artisan test --coverage-html coverage
+```
+
+Catatan hasil pengujian terakhir:
+
+| Komponen | Hasil |
+|---|---|
+| Unit, feature, dan integration test | Lulus |
+| Integration lifecycle booking sampai final | Lulus |
+| Mailtrap SMTP Sandbox | Berhasil diuji |
+| Midtrans Snap Sandbox | Berhasil diuji |
+
+## Midtrans Sandbox
+
+Konfigurasi Midtrans berada di `.env`:
+
+```env
+MIDTRANS_SERVER_KEY=
+MIDTRANS_CLIENT_KEY=
+MIDTRANS_MERCHANT_ID=
+MIDTRANS_SANDBOX=true
+```
+
+Route webhook Midtrans:
+
+```text
+/midtrans/webhook
+```
+
+Saat hosting, isi webhook di dashboard Midtrans dengan:
+
+```text
+https://domain-kamu.com/midtrans/webhook
+```
+
+Sistem sudah memvalidasi:
+
+- signature webhook,
+- nominal pembayaran,
+- status transaksi,
+- status booking sebelum pembayaran,
+- batas waktu pembayaran 30 menit,
+- pembayaran DP dan pelunasan.
+
+## Mailtrap Sandbox
+
+Email menggunakan Mailtrap untuk sandbox:
+
+```env
+MAIL_MAILER=failover
+MAIL_HOST=sandbox.smtp.mailtrap.io
+MAIL_PORT=2525
+MAIL_USERNAME=
+MAIL_PASSWORD=
+```
+
+Mailer `failover` akan mencoba SMTP terlebih dahulu, lalu jatuh ke log jika SMTP gagal. Untuk hosting/demo yang membutuhkan email benar-benar sampai ke inbox pengguna, gunakan layanan email production seperti Mailtrap Email Sending, Resend, Mailgun, SMTP hosting, atau Gmail SMTP dengan App Password.
+
+## Catatan Hosting
+
+Sebelum upload ke hosting, pastikan:
+
+```env
+APP_ENV=production
+APP_DEBUG=false
+APP_URL=https://domain-kamu.com
+```
+
+Lalu jalankan:
+
+```powershell
+composer install --no-dev --optimize-autoloader
+npm install
+npm run build
+php artisan migrate --force
+php artisan storage:link
+php artisan optimize
+```
+
+Pastikan juga:
+
+- folder `storage` dan `bootstrap/cache` writable,
+- `.env` tidak di-commit ke GitHub,
+- webhook Midtrans memakai domain publik,
+- email production sudah memakai credential yang valid,
+- scheduled command dijalankan melalui cron/Task Scheduler.
+
+Contoh cron Laravel:
 
 ```bash
-# Reset & jalankan ulang semua migration (HAPUS semua data!)
-php artisan migrate:fresh
+* * * * * php /path/to/artisan schedule:run >> /dev/null 2>&1
+```
 
-# Reset + jalankan ulang + isi seeder
-php artisan migrate:fresh --seed
+## Perintah Artisan Berguna
+
+```powershell
+# Clear cache aplikasi
+php artisan optimize:clear
 
 # Cek status migration
 php artisan migrate:status
 
-# Clear semua cache
-php artisan optimize:clear
-
-# Jalankan scheduled commands secara manual
+# Membatalkan booking yang kedaluwarsa
 php artisan app:cancel-expired-bookings
+
+# Membersihkan media yang sudah kedaluwarsa
 php artisan app:cleanup-expired-media
+
+# Membersihkan akun klien tidak aktif sesuai aturan sistem
 php artisan app:cleanup-inactive-clients
 ```
 
----
+## Catatan Keamanan
 
-## 🔐 Konfigurasi PowerShell (Windows)
+- Jangan commit file `.env`.
+- Jangan menulis Midtrans key atau SMTP password langsung di kode.
+- Gunakan `APP_DEBUG=false` saat production.
+- Gunakan HTTPS saat hosting.
+- Gunakan webhook Midtrans yang dapat diakses publik.
+- Gunakan akun email production jika aplikasi dipakai user asli.
 
-Jika muncul error `running scripts is disabled` saat menjalankan `npm`:
-
-```powershell
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-```
-
----
-
-## 📝 Catatan Penting
-
-- File `.env` **tidak boleh** di-commit ke Git (sudah ada di `.gitignore`)
-- Kolom `selected_addons`, `features`, `addons`, `gallery`, `photo_gallery`, `facilities`, `roles` disimpan dalam format **JSON** di kolom `longtext`
-- Webhook Midtrans harus dapat diakses dari internet publik — gunakan **ngrok** saat development
-- Scheduled command untuk cancel booking expired perlu dijadwalkan via **Task Scheduler** (Windows) atau **cron** (Linux):
-  ```bash
-  # crontab -e (Linux/Mac)
-  * * * * * php /path/to/artisan schedule:run
-  ```

@@ -206,7 +206,7 @@
                                 <p class="text-xs text-[#8B7359]">Pilih hapus jika foto overview lama ingin dihapus, lalu klik Update Paket.</p>
                             </div>
                         @endif
-                        <input type="file" name="overview_image" accept="image/*"
+                        <input type="file" name="overview_image" accept="{{ \App\Support\ImageUploadValidation::ACCEPT_ATTRIBUTE }}"
                                class="w-full text-sm file:mr-4 file:py-3 file:px-6 file:rounded-3xl file:border-0 file:bg-[#D4A017] file:text-white file:font-medium">
                         @error('overview_image')
                             <p class="text-xs text-red-600 flex items-center gap-1 mt-1"><i class="fa-solid fa-circle-exclamation"></i> {{ $message }}</p>
@@ -240,7 +240,7 @@
                                 <p class="text-xs text-[#8B7359]">Klik Hapus pada foto galeri yang ingin dihapus, lalu klik Update Paket.</p>
                             </div>
                         @endif
-                        <input type="file" name="gallery[]" multiple accept="image/*"
+                        <input type="file" name="gallery[]" multiple accept="{{ \App\Support\ImageUploadValidation::ACCEPT_ATTRIBUTE }}"
                                class="w-full text-sm file:mr-4 file:py-3 file:px-6 file:rounded-3xl file:border-0 file:bg-[#D4A017] file:text-white file:font-medium">
                         @error('gallery')
                             <p class="text-xs text-red-600">{{ $message }}</p>

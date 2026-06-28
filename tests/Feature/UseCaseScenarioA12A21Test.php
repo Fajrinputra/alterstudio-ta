@@ -146,6 +146,16 @@ class UseCaseScenarioA12A21Test extends TestCase
             ->assertSessionHasErrors('overview_image');
 
         $this->actingAs($manager)
+            ->from(route('admin.packages.edit', $package))
+            ->put(route('admin.packages.update', $package), [
+                'category_id' => $category->id,
+                'name' => 'Paket Baru',
+                'price' => 300000,
+                'overview_image' => UploadedFile::fake()->create('video.mp4', 100, 'video/mp4'),
+            ])
+            ->assertSessionHasErrors('overview_image');
+
+        $this->actingAs($manager)
             ->from(route('admin.catalog.packages', $category))
             ->put(route('admin.packages.update', $package), [
                 'category_id' => $category->id,

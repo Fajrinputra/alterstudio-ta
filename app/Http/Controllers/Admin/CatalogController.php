@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\ServiceCategory;
 use App\Models\ServicePackage;
+use App\Support\ImageUploadValidation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
@@ -57,7 +58,13 @@ class CatalogController extends Controller
             'packages.*.features' => ['nullable','string'],
             'packages.*.addons' => ['nullable','string'],
             'packages.*.terms' => ['nullable','string'],
-        ]);
+            'packages.*.overview_image' => ImageUploadValidation::rules(),
+            'packages.*.gallery' => ['nullable','array','max:20'],
+            'packages.*.gallery.*' => ImageUploadValidation::rules(),
+        ], ImageUploadValidation::messages([
+            'packages.*.overview_image',
+            'packages.*.gallery.*',
+        ]));
 
         $category = ServiceCategory::create([
             'name' => $data['name'],
@@ -128,11 +135,11 @@ class CatalogController extends Controller
             'addons.*.price' => ['nullable','integer','min:0'],
             'addons.*.unit' => ['nullable','string','max:50'],
             'terms' => ['nullable','string'],
-            'overview_image' => ['nullable','image','max:20480'],
+            'overview_image' => ImageUploadValidation::rules(),
             'is_active' => ['boolean'],
             'gallery' => ['nullable','array','max:20'],
-            'gallery.*' => ['image','max:20480'],
-        ]);
+            'gallery.*' => ImageUploadValidation::rules(),
+        ], ImageUploadValidation::messages(['overview_image', 'gallery.*']));
 
         $features = $this->toArray($data['features'] ?? null, "\n");
         $addons = $this->normalizeAddons($data['addons'] ?? []);

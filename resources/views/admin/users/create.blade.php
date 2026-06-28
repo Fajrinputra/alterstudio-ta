@@ -16,7 +16,6 @@
             </div>
             <a href="{{ route('admin.users.index') }}"
                class="inline-flex items-center gap-3 px-6 py-3 rounded-3xl border border-[#E1D3C5] text-[#5C432C] hover:bg-white hover:border-[#D4A017] hover:shadow transition-all">
-                <i class="fa-solid fa-arrow-left"></i>
                 Kembali ke Daftar
             </a>
         </div>

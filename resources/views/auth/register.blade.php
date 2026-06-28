@@ -27,7 +27,6 @@
 
                     <a href="/" 
                        class="mx-auto mb-4 inline-flex items-center gap-2 rounded-2xl border border-[#E1D3C5] px-4 py-2 text-xs font-medium text-[#5C432C] transition-all hover:border-[#D4A017] hover:text-[#D4A017]">
-                        <i class="fa-solid fa-arrow-left"></i>
                         <span>Kembali ke Beranda</span>
                     </a>
 

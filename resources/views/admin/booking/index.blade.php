@@ -228,7 +228,6 @@
                                                 @endforeach
                                                     <button type="button" @click="statusActionOpen = false"
                                                             class="inline-flex min-h-[48px] w-full items-center justify-center gap-3 rounded-2xl border border-[#EDE0D0] bg-white px-5 py-3 text-sm font-semibold text-[#7A5B3A] transition-all hover:-translate-y-0.5 hover:border-[#D4A017] hover:text-[#3F2B1B] active:scale-[0.98]">
-                                                        <i class="fa-solid fa-arrow-left"></i>
                                                         <span>Kembali</span>
                                                     </button>
                                                 </div>
@@ -364,7 +363,6 @@
                                                                 @endforeach
                                                                     <button type="button" @click="statusActionOpen = false"
                                                                             class="inline-flex min-h-[48px] w-full items-center justify-center gap-3 rounded-2xl border border-[#EDE0D0] bg-white px-5 py-3 text-sm font-semibold text-[#7A5B3A] transition-all hover:-translate-y-0.5 hover:border-[#D4A017] hover:text-[#3F2B1B] active:scale-[0.98]">
-                                                                        <i class="fa-solid fa-arrow-left"></i>
                                                                         <span>Kembali</span>
                                                                     </button>
                                                                 </div>

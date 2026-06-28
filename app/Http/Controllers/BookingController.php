@@ -9,6 +9,7 @@ use App\Models\Project;
 use App\Models\ServicePackage;
 use App\Models\StudioRoom;
 use App\Support\BookingAvailability;
+use App\Support\DeferredNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -284,8 +285,7 @@ class BookingController extends Controller
         $notification = new \App\Notifications\BookingCreatedNotification(
             $booking->load(['package', 'client', 'studioLocation', 'studioRoom'])
         );
-        $user->notify($notification);
-        \Illuminate\Support\Facades\Notification::send($operators, $notification);
+        DeferredNotification::send($operators->push($user), $notification);
 
         if ($request->wantsJson()) {
             $booking->load(['package', 'project']);
@@ -369,7 +369,7 @@ class BookingController extends Controller
             ->first();
 
         if ($justConfirmed) {
-            $booking->client?->notify(new \App\Notifications\BookingConfirmedNotification($booking->fresh()));
+            DeferredNotification::to($booking->client, new \App\Notifications\BookingConfirmedNotification($booking->fresh()));
         }
 
         if (in_array($targetStatus, [Booking::STATUS_DP_PAID, Booking::STATUS_PAID], true) && $pendingPayment) {

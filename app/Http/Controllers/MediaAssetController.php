@@ -7,6 +7,7 @@ use App\Models\MediaAsset;
 use App\Models\Project;
 use App\Notifications\FinalPhotosReadyNotification;
 use App\Notifications\RawPhotosUploadedNotification;
+use App\Support\DeferredNotification;
 use Illuminate\Http\Request;
 
 /**
@@ -55,7 +56,7 @@ class MediaAssetController extends Controller
             'status' => Project::STATUS_SHOOT_DONE,
         ]);
 
-        $project->booking?->client?->notify(new RawPhotosUploadedNotification($project->id));
+        DeferredNotification::to($project->booking?->client, new RawPhotosUploadedNotification($project->id));
 
         return $this->respondSuccess($request, $project->fresh(), 'Link Drive foto mentah berhasil disimpan. Klien telah diberi notifikasi.');
     }
@@ -94,7 +95,7 @@ class MediaAssetController extends Controller
             'status' => Project::STATUS_FINAL,
         ]);
 
-        $project->booking?->client?->notify(new FinalPhotosReadyNotification($project->id));
+        DeferredNotification::to($project->booking?->client, new FinalPhotosReadyNotification($project->id));
 
         return $this->respondSuccess($request, $project->fresh(), 'Hasil final berhasil ditandai tersedia. Klien telah diberi notifikasi.');
     }

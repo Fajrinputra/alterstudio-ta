@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\ImageUploadValidation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -13,8 +14,8 @@ class ProfileAvatarController extends Controller
     public function __invoke(Request $request)
     {
         $request->validate([
-            'avatar' => ['nullable', 'image', 'max:2048'],
-        ]);
+            'avatar' => ImageUploadValidation::rules(maxKb: 2048),
+        ], ImageUploadValidation::messages(['avatar'], '2 MB'));
 
         if ($request->hasFile('avatar')) {
             $path = $request->file('avatar')->storePublicly('avatars', 'public');

@@ -56,7 +56,6 @@
                 <div class="mt-6 space-y-3 text-center">
                     <a href="{{ route('login') }}"
                        class="inline-flex items-center justify-center gap-2 text-sm font-medium text-[#D4A017] transition-colors hover:text-[#E07A5F]">
-                        <i class="fa-solid fa-arrow-left"></i>
                         Kembali ke Halaman Login
                     </a>
 

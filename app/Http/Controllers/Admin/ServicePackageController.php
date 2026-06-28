@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\ServicePackage;
+use App\Support\ImageUploadValidation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
@@ -126,15 +127,15 @@ class ServicePackageController extends Controller
             'addons.*.price' => ['nullable', 'integer', 'min:0'],
             'addons.*.unit' => ['nullable', 'string', 'max:50'],
             'terms' => ['nullable', 'string'],
-            'overview_image' => ['nullable', 'image', 'max:20480'],
+            'overview_image' => ImageUploadValidation::rules(),
             'remove_overview' => ['nullable', 'boolean'],
             'is_active' => ['boolean'],
             'gallery' => ['nullable', 'array', 'max:20'],
-            'gallery.*' => ['image', 'max:20480'],
+            'gallery.*' => ImageUploadValidation::rules(),
             'remove_gallery' => ['nullable', 'array'],
             'remove_gallery.*' => ['string'],
             'duration_minutes' => ['nullable','integer','min:1'],
-        ]);
+        ], ImageUploadValidation::messages(['overview_image', 'gallery.*']));
 
         $validated['features'] = $this->toArray($validated['features'] ?? null, "\n");
         $validated['addons'] = $this->normalizeAddons($validated['addons'] ?? []);

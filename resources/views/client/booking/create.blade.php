@@ -12,7 +12,6 @@
             </div>
             <a href="{{ route('catalog.public') }}"
                class="inline-flex w-full items-center justify-center gap-3 rounded-3xl border border-[#E1D3C5] px-5 py-3 text-[#5C432C] transition-all hover:bg-white hover:shadow-md sm:w-auto sm:px-6">
-                <i class="fa-solid fa-arrow-left"></i>
                 Kembali ke Katalog
             </a>
         </div>

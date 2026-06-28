@@ -28,6 +28,14 @@ class ReportController extends Controller
             'date_to' => ['required', 'date', 'after_or_equal:date_from'],
             'category_id' => ['nullable', 'integer', 'exists:service_categories,id'],
             'download' => ['nullable', 'in:csv,xls,pdf'],
+        ], [
+            'date_from.required' => 'Tanggal awal laporan wajib diisi.',
+            'date_from.date' => 'Tanggal awal laporan tidak valid.',
+            'date_to.required' => 'Tanggal akhir laporan wajib diisi.',
+            'date_to.date' => 'Tanggal akhir laporan tidak valid.',
+            'date_to.after_or_equal' => 'Tanggal akhir laporan harus sama dengan atau setelah tanggal awal.',
+            'category_id.exists' => 'Kategori laporan yang dipilih tidak valid.',
+            'download.in' => 'Format unduhan laporan tidak valid.',
         ]);
 
         $dateFrom = $validated['date_from'];

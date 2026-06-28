@@ -69,7 +69,6 @@
                         <div class="flex justify-center mb-4 sm:mb-5">
                             <a href="/" 
                                class="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-[#E1D3C5] px-4 py-2.5 text-sm font-medium text-[#5C432C] transition-all hover:border-[#D4A017] hover:bg-white hover:text-[#D4A017] sm:w-auto sm:px-5">
-                                <i class="fa-solid fa-arrow-left"></i>
                                 <span>Kembali ke Beranda</span>
                             </a>
                         </div>

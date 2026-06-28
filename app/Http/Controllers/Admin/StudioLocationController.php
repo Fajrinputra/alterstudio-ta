@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\StudioLocation;
 use App\Models\StudioRoom;
+use App\Support\ImageUploadValidation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
@@ -157,10 +158,10 @@ class StudioLocationController extends Controller
             'description' => ['nullable', 'string'],
             'map_url' => ['nullable', 'url', 'max:500'],
             'photos' => ['nullable', 'array', 'max:10'],
-            'photos.*' => ['image', 'max:20480'],
+            'photos.*' => ImageUploadValidation::rules(),
             'is_active' => ['nullable', 'boolean'],
             'remove_photos' => ['nullable', 'boolean'],
-        ]);
+        ], ImageUploadValidation::messages(['photos.*']));
     }
 
     /** Menambah ruangan pada cabang studio tertentu. */
@@ -170,9 +171,9 @@ class StudioLocationController extends Controller
             'studio_location_id' => ['required', 'exists:studio_locations,id'],
             'name' => ['required','string','max:255'],
             'description' => ['nullable','string'],
-            'photo' => ['nullable', 'image', 'max:20480'],
+            'photo' => ImageUploadValidation::rules(),
             'is_active' => ['nullable', 'boolean'],
-        ]);
+        ], ImageUploadValidation::messages(['photo']));
 
         $data['is_active'] = $request->boolean('is_active');
 
@@ -193,9 +194,9 @@ class StudioLocationController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
-            'photo' => ['nullable', 'image', 'max:20480'],
+            'photo' => ImageUploadValidation::rules(),
             'is_active' => ['nullable', 'boolean'],
-        ]);
+        ], ImageUploadValidation::messages(['photo']));
 
         $payload = [
             'name' => $data['name'],

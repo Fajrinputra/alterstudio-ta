@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Project;
 use App\Notifications\EditRequestSubmittedNotification;
+use App\Support\DeferredNotification;
 use Illuminate\Http\Request;
 
 /**
@@ -51,7 +52,7 @@ class PhotoSelectionController extends Controller
             'status' => Project::STATUS_EDITING,
         ]);
 
-        $project->editor?->notify(new EditRequestSubmittedNotification($project->id));
+        DeferredNotification::to($project->editor, new EditRequestSubmittedNotification($project->id));
 
         return $this->respondSuccess($request, 'Permintaan edit berhasil dikirim ke editor.');
     }

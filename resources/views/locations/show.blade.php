@@ -3,12 +3,8 @@
     <div class="min-h-screen bg-[#FAF6F0] py-12">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             
-            {{-- Back Button - Lebih Modern --}}
             <a href="{{ url('/') }}#studio" 
-               class="inline-flex items-center gap-3 text-[#5C432C] hover:text-[#D4A017] mb-8 group transition-all">
-                <div class="w-9 h-9 flex items-center justify-center rounded-2xl border border-[#E1D3C5] group-hover:border-[#D4A017] transition-colors">
-                    <i class="fa-solid fa-arrow-left"></i>
-                </div>
+               class="inline-flex items-center text-[#5C432C] hover:text-[#D4A017] mb-8 transition-all">
                 <span class="font-medium">Kembali ke Beranda</span>
             </a>
 

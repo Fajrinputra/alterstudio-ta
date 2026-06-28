@@ -13,7 +13,6 @@
                 <h2 class="font-display text-4xl md:text-5xl font-semibold tracking-[-1px] text-[#3F2B1B] mt-1">Edit Cabang</h2>
             </div>
             <a href="{{ route('admin.locations.show', $studioLocation) }}" class="inline-flex items-center justify-center gap-3 px-6 py-3 rounded-3xl border border-[#E1D3C5] text-[#5C432C] hover:bg-white hover:border-[#D4A017] transition-all">
-                <i class="fa-solid fa-arrow-left"></i>
                 Kembali ke Detail
             </a>
         </div>
@@ -57,7 +56,8 @@
 
                     <div class="space-y-3">
                         <label class="block text-xs font-medium text-[#7A5B3A] tracking-widest">Tambah Foto Lokasi</label>
-                        <input type="file" name="photos[]" accept="image/*" multiple class="w-full text-sm file:mr-6 file:py-4 file:px-8 file:rounded-3xl file:border-0 file:bg-[#FAF6F0] file:text-[#3F2B1B] file:font-medium hover:file:bg-white">
+                        <input type="file" name="photos[]" accept="{{ \App\Support\ImageUploadValidation::ACCEPT_ATTRIBUTE }}" multiple class="w-full text-sm file:mr-6 file:py-4 file:px-8 file:rounded-3xl file:border-0 file:bg-[#FAF6F0] file:text-[#3F2B1B] file:font-medium hover:file:bg-white">
+                        <p class="text-xs text-[#8B7359]">Maksimal 10 foto lokasi, 20 MB per foto. Format JPG, JPEG, PNG, WEBP, atau GIF. Video tidak diperbolehkan.</p>
                     </div>
 
                     <div class="grid md:grid-cols-2 gap-4">
@@ -98,7 +98,8 @@
                                         @endif
                                         <input name="name" required value="{{ $room->name }}" class="w-full px-5 py-3 rounded-3xl border border-[#E1D3C5] bg-white text-[#3F2B1B]">
                                         <textarea name="description" rows="2" class="w-full px-5 py-3 rounded-3xl border border-[#E1D3C5] bg-white text-[#3F2B1B]" placeholder="Deskripsi ruangan">{{ $room->description }}</textarea>
-                                        <input type="file" name="photo" accept="image/*" class="w-full text-xs file:mr-4 file:py-3 file:px-5 file:rounded-3xl file:border-0 file:bg-white file:text-[#3F2B1B] file:font-medium">
+                                        <input type="file" name="photo" accept="{{ \App\Support\ImageUploadValidation::ACCEPT_ATTRIBUTE }}" class="w-full text-xs file:mr-4 file:py-3 file:px-5 file:rounded-3xl file:border-0 file:bg-white file:text-[#3F2B1B] file:font-medium">
+                                        <p class="text-xs text-[#8B7359]">Maksimal 20 MB. Format JPG, JPEG, PNG, WEBP, atau GIF. Video tidak diperbolehkan.</p>
                                         <div class="flex items-center justify-between gap-3">
                                             <label class="inline-flex items-center gap-2 text-sm text-[#3F2B1B]">
                                                 <input type="checkbox" name="is_active" value="1" @checked($room->is_active) class="w-5 h-5 rounded-xl border-[#E1D3C5] text-[#D4A017]">
@@ -125,7 +126,8 @@
                         <h3 class="font-display text-2xl font-semibold text-[#3F2B1B]">Tambah Ruangan</h3>
                         <input name="name" required class="w-full px-5 py-3 rounded-3xl border border-[#E1D3C5] bg-white text-[#3F2B1B]" placeholder="Nama ruangan">
                         <textarea name="description" rows="2" class="w-full px-5 py-3 rounded-3xl border border-[#E1D3C5] bg-white text-[#3F2B1B]" placeholder="Deskripsi ruangan"></textarea>
-                        <input type="file" name="photo" accept="image/*" class="w-full text-xs file:mr-4 file:py-3 file:px-5 file:rounded-3xl file:border-0 file:bg-[#FAF6F0] file:text-[#3F2B1B] file:font-medium">
+                        <input type="file" name="photo" accept="{{ \App\Support\ImageUploadValidation::ACCEPT_ATTRIBUTE }}" class="w-full text-xs file:mr-4 file:py-3 file:px-5 file:rounded-3xl file:border-0 file:bg-[#FAF6F0] file:text-[#3F2B1B] file:font-medium">
+                        <p class="text-xs text-[#8B7359]">Maksimal 20 MB. Format JPG, JPEG, PNG, WEBP, atau GIF. Video tidak diperbolehkan.</p>
                         <label class="inline-flex items-center gap-2 text-sm text-[#3F2B1B]">
                             <input type="checkbox" name="is_active" value="1" checked class="w-5 h-5 rounded-xl border-[#E1D3C5] text-[#D4A017]">
                             Aktif
