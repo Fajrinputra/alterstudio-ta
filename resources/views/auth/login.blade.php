@@ -110,7 +110,7 @@
                                         type="password"
                                         name="password"
                                         required autocomplete="current-password"
-                                        placeholder="••••••••" />
+                                        placeholder="Kata sandi Anda" />
                                     <button type="button" id="toggle-password"
                                         class="absolute right-4 top-1/2 -translate-y-1/2 text-[#8B7359] hover:text-[#5C432C] transition-colors">
                                         <i id="toggle-password-icon" class="fa-solid fa-eye"></i>
@@ -119,15 +119,8 @@
                                 <x-input-error :messages="$errors->get('password')" class="text-rose-500 text-sm" />
                             </div>
 
-                            <!-- Remember Me & Forgot Password -->
-                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-sm">
-                                <label for="remember_me" class="inline-flex items-center gap-2 cursor-pointer">
-                                    <input id="remember_me" type="checkbox" 
-                                           class="w-5 h-5 rounded-xl border-[#E1D3C5] text-[#D4A017] focus:ring-[#D4A017]"
-                                           name="remember">
-                                    <span class="text-[#5C432C]">Ingat saya</span>
-                                </label>
-
+                            <!-- Forgot Password -->
+                            <div class="flex justify-end text-sm">
                                 @if (Route::has('password.request'))
                                     <a href="{{ route('password.request') }}" 
                                        class="text-[#D4A017] hover:text-[#E07A5F] font-medium flex items-center gap-1 transition-colors">

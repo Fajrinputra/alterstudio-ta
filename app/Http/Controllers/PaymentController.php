@@ -214,6 +214,7 @@ class PaymentController extends Controller
             return response()->json(['message' => 'Konfigurasi Midtrans belum lengkap.'], 503);
         }
 
+        // Signature dan nominal dicek agar callback palsu atau nominal berbeda ditolak.
         $expectedSignature = hash(
             'sha512',
             $data['order_id'].$data['status_code'].$data['gross_amount'].$serverKey
@@ -367,6 +368,7 @@ class PaymentController extends Controller
 
     protected function cancelIfPaymentWindowExpired(Booking $booking): bool
     {
+        // Window 30 menit menjaga slot tidak tertahan terlalu lama oleh transaksi kosong.
         if (! $booking->isPaymentWindowExpired()) {
             return false;
         }

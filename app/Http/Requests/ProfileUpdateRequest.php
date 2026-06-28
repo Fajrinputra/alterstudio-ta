@@ -33,4 +33,18 @@ class ProfileUpdateRequest extends FormRequest
             'avatar' => ['nullable', 'image', 'max:2048'],
         ];
     }
+
+    /**
+     * Pesan khusus untuk field profil yang sering membuat user bingung.
+     *
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'no_hp.regex' => 'Nomor HP harus menggunakan format Indonesia, misalnya 081234567890 atau +6281234567890.',
+            'avatar.image' => 'Foto profil harus berupa file gambar.',
+            'avatar.max' => 'Ukuran foto profil maksimal 2 MB.',
+        ];
+    }
 }

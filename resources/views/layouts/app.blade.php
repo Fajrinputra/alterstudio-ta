@@ -93,7 +93,7 @@
         <div x-data="{ faqOpen: false }" @keydown.escape.window="faqOpen = false">
             <button type="button"
                     @click="faqOpen = true"
-                    aria-label="Buka panduan pemesanan"
+                    aria-label="Buka rules pemesanan"
                     class="fixed bottom-24 right-4 z-50 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#D4A017] via-[#E0912F] to-[#E07A5F] text-white shadow-xl ring-4 ring-white/50 transition-all duration-300 hover:scale-105 active:scale-95 sm:right-6 sm:h-14 sm:w-14">
                 <i class="fa-solid fa-circle-question text-xl sm:text-2xl"></i>
             </button>

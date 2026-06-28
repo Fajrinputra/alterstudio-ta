@@ -141,6 +141,7 @@ class BookingAvailability
     {
         $buffer = $this->bufferMinutes();
 
+        // Booking aktif pada tanggal yang sama dianggap menahan ruangan sampai buffer selesai.
         return Booking::query()
             ->with('package:id,duration_minutes')
             ->where('studio_location_id', $locationId)
@@ -163,6 +164,7 @@ class BookingAvailability
 
     protected function firstAvailableRoomId(Collection $roomIds, Collection $bookedRanges, Carbon $start, Carbon $blockedEnd): ?int
     {
+        // Slot valid jika masih ada minimal satu ruangan aktif yang tidak bentrok.
         $conflicts = $bookedRanges->filter(function (array $range) use ($start, $blockedEnd) {
             return $start->lt($range['blocked_end']) && $blockedEnd->gt($range['start']);
         });
@@ -187,6 +189,7 @@ class BookingAvailability
 
     protected function activeRoomIds(int $locationId): Collection
     {
+        // Urutan id dipakai agar pilihan ruangan konsisten dari request ke request.
         return StudioRoom::query()
             ->where('studio_location_id', $locationId)
             ->where('is_active', true)
@@ -213,9 +216,9 @@ class BookingAvailability
 
     protected function isAlignedToSlotGrid(Carbon $start, Carbon $openAt): bool
     {
+        // Menolak jam manual yang tidak mengikuti interval slot sistem.
         $minutesFromOpen = (int) $openAt->diffInMinutes($start, false);
 
         return $minutesFromOpen >= 0 && $minutesFromOpen % $this->slotIntervalMinutes() === 0;
     }
-
 }

@@ -2,6 +2,21 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+    html,
+    body {
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+    img,
+    video,
+    canvas,
+    svg {
+        max-width: 100%;
+    }
+}
+
 @layer utilities {
     .max-w-7xl {
         max-width: 1180px;
@@ -81,6 +96,83 @@
         .lg\:px-8 {
             padding-left: 1.5rem;
             padding-right: 1.5rem;
+        }
+    }
+
+    @media (max-width: 640px) {
+        .rounded-3xl {
+            border-radius: 0.875rem;
+        }
+
+        .shadow-xl,
+        .shadow-2xl {
+            box-shadow: 0 12px 28px -22px rgb(63 43 27 / 0.42);
+        }
+
+        .text-5xl {
+            font-size: 1.85rem;
+            line-height: 1.15;
+        }
+
+        .text-4xl {
+            font-size: 1.65rem;
+            line-height: 1.18;
+        }
+
+        .text-3xl {
+            font-size: 1.45rem;
+            line-height: 1.2;
+        }
+
+        .p-12,
+        .p-10,
+        .p-8,
+        .p-7,
+        .p-6 {
+            padding: 1rem;
+        }
+
+        .px-12,
+        .px-10,
+        .px-8,
+        .px-7,
+        .px-6 {
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+
+        .py-12,
+        .py-10,
+        .py-8,
+        .py-6,
+        .py-5,
+        .py-4 {
+            padding-top: 0.875rem;
+            padding-bottom: 0.875rem;
+        }
+
+        .py-20,
+        .py-16,
+        .py-14 {
+            padding-top: 1.5rem;
+            padding-bottom: 1.5rem;
+        }
+
+        .gap-8,
+        .gap-6,
+        .gap-5 {
+            gap: 1rem;
+        }
+
+        .space-y-8 > :not([hidden]) ~ :not([hidden]),
+        .space-y-6 > :not([hidden]) ~ :not([hidden]) {
+            --tw-space-y-reverse: 0;
+            margin-top: calc(1rem * calc(1 - var(--tw-space-y-reverse)));
+            margin-bottom: calc(1rem * var(--tw-space-y-reverse));
+        }
+
+        table {
+            font-size: 0.8125rem;
         }
     }
 }

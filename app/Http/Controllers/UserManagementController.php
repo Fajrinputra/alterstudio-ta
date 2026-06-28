@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules;
 
 /**
  * CRUD user internal oleh owner + aktivasi/nonaktivasi akun.
@@ -55,9 +56,9 @@ class UserManagementController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'role' => ['required', Rule::in($this->assignableRoles())],
-            'password' => ['required', 'string', 'min:8'],
+            'password' => ['required', 'string', Rules\Password::defaults()],
             'no_hp' => ['nullable', 'string', 'max:20', 'regex:/^(?:\+62|62|0)[0-9]{9,13}$/'],
-        ]);
+        ], $this->validationMessages());
 
         $user = User::create([
             'name' => $data['name'],
@@ -81,10 +82,10 @@ class UserManagementController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
             'role' => ['required', Rule::in($this->assignableRoles($user))],
-            'password' => ['nullable', 'string', 'min:8'],
+            'password' => ['nullable', 'string', Rules\Password::defaults()],
             'no_hp' => ['nullable', 'string', 'max:20', 'regex:/^(?:\+62|62|0)[0-9]{9,13}$/'],
             'is_active' => ['nullable', 'boolean'],
-        ]);
+        ], $this->validationMessages());
 
         $payload = [
             'name' => $data['name'],
@@ -171,6 +172,22 @@ class UserManagementController extends Controller
         ));
     }
 
+    /**
+     * Pesan validasi akun internal dibuat eksplisit agar owner tidak menebak format input.
+     *
+     * @return array<string, string>
+     */
+    protected function validationMessages(): array
+    {
+        return [
+            'no_hp.regex' => 'Nomor HP harus menggunakan format Indonesia, misalnya 081234567890 atau +6281234567890.',
+            'password.min' => 'Password minimal harus 8 karakter.',
+        ];
+    }
+
+    /**
+     * Mencegah akun yang masih punya pekerjaan aktif dinonaktifkan/dihapus.
+     */
     protected function hasActiveOperationalWork(User $user): bool
     {
         $hasActiveClientBookings = $user->bookings()

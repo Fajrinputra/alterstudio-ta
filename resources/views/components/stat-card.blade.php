@@ -35,10 +35,10 @@
     $iconColor = $palette['icon'];
 @endphp
 
-<div {{ $attributes->class("relative min-w-0 overflow-hidden rounded-2xl border bg-gradient-to-br p-5 shadow-lg {$bgColor}") }}>
+<div {{ $attributes->class("relative min-w-0 overflow-hidden rounded-2xl border bg-gradient-to-br p-4 shadow-lg sm:p-5 {$bgColor}") }}>
     <div class="absolute -right-6 -top-6 h-20 w-20 rounded-full {{ $iconColor }} opacity-10 blur-2xl"></div>
     
-    <div class="relative z-10 flex min-w-0 items-center gap-4">
+    <div class="relative z-10 flex min-w-0 flex-wrap items-center gap-3 sm:flex-nowrap sm:gap-4">
         @if($icon || $trend)
             <div class="flex flex-shrink-0 items-center gap-3">
                 @if($icon)
@@ -56,7 +56,7 @@
             </div>
         @endif
 
-        <p class="min-w-0 flex-1 text-xs font-medium uppercase tracking-[0.18em] opacity-80">{{ $label }}</p>
-        <p class="flex-shrink-0 text-right text-2xl font-semibold leading-none tabular-nums">{{ number_format($value) }}</p>
+        <p class="min-w-0 flex-1 text-xs font-medium uppercase tracking-[0.16em] opacity-80 sm:tracking-[0.18em]">{{ $label }}</p>
+        <p class="flex-shrink-0 text-right text-xl font-semibold leading-none tabular-nums sm:text-2xl">{{ number_format($value) }}</p>
     </div>
 </div>

@@ -45,7 +45,7 @@ class LoginRequest extends FormRequest
         // Cek rate limit sebelum validasi kredensial.
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
+        if (! Auth::attempt($this->only('email', 'password'), false)) {
             // Hit percobaan gagal untuk email+IP saat ini.
             RateLimiter::hit($this->throttleKey());
 

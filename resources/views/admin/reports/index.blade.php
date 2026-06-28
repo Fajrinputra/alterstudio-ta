@@ -65,10 +65,10 @@
                                 {{ $isOwnerReport ? 'Terapkan Periode' : 'Terapkan Filter' }}
                             </button>
                             @if($canExportReport)
-                                <a href="{{ request()->fullUrlWithQuery(['download'=>'csv']) }}"
+                                <a href="{{ request()->fullUrlWithQuery(['download'=>'xls']) }}"
                                    class="h-14 px-8 rounded-3xl border border-[#E1D3C5] text-[#5C432C] hover:bg-white hover:border-[#D4A017] transition-all flex items-center justify-center gap-3">
-                                    <i class="fa-solid fa-file-csv"></i>
-                                    Unduh CSV
+                                    <i class="fa-solid fa-file-excel"></i>
+                                    Unduh Excel
                                 </a>
                                 <a href="{{ request()->fullUrlWithQuery(['download'=>'pdf']) }}" target="_blank"
                                    class="h-14 px-8 rounded-3xl border border-[#E1D3C5] text-[#5C432C] hover:bg-white hover:border-[#D4A017] transition-all flex items-center justify-center gap-3">

@@ -286,11 +286,11 @@
         </section>
 
         <!-- Packages Section -->
-        <section id="paket" class="bg-white py-12 sm:py-20">
+        <section id="paket" class="bg-white py-8 sm:py-20">
             <div class="max-w-7xl mx-auto px-4 sm:px-6">
-                <div class="text-center mb-10 sm:mb-14">
-                    <h2 class="font-display text-3xl font-bold tracking-tight text-[#3F2B1B] sm:text-5xl">Paket & Kategori Foto</h2>
-                    <p class="text-[#7A5B3A] text-sm mt-3 sm:text-xl">Pilih paket yang sesuai dengan cerita Anda</p>
+                <div class="mb-6 text-center sm:mb-14">
+                    <h2 class="font-display text-2xl font-bold tracking-tight text-[#3F2B1B] sm:text-5xl">Paket & Kategori Foto</h2>
+                    <p class="mt-2 text-sm text-[#7A5B3A] sm:mt-3 sm:text-xl">Pilih paket yang sesuai dengan cerita Anda</p>
                 </div>
 
                 @php
@@ -303,7 +303,7 @@
                 @endphp
 
                 <!-- Categories Filter -->
-                <div class="flex flex-wrap justify-center gap-2 mb-10 sm:gap-3 sm:mb-14">
+                <div class="mb-6 flex flex-wrap justify-center gap-2 sm:gap-3 sm:mb-14">
                     @foreach($categories as $category)
                         <button type="button" 
                                 data-category-filter="{{ $category->id }}"
@@ -317,24 +317,24 @@
 
                 <!-- Packages Grid -->
                 @if($allPackages->isNotEmpty())
-                    <div id="landing-packages-grid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div id="landing-packages-grid" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 sm:gap-6">
                         @foreach($allPackages as $package)
                             @php
                                 $features = collect($package->features ?? [])->filter()->take(5)->values();
                                 $isPopular = in_array($package->id, $mostPopularPackageIds ?? [], true) && (($package->bookings_count ?? 0) > 0);
                             @endphp
-                            <div class="package-card relative bg-white rounded-3xl border {{ $isPopular ? 'border-2 border-[#D4A017]' : 'border-[#EDE0D0]' }} p-4 shadow-md sm:p-9 sm:shadow-lg"
+                            <div class="package-card relative bg-white rounded-2xl border {{ $isPopular ? 'border-2 border-[#D4A017]' : 'border-[#EDE0D0]' }} p-4 shadow-sm sm:rounded-3xl sm:p-7 sm:shadow-lg"
                                  data-package-card data-category-id="{{ $package->category_id }}">
                                 @if($isPopular)
                                     <div class="popular-badge">Paling Diminati 🔥</div>
                                 @endif
                                 <p class="mb-1.5 text-[11px] uppercase tracking-widest text-[#8B7359] sm:mb-2 sm:text-xs">{{ $package->category_name }}</p>
-                                <h3 class="mb-2 font-display text-2xl font-semibold leading-tight text-[#3F2B1B] sm:mb-4 sm:text-3xl">{{ $package->name }}</h3>
+                                <h3 class="mb-2 font-display text-xl font-semibold leading-tight text-[#3F2B1B] sm:mb-4 sm:text-3xl">{{ $package->name }}</h3>
                                 <div class="mb-3 text-2xl font-bold text-[#D4A017] sm:mb-6 sm:text-4xl">Rp {{ number_format($package->price, 0, ',', '.') }}</div>
                                 @if($package->description)
                                     <p class="mb-3 line-clamp-2 text-sm text-[#7A5B3A] sm:mb-6 sm:text-base">{{ $package->description }}</p>
                                 @endif
-                                <ul class="mb-4 space-y-2 sm:mb-8 sm:min-h-[140px] sm:space-y-3">
+                                <ul class="mb-4 space-y-1.5 sm:mb-8 sm:min-h-[140px] sm:space-y-3">
                                     @forelse($features as $feature)
                                         <li class="{{ $loop->iteration > 3 ? 'hidden sm:flex' : 'flex' }} items-start gap-2 text-sm leading-5 text-[#3F2B1B] sm:gap-3">
                                             <i class="fa-solid fa-circle-check mt-0.5 text-xs text-[#D4A017] sm:text-sm"></i>
@@ -347,18 +347,18 @@
                                 @auth
                                     @if(auth()->user()->role === \App\Enums\Role::CLIENT)
                                         <a href="{{ route('bookings.create', ['package_id' => $package->id]) }}" 
-                                           class="block w-full rounded-3xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] py-3 text-center text-sm font-semibold text-white transition-all hover:brightness-110 sm:py-4 sm:text-base">
+                                           class="block w-full rounded-2xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] py-2.5 text-center text-sm font-semibold text-white transition-all hover:brightness-110 sm:rounded-3xl sm:py-4 sm:text-base">
                                             Pilih Paket
                                         </a>
                                     @else
                                         <a href="{{ route('catalog.public') }}" 
-                                           class="block w-full rounded-3xl border-2 border-[#D4A017] py-3 text-center text-sm font-semibold text-[#D4A017] transition-all hover:bg-[#D4A017] hover:text-white sm:py-4 sm:text-base">
+                                           class="block w-full rounded-2xl border-2 border-[#D4A017] py-2.5 text-center text-sm font-semibold text-[#D4A017] transition-all hover:bg-[#D4A017] hover:text-white sm:rounded-3xl sm:py-4 sm:text-base">
                                             Lihat Detail
                                         </a>
                                     @endif
                                 @else
                                     <a href="{{ route('register') }}" 
-                                       class="block w-full rounded-3xl border-2 border-[#D4A017] py-3 text-center text-sm font-semibold text-[#D4A017] transition-all hover:bg-[#D4A017] hover:text-white sm:py-4 sm:text-base">
+                                       class="block w-full rounded-2xl border-2 border-[#D4A017] py-2.5 text-center text-sm font-semibold text-[#D4A017] transition-all hover:bg-[#D4A017] hover:text-white sm:rounded-3xl sm:py-4 sm:text-base">
                                         Daftar untuk Pemesanan
                                     </a>
                                 @endauth
@@ -375,11 +375,11 @@
         </section>
 
        <!-- Portfolio Section -->
-<section id="portofolio" class="bg-[#FAF6F0] py-12 sm:py-20">
+<section id="portofolio" class="bg-[#FAF6F0] py-8 sm:py-20">
     <div class="max-w-7xl mx-auto px-4 sm:px-6">
-        <div class="mb-10 text-center sm:mb-14">
-            <h2 class="font-display text-3xl font-bold tracking-tight text-[#3F2B1B] sm:text-5xl">Portofolio Kami</h2>
-            <p class="mt-3 text-sm text-[#7A5B3A] sm:text-xl">Koleksi momen terbaik yang telah kami abadikan</p>
+        <div class="mb-6 text-center sm:mb-14">
+            <h2 class="font-display text-2xl font-bold tracking-tight text-[#3F2B1B] sm:text-5xl">Portofolio Kami</h2>
+            <p class="mt-2 text-sm text-[#7A5B3A] sm:mt-3 sm:text-xl">Koleksi momen terbaik yang telah kami abadikan</p>
         </div>
 
         @php
@@ -404,7 +404,7 @@
         @endphp
 
         @if($portfolioItems->isNotEmpty())
-            <div class="mb-8 flex flex-wrap justify-center gap-2 sm:mb-12 sm:gap-3">
+            <div class="mb-6 flex flex-wrap justify-center gap-2 sm:mb-12 sm:gap-3">
                 <!-- Button "Semua Foto" tanpa class active -->
                 <button type="button" data-portfolio-filter="all"
                         class="portfolio-tab rounded-3xl border border-[#E1D3C5] bg-white px-4 py-2 text-xs text-[#5C432C] transition-all hover:border-[#D4A017] hover:bg-[#D4A017] hover:text-white sm:px-8 sm:py-3 sm:text-sm">
@@ -421,7 +421,7 @@
                 @endforeach
             </div>
 
-            <div class="grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
+            <div class="grid grid-cols-2 gap-2.5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
                 @foreach($portfolioItems as $photo)
                     <a href="{{ $photo['url'] }}" target="_blank"
                        data-portfolio-card
@@ -454,11 +454,11 @@
 </section>
 
         <!-- Studio Section -->
-        <section id="studio" class="bg-white py-12 sm:py-20">
+        <section id="studio" class="bg-white py-8 sm:py-20">
             <div class="max-w-7xl mx-auto px-4 sm:px-6">
-                <div class="mb-10 text-center sm:mb-14">
-                    <h2 class="font-display text-3xl font-bold tracking-tight text-[#3F2B1B] sm:text-5xl">Studio & Lokasi</h2>
-                    <p class="mt-3 text-sm text-[#7A5B3A] sm:text-xl">Kunjungi cabang kami dan rasakan pengalamannya</p>
+                <div class="mb-6 text-center sm:mb-14">
+                    <h2 class="font-display text-2xl font-bold tracking-tight text-[#3F2B1B] sm:text-5xl">Studio & Lokasi</h2>
+                    <p class="mt-2 text-sm text-[#7A5B3A] sm:mt-3 sm:text-xl">Kunjungi cabang kami dan rasakan pengalamannya</p>
                 </div>
                 @if($locations->count())
                     <div class="grid gap-4 md:grid-cols-2 md:gap-8">
@@ -467,19 +467,19 @@
                                 $photo = $loc->photo_path ? Storage::url($loc->photo_path) : null;
                             @endphp
                            
-                            <div class="group overflow-hidden rounded-3xl border border-[#EDE0D0] bg-white shadow-md transition-all hover:shadow-2xl sm:shadow-xl">
+                            <div class="group overflow-hidden rounded-2xl border border-[#EDE0D0] bg-white shadow-sm transition-all hover:shadow-2xl sm:rounded-3xl sm:shadow-xl">
                                 @if($photo)
-                                    <div class="h-40 w-full overflow-hidden sm:h-72">
+                                    <div class="h-36 w-full overflow-hidden sm:h-72">
                                         <img src="{{ $photo }}" alt="{{ $loc->name }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
                                     </div>
                                 @else
-                                    <div class="flex h-40 w-full items-center justify-center bg-gradient-to-br from-[#FAF6F0] to-[#E7D9C2] sm:h-72">
+                                    <div class="flex h-36 w-full items-center justify-center bg-gradient-to-br from-[#FAF6F0] to-[#E7D9C2] sm:h-72">
                                         <span class="font-display text-2xl text-[#3F2B1B] sm:text-4xl">{{ $loc->name }}</span>
                                     </div>
                                 @endif
                                
-                                <div class="p-4 sm:p-9">
-                                    <h3 class="mb-2 font-display text-2xl font-semibold text-[#3F2B1B] sm:mb-3 sm:text-3xl">{{ $loc->name }}</h3>
+                                <div class="p-4 sm:p-7">
+                                    <h3 class="mb-2 font-display text-xl font-semibold text-[#3F2B1B] sm:mb-3 sm:text-3xl">{{ $loc->name }}</h3>
                                     @if($loc->address)
                                         <p class="mb-3 flex items-start gap-2 text-sm leading-5 text-[#7A5B3A] sm:mb-5 sm:gap-3 sm:text-base">
                                             <i class="fa-solid fa-location-dot text-[#D4A017] mt-1"></i>
@@ -490,14 +490,14 @@
                                         <p class="mb-4 line-clamp-2 text-sm text-[#5C432C] sm:mb-8 sm:text-base">{{ $loc->description }}</p>
                                     @endif
                                    
-                                    <div class="flex gap-3 sm:gap-4">
+                                    <div class="flex gap-2 sm:gap-4">
                                         <a href="{{ route('locations.public.show', $loc) }}" 
-                                           class="flex-1 rounded-3xl border-2 border-[#D4A017] py-3 text-center text-sm font-semibold text-[#D4A017] transition-all hover:bg-[#D4A017] hover:text-white sm:py-4 sm:text-base">
+                                           class="flex-1 rounded-2xl border-2 border-[#D4A017] py-2.5 text-center text-sm font-semibold text-[#D4A017] transition-all hover:bg-[#D4A017] hover:text-white sm:rounded-3xl sm:py-4 sm:text-base">
                                             Detail Cabang
                                         </a>
                                         @if($loc->map_url)
                                             <a href="{{ $loc->map_url }}" target="_blank"
-                                               class="rounded-3xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] px-5 py-3 text-sm font-semibold text-white transition-all hover:brightness-110 sm:px-8 sm:py-4 sm:text-base">
+                                               class="rounded-2xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] px-4 py-2.5 text-sm font-semibold text-white transition-all hover:brightness-110 sm:rounded-3xl sm:px-8 sm:py-4 sm:text-base">
                                                 <i class="fa-solid fa-map"></i>
                                             </a>
                                         @endif
@@ -597,6 +597,7 @@
                         Panduan
                     </p>
                     <h2 class="mt-4 font-display text-3xl font-semibold text-[#3F2B1B]">Tata Cara dan Persyaratan Pemesanan</h2>
+                    <p class="sr-only">Panduan Pemesanan Alter Studio</p>
                     <p class="mt-3 text-sm leading-6 text-[#7A5B3A]">
                         Panduan ini berisi langkah pemesanan dan syarat penting agar proses foto, pembayaran, dan pengambilan hasil berjalan lancar.
                     </p>

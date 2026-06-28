@@ -74,6 +74,7 @@ class Project extends Model
     protected static function booted(): void
     {
         static::saved(function (Project $project) {
+            // Field fotografer/editor lama dipetakan ke tabel pivot project_schedule_users.
             if (! $project->pendingPhotographerId && ! $project->pendingEditorId) {
                 return;
             }
@@ -117,11 +118,13 @@ class Project extends Model
 
     public function setPhotographerIdAttribute($value): void
     {
+        // Mutator ini menjaga kompatibilitas kode lama yang masih mengisi photographer_id.
         $this->pendingPhotographerId = $value ? (int) $value : null;
     }
 
     public function setEditorIdAttribute($value): void
     {
+        // Mutator ini menjaga kompatibilitas kode lama yang masih mengisi editor_id.
         $this->pendingEditorId = $value ? (int) $value : null;
     }
 
@@ -231,6 +234,7 @@ class Project extends Model
 
     public function rawDriveExpiresAt(): ?Carbon
     {
+        // Link Drive hanya ditampilkan selama masa akses yang ditentukan sistem.
         return $this->raw_drive_uploaded_at?->copy()->addDays(self::DRIVE_ACCESS_DAYS);
     }
 

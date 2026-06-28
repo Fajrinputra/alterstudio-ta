@@ -416,10 +416,10 @@
                                             </select>
                                         </div>
                                         <div class="lg:col-span-2 xl:col-span-1">
-                                            <button class="flex h-14 w-full min-w-0 items-center justify-center gap-2.5 rounded-3xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] px-6 text-sm font-semibold text-white shadow-xl transition-all hover:-translate-y-0.5 hover:shadow-2xl disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 disabled:hover:shadow-xl"
+                                            <button class="flex min-h-12 w-full min-w-0 items-center justify-center gap-2.5 rounded-2xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] px-4 py-3 text-sm font-semibold leading-tight text-white shadow-xl transition-all hover:-translate-y-0.5 hover:shadow-2xl disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 disabled:hover:shadow-xl sm:h-14 sm:rounded-3xl sm:px-6 sm:py-0"
                                                     @if(!$canSchedule) disabled @endif>
                                                 <i class="fa-solid fa-calendar-check shrink-0"></i>
-                                                <span class="whitespace-nowrap">{{ $canSchedule ? 'Simpan Jadwal' : 'Belum Bisa Dijadwalkan' }}</span>
+                                                <span class="min-w-0 text-center">{{ $canSchedule ? 'Simpan Jadwal' : 'Belum Bisa Dijadwalkan' }}</span>
                                             </button>
                                             @if(!$canSchedule)
                                                 <p class="mt-2 text-xs leading-5 text-red-600">

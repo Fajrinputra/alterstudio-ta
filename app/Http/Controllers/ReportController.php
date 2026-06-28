@@ -27,7 +27,7 @@ class ReportController extends Controller
             'date_from' => ['required', 'date'],
             'date_to' => ['required', 'date', 'after_or_equal:date_from'],
             'category_id' => ['nullable', 'integer', 'exists:service_categories,id'],
-            'download' => ['nullable', 'in:csv,pdf'],
+            'download' => ['nullable', 'in:csv,xls,pdf'],
         ]);
 
         $dateFrom = $validated['date_from'];
@@ -112,6 +112,39 @@ class ReportController extends Controller
             }, $fileBaseName.'.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
         }
 
+        if ($request->get('download') === 'xls') {
+            $excelData = compact(
+                'dateFrom',
+                'dateTo',
+                'categoryId',
+                'categoryLabel',
+                'exportedAt',
+                'exportedBy',
+                'reportTitle',
+                'canExportReport',
+                'bookings',
+                'revenueTotal',
+                'totalOrders',
+                'assignedEditors',
+                'assignedPhotographers',
+                'activeClients',
+                'isOwnerReport',
+                'paymentBreakdown',
+                'statusSummary',
+                'photographerPerf',
+                'editorPerf'
+            );
+
+            try {
+                return response($this->renderExcelReport($excelData), 200, [
+                    'Content-Type' => 'application/vnd.ms-excel; charset=UTF-8',
+                    'Content-Disposition' => 'attachment; filename="'.$fileBaseName.'.xls"',
+                ]);
+            } catch (\Throwable $exception) {
+                return $this->exportFailureResponse($request, 'Excel', $exception);
+            }
+        }
+
         $chart = [
             'photographers' => [
                 'labels' => $photographerPerf->pluck('name'),
@@ -182,6 +215,12 @@ class ReportController extends Controller
     protected function renderPdfReport(array $data): string
     {
         return view('admin.reports.print', $data)->render();
+    }
+
+    /** @param array<string, mixed> $data */
+    protected function renderExcelReport(array $data): string
+    {
+        return view('admin.reports.excel', $data)->render();
     }
 
     protected function exportFailureResponse(Request $request, string $format, \Throwable $exception)

@@ -90,6 +90,33 @@ class ReportExportTest extends TestCase
     }
 
     /**
+     * Pengujian: ekspor laporan Excel oleh Manajer.
+     * Hasil yang diharapkan: file Excel berisi tabel laporan yang rapi dan detail seperti laporan cetak.
+     */
+    public function test_excel_export_contains_structured_report_tables(): void
+    {
+        [$manager, $category] = $this->seedReportScenario();
+
+        $response = $this->actingAs($manager)->get(route('reports.index', [
+            'date_from' => now()->subDay()->toDateString(),
+            'date_to' => now()->addDay()->toDateString(),
+            'category_id' => $category->id,
+            'download' => 'xls',
+        ]));
+
+        $response->assertOk();
+        $this->assertSame('application/vnd.ms-excel; charset=UTF-8', $response->headers->get('content-type'));
+        $this->assertStringContainsString('Laporan Kinerja Kru Alterstudio.xls', urldecode((string) $response->headers->get('content-disposition')));
+
+        $response->assertSee('<table>', false)
+            ->assertSee('Ringkasan Laporan', false)
+            ->assertSee('Pemesanan dalam Periode', false)
+            ->assertSee('Kinerja Fotografer', false)
+            ->assertSee('Kinerja Editor', false)
+            ->assertSee('Rp 500.000', false);
+    }
+
+    /**
      * Pengujian: ekspor laporan PDF oleh Manajer.
      * Hasil yang diharapkan: tampilan cetak laporan berisi metadata dan tabel kinerja kru.
      */
@@ -186,6 +213,7 @@ class ReportExportTest extends TestCase
             ->assertSee('Terapkan Periode', false)
             ->assertDontSee('Kategori Laporan', false)
             ->assertDontSee('Unduh CSV', false)
+            ->assertDontSee('Unduh Excel', false)
             ->assertDontSee('Unduh PDF', false);
     }
 
