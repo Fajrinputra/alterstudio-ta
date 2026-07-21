@@ -6,7 +6,6 @@ use App\Enums\Role;
 use App\Models\Booking;
 use App\Models\Project;
 use App\Models\ProjectSchedule;
-use App\Models\ProjectScheduleUser;
 use App\Models\ServicePackage;
 use App\Models\StudioRoom;
 use App\Models\User;
@@ -36,36 +35,33 @@ class ScheduleController extends Controller
             'booking.package',
             'booking.studioLocation.rooms',
             'booking.studioRoom',
-            'scheduleRecord.photographerAssignment.user',
-            'scheduleRecord.editorAssignment.user',
+            'scheduleRecord.photographer',
+            'scheduleRecord.editor',
         ])->whereHas('booking');
 
         $isCrewOnly = $user->isRole(Role::PHOTOGRAPHER, Role::EDITOR)
             && ! $user->isRole(Role::OWNER, Role::ADMIN, Role::MANAGER, Role::CLIENT);
 
         if ($isCrewOnly) {
-            $query->whereHas('scheduleRecord.users', function ($q) use ($user) {
-                $q->where('user_id', $user->id);
+            $query->whereHas('scheduleRecord', function ($q) use ($user) {
+                $q->where('photographer_id', $user->id)
+                    ->orWhere('editor_id', $user->id);
             })->whereNotNull('start_at');
 
             if ($assignmentRoleFilter === 'photographer') {
-                $query->whereHas('scheduleRecord.users', fn ($q) => $q
-                    ->where('user_id', $user->id)
-                    ->where('role', Role::PHOTOGRAPHER->value));
+                $query->whereHas('scheduleRecord', fn ($q) => $q->where('photographer_id', $user->id));
             }
 
             if ($assignmentRoleFilter === 'editor') {
-                $query->whereHas('scheduleRecord.users', fn ($q) => $q
-                    ->where('user_id', $user->id)
-                    ->where('role', Role::EDITOR->value));
+                $query->whereHas('scheduleRecord', fn ($q) => $q->where('editor_id', $user->id));
             }
             $readOnly = true;
         } else {
             $query
                 ->when($assignmentRoleFilter === 'photographer', fn ($q) => $q
-                    ->whereHas('scheduleRecord.users', fn ($users) => $users->where('role', Role::PHOTOGRAPHER->value)))
+                    ->whereHas('scheduleRecord', fn ($schedule) => $schedule->whereNotNull('photographer_id')))
                 ->when($assignmentRoleFilter === 'editor', fn ($q) => $q
-                    ->whereHas('scheduleRecord.users', fn ($users) => $users->where('role', Role::EDITOR->value)));
+                    ->whereHas('scheduleRecord', fn ($schedule) => $schedule->whereNotNull('editor_id')));
             $readOnly = false;
         }
 
@@ -74,7 +70,9 @@ class ScheduleController extends Controller
             ->when($scheduleFilter === 'scheduled', fn ($q) => $q->whereNotNull('start_at'))
             ->when($scheduleFilter === 'unscheduled', fn ($q) => $q->whereNull('start_at'))
             ->when($crewUserFilter, function ($q) use ($crewUserFilter) {
-                $q->whereHas('scheduleRecord.users', fn ($users) => $users->where('user_id', $crewUserFilter));
+                $q->whereHas('scheduleRecord', fn ($schedule) => $schedule
+                    ->where('photographer_id', $crewUserFilter)
+                    ->orWhere('editor_id', $crewUserFilter));
             })
             ->orderByDesc('id')
             ->paginate(12)
@@ -94,7 +92,6 @@ class ScheduleController extends Controller
             $rangeEnd = collect($projectWindows)->pluck(1)->sortByDesc(fn ($date) => $date->getTimestamp())->first();
 
             $existingSchedules = ProjectSchedule::query()
-                ->with('users:id,project_schedule_id,user_id')
                 ->whereHas('booking', fn ($q) => $q->where('status', '!=', Booking::STATUS_CANCELLED))
                 ->where('start_at', '<', $rangeEnd->format('Y-m-d H:i:s'))
                 ->where('end_at', '>', $rangeStart->format('Y-m-d H:i:s'))
@@ -107,7 +104,7 @@ class ScheduleController extends Controller
                 ->filter(fn (ProjectSchedule $schedule) => $schedule->project_id !== $project->id
                     && Carbon::parse($schedule->start_at)->lt($end)
                     && Carbon::parse($schedule->end_at)->gt($start))
-                ->flatMap(fn (ProjectSchedule $schedule) => $schedule->users->pluck('user_id'))
+                ->flatMap(fn (ProjectSchedule $schedule) => [$schedule->photographer_id, $schedule->editor_id])
                 ->map(fn ($id) => (int) $id)
                 ->filter()
                 ->unique()
@@ -226,7 +223,7 @@ class ScheduleController extends Controller
             $this->syncScheduleRecord($project, $booking, $room, $validated, $start, $end, $request->user()?->id);
         });
 
-        $project->load(['booking', 'scheduleRecord.photographerAssignment.user', 'scheduleRecord.editorAssignment.user']);
+        $project->load(['booking', 'scheduleRecord.photographer', 'scheduleRecord.editor']);
 
         $recipients = collect([$project->photographer, $project->editor])->filter();
         if ($recipients->isNotEmpty()) {
@@ -309,7 +306,7 @@ class ScheduleController extends Controller
             $this->syncScheduleRecord($project, $project->booking, $room, $validated, $start, $end, $request->user()?->id);
         });
 
-        $project->load(['scheduleRecord.photographerAssignment.user', 'scheduleRecord.editorAssignment.user']);
+        $project->load(['scheduleRecord.photographer', 'scheduleRecord.editor']);
 
         $recipients = collect([$project->photographer, $project->editor])->filter();
         if ($recipients->isNotEmpty()) {
@@ -362,7 +359,10 @@ class ScheduleController extends Controller
         $assignedIds = array_values(array_unique([$photographerId, $editorId]));
 
         $scheduleOverlap = ProjectSchedule::query()
-            ->whereHas('users', fn ($q) => $q->whereIn('user_id', $assignedIds))
+            ->where(function ($query) use ($assignedIds) {
+                $query->whereIn('photographer_id', $assignedIds)
+                    ->orWhereIn('editor_id', $assignedIds);
+            })
             ->whereHas('booking', fn ($q) => $q->where('status', '!=', Booking::STATUS_CANCELLED))
             ->where('project_id', '!=', $projectId)
             ->where('start_at', '<', $end->format('Y-m-d H:i:s'))
@@ -375,13 +375,12 @@ class ScheduleController extends Controller
     protected function overlappingAssignedUserIds(DateTimeInterface $start, DateTimeInterface $end, int $projectId): array
     {
         $scheduleUserIds = ProjectSchedule::query()
-            ->with('users:id,project_schedule_id,user_id')
             ->whereHas('booking', fn ($q) => $q->where('status', '!=', Booking::STATUS_CANCELLED))
             ->where('project_id', '!=', $projectId)
             ->where('start_at', '<', $end->format('Y-m-d H:i:s'))
             ->where('end_at', '>', $start->format('Y-m-d H:i:s'))
             ->get()
-            ->flatMap(fn (ProjectSchedule $schedule) => $schedule->users->pluck('user_id'))
+            ->flatMap(fn (ProjectSchedule $schedule) => [$schedule->photographer_id, $schedule->editor_id])
             ->map(fn ($id) => (int) $id);
 
         return $scheduleUserIds
@@ -513,23 +512,13 @@ class ScheduleController extends Controller
                 'studio_location_id' => (int) $booking->studio_location_id,
                 'studio_room_id' => $room->id,
                 'scheduled_by' => $scheduledBy,
+                'photographer_id' => $validated['photographer_id'],
+                'editor_id' => $validated['editor_id'],
                 'start_at' => $start,
                 'end_at' => $end,
                 'status' => ProjectSchedule::STATUS_SCHEDULED,
             ]
         );
-
-        $schedule->users()->delete();
-        ProjectScheduleUser::create([
-            'project_schedule_id' => $schedule->id,
-            'user_id' => $validated['photographer_id'],
-            'role' => Role::PHOTOGRAPHER->value,
-        ]);
-        ProjectScheduleUser::create([
-            'project_schedule_id' => $schedule->id,
-            'user_id' => $validated['editor_id'],
-            'role' => Role::EDITOR->value,
-        ]);
 
         return $schedule;
     }

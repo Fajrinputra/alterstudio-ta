@@ -1,0 +1,31 @@
+@startuml
+title SD-B40 Lihat Menu Kelola Hero Landing Page
+
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam BoxPadding 4
+skinparam sequence {
+    ArrowColor #333333
+    LifeLineBorderColor #999999
+    LifeLineBackgroundColor white
+    ParticipantBorderColor #999999
+    ParticipantBackgroundColor #ECEEF8
+    ParticipantFontColor #111111
+    ActorBorderColor #999999
+    ActorFontColor #111111
+}
+
+actor "Manajer" as Manajer
+boundary "Menu Hero Landing Page" as MenuHero
+boundary "Halaman Kelola Hero" as HalamanHero
+control "LandingHeroSlideController" as LandingHeroController
+entity "LandingHeroSlides Model" as LandingHeroSlide
+
+Manajer -> MenuHero : Membuka menu kelola hero
+MenuHero -> LandingHeroController : index()
+LandingHeroController -> LandingHeroSlide : SELECT landing_hero_slides
+LandingHeroSlide --> LandingHeroController : data hero slide
+LandingHeroController --> HalamanHero : tampilkan daftar hero slide
+HalamanHero --> Manajer : menu kelola hero tampil
+
+@enduml

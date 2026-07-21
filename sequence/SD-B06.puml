@@ -1,0 +1,56 @@
+@startuml
+title SD-B06 Lupa Password
+
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam BoxPadding 4
+skinparam sequence {
+    ArrowColor #333333
+    LifeLineBorderColor #999999
+    LifeLineBackgroundColor white
+    ParticipantBorderColor #999999
+    ParticipantBackgroundColor #ECEEF8
+    ParticipantFontColor #111111
+    ActorBorderColor #999999
+    ActorFontColor #111111
+    GroupBorderColor #111111
+    GroupBackgroundColor transparent
+}
+
+actor "Pengguna" as Pengguna
+boundary "Halaman Login" as HalamanLogin
+boundary "Halaman Lupa Password" as HalamanLupa
+boundary "Form Email Reset" as FormEmail
+control "PasswordResetLinkController" as ResetLinkController
+control "MailService" as MailService
+entity "Users Model" as User
+entity "PasswordResetToken" as ResetToken
+
+Pengguna -> HalamanLogin : Klik lupa password
+HalamanLogin -> HalamanLupa : tampilkan halaman lupa password
+HalamanLupa --> Pengguna : form email reset tampil
+Pengguna -> FormEmail : Mengisi email
+Pengguna -> FormEmail : Klik kirim link reset
+FormEmail -> ResetLinkController : store(email)
+ResetLinkController -> ResetLinkController : validasi format email
+
+alt Email valid dan terdaftar
+    ResetLinkController -> User : cari user berdasarkan email
+    User --> ResetLinkController : user object
+    ResetLinkController -> ResetToken : buat token reset
+    ResetToken --> ResetLinkController : token reset
+    ResetLinkController -> MailService : kirim link reset
+    MailService -> MailService : send reset link
+    MailService --> MailService : email terkirim
+    MailService --> ResetLinkController : status terkirim
+    ResetLinkController --> HalamanLupa : tampilkan status link reset dikirim
+    HalamanLupa --> Pengguna : tautan reset dikirim
+else Email tidak valid / tidak terdaftar
+    ResetLinkController --> FormEmail : tampilkan pesan error
+    FormEmail --> Pengguna : permintaan reset ditolak
+else Email gagal dikirim
+    ResetLinkController --> HalamanLupa : tampilkan pesan gagal kirim email
+    HalamanLupa --> Pengguna : reset gagal
+end
+
+@enduml

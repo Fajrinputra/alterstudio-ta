@@ -1,0 +1,93 @@
+@startuml
+title SD-B50 Ganti Jadwal Pemesanan
+
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam BoxPadding 4
+skinparam sequence {
+    ArrowColor #333333
+    LifeLineBorderColor #999999
+    LifeLineBackgroundColor white
+    ParticipantBorderColor #999999
+    ParticipantBackgroundColor #ECEEF8
+    ParticipantFontColor #111111
+    ActorBorderColor #999999
+    ActorFontColor #111111
+    GroupBorderColor #111111
+    GroupBackgroundColor transparent
+}
+
+actor "Klien" as Klien
+boundary "Halaman Pemesanan Saya" as HalamanPemesanan
+boundary "Form Ganti Jadwal" as FormGantiJadwal
+control "BookingController" as BookingController
+control "BookingAvailability" as BookingAvailability
+entity "Bookings Model" as Booking
+entity "ServicePackages Model" as ServicePackage
+entity "StudioLocations Model" as StudioLocation
+entity "StudioRooms Model" as StudioRoom
+
+Klien -> HalamanPemesanan : Membuka riwayat pemesanan
+HalamanPemesanan -> BookingController : index()
+BookingController -> Booking : ambil pemesanan milik klien
+Booking --> BookingController : data pemesanan
+BookingController --> HalamanPemesanan : tampilkan daftar pemesanan
+HalamanPemesanan --> Klien : daftar pemesanan tampil
+
+Klien -> HalamanPemesanan : Klik Ganti Jadwal
+HalamanPemesanan -> BookingController : edit(bookingId)
+BookingController -> Booking : ambil booking dan validasi kepemilikan
+Booking --> BookingController : data booking
+BookingController -> BookingController : validasi belum dikonfirmasi,\nbelum bayar, dan belum dibatalkan
+BookingController -> ServicePackage : ambil paket aktif pada booking
+ServicePackage --> BookingController : data paket
+BookingController -> StudioLocation : ambil cabang aktif
+StudioLocation --> BookingController : data cabang aktif
+BookingController --> FormGantiJadwal : tampilkan form ganti jadwal
+FormGantiJadwal --> Klien : form ganti jadwal tampil
+
+Klien -> FormGantiJadwal : Mengubah cabang, tanggal,\nwaktu, add-on, jenis pembayaran, catatan
+FormGantiJadwal -> BookingController : availability(ignore_booking_id)
+BookingController -> BookingController : validasi tanggal maksimal 1 bulan
+BookingController -> BookingAvailability : hitung slot tersedia\ndengan mengabaikan booking saat ini
+BookingAvailability -> Booking : ambil booking aktif pada cabang/tanggal
+Booking --> BookingAvailability : data booking aktif
+BookingAvailability -> StudioRoom : ambil ruangan aktif
+StudioRoom --> BookingAvailability : data ruangan aktif
+BookingAvailability -> BookingAvailability : validasi jam operasional,\nslot lewat, durasi add-on, dan bentrok
+BookingAvailability --> BookingController : daftar slot tersedia
+BookingController --> FormGantiJadwal : tampilkan pilihan waktu tersedia
+FormGantiJadwal --> Klien : slot baru tersedia
+
+Klien -> FormGantiJadwal : Klik Simpan Perubahan
+FormGantiJadwal -> BookingController : update(bookingId, data)
+BookingController -> Booking : lock booking dan validasi ulang status
+Booking --> BookingController : booking valid
+BookingController -> ServicePackage : lock paket aktif
+ServicePackage --> BookingController : data paket aktif
+BookingController -> StudioRoom : lock ruangan aktif pada cabang
+StudioRoom --> BookingController : data ruangan aktif
+BookingController -> BookingAvailability : validasi ulang slot\nmengabaikan booking saat ini
+BookingAvailability --> BookingController : hasil validasi slot
+
+alt Data valid dan slot tersedia
+    BookingController -> BookingController : hitung ulang add-on\ndan total biaya
+    BookingController -> Booking : update cabang, ruangan,\ntanggal, waktu, add-on,\njenis pembayaran, dan catatan
+    Booking --> BookingController : booking diperbarui
+    BookingController --> HalamanPemesanan : redirect dengan pesan berhasil
+    HalamanPemesanan --> Klien : jadwal berhasil diperbarui\ndan tetap menunggu konfirmasi
+else Booking sudah dikonfirmasi / pembayaran dimulai / dibatalkan
+    BookingController --> HalamanPemesanan : tolak perubahan jadwal
+    HalamanPemesanan --> Klien : pemesanan tidak dapat diubah
+else Paket sudah tidak aktif
+    BookingController --> HalamanPemesanan : tampilkan pesan paket tidak aktif
+    HalamanPemesanan --> Klien : hubungi admin
+else Data tidak valid atau tanggal tidak valid
+    BookingController --> FormGantiJadwal : tampilkan pesan validasi
+    FormGantiJadwal --> Klien : perbaiki data pemesanan
+else Slot tidak tersedia
+    BookingController --> FormGantiJadwal : tampilkan pilihan waktu lain
+    FormGantiJadwal --> Klien : pilih slot lain
+end
+
+@enduml

@@ -1,0 +1,57 @@
+@startuml
+title SD-B24 Lihat Menu dan Status Pemesanan
+
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam BoxPadding 4
+skinparam sequence {
+    ArrowColor #333333
+    LifeLineBorderColor #999999
+    LifeLineBackgroundColor white
+    ParticipantBorderColor #999999
+    ParticipantBackgroundColor #ECEEF8
+    ParticipantFontColor #111111
+    ActorBorderColor #999999
+    ActorFontColor #111111
+    GroupBorderColor #111111
+    GroupBackgroundColor transparent
+}
+
+actor "Klien" as Klien
+boundary "Menu Pemesanan" as MenuPemesanan
+boundary "Halaman Pemesanan Saya" as HalamanSaya
+boundary "Detail Pemesanan" as DetailPemesanan
+control "BookingController" as BookingController
+entity "Bookings Model" as Booking
+entity "Payments Model" as Payment
+entity "Projects Model" as Project
+
+Klien -> MenuPemesanan : Buka menu pemesanan
+MenuPemesanan -> HalamanSaya : akses pemesanan saya
+HalamanSaya -> BookingController : index()
+BookingController -> Booking : ambil booking milik klien
+Booking -> Payment : ambil payment terkait
+Payment --> Booking : data payment
+Booking -> Project : ambil project terkait
+Project --> Booking : data project
+Booking --> BookingController : data pemesanan
+
+alt Data tersedia
+    BookingController --> HalamanSaya : tampilkan daftar dan status pemesanan
+    HalamanSaya --> Klien : status pemesanan tampil
+    Klien -> HalamanSaya : pilih detail pemesanan
+    HalamanSaya -> DetailPemesanan : buka detail
+    DetailPemesanan -> BookingController : show(bookingId)
+    BookingController -> Booking : ambil detail booking/payment/project
+    Booking --> BookingController : detail pemesanan
+    BookingController --> DetailPemesanan : tampilkan detail pemesanan
+    DetailPemesanan --> Klien : detail pemesanan tampil
+else Belum ada pemesanan
+    BookingController --> HalamanSaya : tampilkan daftar kosong
+    HalamanSaya --> Klien : belum ada pemesanan
+else Terjadi kesalahan sistem
+    BookingController --> HalamanSaya : tampilkan error
+    HalamanSaya --> Klien : status gagal ditampilkan
+end
+
+@enduml

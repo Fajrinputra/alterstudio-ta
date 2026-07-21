@@ -150,6 +150,11 @@
                             <p class="font-semibold text-[#3F2B1B]">5. Syarat Penting</p>
                             <p class="mt-2">Tanggal pemesanan maksimal 1 bulan dari hari ini dan tidak boleh memilih tanggal yang sudah lewat. Slot pada hari yang sama otomatis disembunyikan jika jamnya sudah berlalu.</p>
                         </div>
+
+                        <div class="rounded-2xl border border-[#EDE0D0] bg-[#FAF6F0] p-4">
+                            <p class="font-semibold text-[#3F2B1B]">6. Bantuan dan Komplain</p>
+                            <p class="mt-2">Jika ingin komplain hasil foto, bertanya tentang revisi, atau ada hal penting yang belum tersedia di sistem, silakan hubungi admin melalui tombol WhatsApp.</p>
+                        </div>
                     </div>
                 </section>
             </div>

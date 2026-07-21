@@ -71,6 +71,32 @@
                     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-1">
                         <x-stat-card label="Total Pemesanan" :value="$metrics['bookings'] ?? 0" icon="receipt" />
                         <x-stat-card label="Project Final" :value="$metrics['projects_final'] ?? 0" color="emerald" icon="circle-check" />
+                        @php
+                            $clientRevenue = number_format($metrics['revenue_received'] ?? 0, 0, ',', '.');
+                            $clientDp = number_format($metrics['revenue_dp'] ?? 0, 0, ',', '.');
+                            $clientFull = number_format($metrics['revenue_full'] ?? 0, 0, ',', '.');
+                        @endphp
+                        <div class="rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-500/10 to-teal-600/10 p-5 text-emerald-700 shadow-lg">
+                            <div class="flex items-center gap-3">
+                                <div class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl bg-emerald-500 text-white shadow-sm">
+                                    <i class="fa-solid fa-wallet text-base"></i>
+                                </div>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-medium uppercase tracking-[0.18em] opacity-80">Pembayaran Saya</p>
+                                    <p class="mt-1 text-xl font-semibold leading-tight">Rp {{ $clientRevenue }}</p>
+                                </div>
+                            </div>
+                            <div class="mt-4 grid grid-cols-2 gap-2 text-xs">
+                                <div class="rounded-xl bg-white/80 px-3 py-2">
+                                    <span class="block opacity-75">DP</span>
+                                    <strong>Rp {{ $clientDp }}</strong>
+                                </div>
+                                <div class="rounded-xl bg-white/80 px-3 py-2">
+                                    <span class="block opacity-75">Lunas</span>
+                                    <strong>Rp {{ $clientFull }}</strong>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </section>
 
@@ -204,20 +230,32 @@
                         <x-stat-card label="Data Pembayaran" :value="$data['metrics']['waiting_payment'] ?? 0" color="blue" icon="credit-card" />
                         <x-stat-card label="Project Final" :value="$data['metrics']['projects_final'] ?? 0" color="emerald" icon="circle-check" />
                         <x-stat-card label="Belum Terjadwal" :value="$data['metrics']['unscheduled'] ?? 0" color="red" icon="calendar-xmark" />
-                        @if($role === Role::OWNER)
+                        @if($role === Role::MANAGER || $role === Role::OWNER)
                             @php
                                 $revenueReceived = number_format($data['metrics']['revenue_received'] ?? 0, 0, ',', '.');
+                                $revenueDp = number_format($data['metrics']['revenue_dp'] ?? 0, 0, ',', '.');
+                                $revenueFull = number_format($data['metrics']['revenue_full'] ?? 0, 0, ',', '.');
                             @endphp
-                            <div class="relative min-w-0 overflow-hidden rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-500/10 to-teal-600/10 p-5 text-emerald-700 shadow-lg">
+                            <div class="relative min-w-0 overflow-hidden rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-500/10 to-teal-600/10 p-5 text-emerald-700 shadow-lg sm:col-span-2">
                                 <div class="absolute -right-6 -top-6 h-20 w-20 rounded-full bg-emerald-500 opacity-10 blur-2xl"></div>
-                                <div class="relative z-10 flex min-w-0 items-center gap-4">
+                                <div class="relative z-10 flex min-w-0 flex-col gap-4 sm:flex-row sm:items-center">
                                     <div class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl bg-emerald-500 text-white shadow-sm">
                                         <i class="fa-solid fa-wallet text-base"></i>
                                     </div>
-                                    <p class="min-w-0 flex-1 text-xs font-medium uppercase tracking-[0.18em] opacity-80">Pendapatan Diterima</p>
-                                    <p class="flex-shrink-0 whitespace-nowrap text-right text-[clamp(1.05rem,1.35vw,1.45rem)] font-semibold leading-tight tabular-nums">
-                                        Rp {{ $revenueReceived }}
-                                    </p>
+                                    <div class="min-w-0 flex-1">
+                                        <p class="text-xs font-medium uppercase tracking-[0.18em] opacity-80">Pendapatan Diterima</p>
+                                        <p class="mt-1 text-[clamp(1.1rem,1.5vw,1.6rem)] font-semibold leading-tight tabular-nums">Rp {{ $revenueReceived }}</p>
+                                    </div>
+                                    <div class="grid w-full grid-cols-2 gap-2 text-xs sm:w-auto sm:min-w-[260px]">
+                                        <div class="rounded-xl bg-white/80 px-3 py-2">
+                                            <span class="block opacity-75">DP diterima</span>
+                                            <strong>Rp {{ $revenueDp }}</strong>
+                                        </div>
+                                        <div class="rounded-xl bg-white/80 px-3 py-2">
+                                            <span class="block opacity-75">Lunas/pelunasan</span>
+                                            <strong>Rp {{ $revenueFull }}</strong>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         @endif

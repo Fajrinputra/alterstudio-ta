@@ -87,9 +87,11 @@ class NotificationMailTest extends TestCase
     {
         [$booking] = $this->makeBooking();
         $crew = User::factory()->create(['role' => Role::PHOTOGRAPHER, 'name' => 'Crew A']);
+        $editor = User::factory()->create(['role' => Role::EDITOR, 'name' => 'Editor A']);
         $project = Project::factory()->create([
             'booking_id' => $booking->id,
             'photographer_id' => $crew->id,
+            'editor_id' => $editor->id,
             'status' => Project::STATUS_SCHEDULED,
             'start_at' => now()->addDay()->setTime(10, 0),
             'end_at' => now()->addDay()->setTime(11, 0),

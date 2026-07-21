@@ -1,0 +1,59 @@
+@startuml
+title SD-B21 Menolak Pemesanan
+
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam BoxPadding 4
+skinparam sequence {
+    ArrowColor #333333
+    LifeLineBorderColor #999999
+    LifeLineBackgroundColor white
+    ParticipantBorderColor #999999
+    ParticipantBackgroundColor #ECEEF8
+    ParticipantFontColor #111111
+    ActorBorderColor #999999
+    ActorFontColor #111111
+    GroupBorderColor #111111
+    GroupBackgroundColor transparent
+}
+
+actor "Admin / Manajer" as Admin
+boundary "Halaman Daftar Pemesanan" as HalamanDaftar
+boundary "Modal Aksi Pemesanan" as ModalAksi
+control "BookingController" as BookingController
+control "NotificationService" as NotificationService
+entity "Bookings Model" as Booking
+entity "Payments Model" as Payment
+
+Admin -> HalamanDaftar : Membuka daftar pemesanan
+HalamanDaftar -> BookingController : index()
+BookingController -> Booking : ambil pemesanan status diajukan
+Booking --> BookingController : data pemesanan
+BookingController --> HalamanDaftar : tampilkan daftar pemesanan
+
+Admin -> HalamanDaftar : Memilih pemesanan status diajukan
+HalamanDaftar -> ModalAksi : tampilkan aksi pemesanan
+Admin -> ModalAksi : Pilih tolak
+ModalAksi -> BookingController : reject(bookingId)
+BookingController -> Booking : ambil data pemesanan
+Booking --> BookingController : data booking
+BookingController -> BookingController : validasi status diajukan dan belum dibayar
+
+alt Pemesanan valid untuk ditolak
+    BookingController -> Booking : update status CANCELLED
+    Booking --> BookingController : pemesanan dibatalkan
+    BookingController -> Payment : update payment pending menjadi failed jika ada
+    Payment --> BookingController : transaksi pending diperbarui
+    BookingController -> NotificationService : kirim notifikasi penolakan ke klien
+    NotificationService --> BookingController : notifikasi terkirim
+    BookingController --> HalamanDaftar : tampilkan status dibatalkan
+    HalamanDaftar --> Admin : pemesanan berhasil ditolak
+else Pemesanan sudah DP atau lunas
+    BookingController --> ModalAksi : tolak proses
+    ModalAksi --> Admin : aksi tolak tidak tersedia
+else Data tidak ditemukan
+    BookingController --> ModalAksi : tampilkan pesan kesalahan
+    ModalAksi --> Admin : pemesanan tidak ditemukan
+end
+
+@enduml

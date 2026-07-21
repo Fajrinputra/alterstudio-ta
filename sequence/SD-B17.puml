@@ -1,0 +1,57 @@
+@startuml
+title SD-B17 Tambah Paket Layanan
+
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam BoxPadding 4
+skinparam sequence {
+    ArrowColor #333333
+    LifeLineBorderColor #999999
+    LifeLineBackgroundColor white
+    ParticipantBorderColor #999999
+    ParticipantBackgroundColor #ECEEF8
+    ParticipantFontColor #111111
+    ActorBorderColor #999999
+    ActorFontColor #111111
+    GroupBorderColor #111111
+    GroupBackgroundColor transparent
+}
+
+actor "Admin/Manajer" as Admin
+boundary "Halaman Paket Layanan" as HalamanPaket
+boundary "Form Paket" as FormPaket
+control "ServicePackageController" as PackageController
+control "StorageService" as StorageService
+entity "ServiceCategories Model" as ServiceCategory
+entity "ServicePackages Model" as ServicePackage
+
+Admin -> HalamanPaket : Klik tambah paket
+HalamanPaket -> FormPaket : tampilkan form paket
+FormPaket --> Admin : form tampil
+Admin -> FormPaket : Mengisi data paket
+Admin -> FormPaket : Klik simpan
+FormPaket -> PackageController : store(data paket)
+PackageController -> PackageController : validasi data dan otorisasi
+
+alt Data valid
+    PackageController -> ServiceCategory : cek kategori tujuan
+    ServiceCategory --> PackageController : kategori valid
+    opt Cover/galeri diunggah
+        PackageController -> StorageService : simpan file gambar
+        StorageService -> StorageService : STORE image files
+        StorageService --> StorageService : path gambar
+        StorageService --> PackageController : path gambar
+    end
+    PackageController -> ServicePackage : create paket layanan
+    ServicePackage --> PackageController : paket tersimpan
+    PackageController --> HalamanPaket : redirect dengan pesan berhasil
+    HalamanPaket --> Admin : paket baru tersimpan
+else Field wajib kosong / data tidak valid
+    PackageController --> FormPaket : tampilkan error validasi
+    FormPaket --> Admin : simpan ditolak
+else Gagal menyimpan
+    PackageController --> FormPaket : tampilkan pesan gagal
+    FormPaket --> Admin : paket tidak dibuat
+end
+
+@enduml

@@ -49,10 +49,10 @@ class CatalogController extends Controller
     {
         // Simpan kategori baru berikut paket awal jika diisi pada form.
         $data = $request->validate([
-            'name' => ['required','string','max:255'],
+            'name' => ['required','string','max:50'],
             'description' => ['nullable','string'],
             'packages' => ['nullable','array'],
-            'packages.*.name' => ['required_with:packages.*.price','string','max:255'],
+            'packages.*.name' => ['required_with:packages.*.price','string','max:50'],
             'packages.*.price' => ['nullable','integer','min:0'],
             'packages.*.description' => ['nullable','string'],
             'packages.*.features' => ['nullable','string'],
@@ -125,13 +125,13 @@ class CatalogController extends Controller
     {
         // Tambahkan satu paket baru ke kategori yang dipilih.
         $data = $request->validate([
-            'name' => ['required','string','max:255'],
+            'name' => ['required','string','max:50'],
             'price' => ['required','integer','min:0'],
             'max_people' => ['nullable','integer','min:1'],
             'description' => ['nullable','string'],
             'features' => ['nullable','string'],
             'addons' => ['nullable','array'],
-            'addons.*.label' => ['nullable','string','max:255'],
+            'addons.*.label' => ['nullable','string','max:50'],
             'addons.*.price' => ['nullable','integer','min:0'],
             'addons.*.unit' => ['nullable','string','max:50'],
             'terms' => ['nullable','string'],

@@ -71,7 +71,9 @@ class CleanupInactiveClients extends Command
         }
 
         return Project::query()
-            ->whereHas('scheduleRecord.users', fn ($query) => $query->where('user_id', $user->id))
+            ->whereHas('scheduleRecord', fn ($query) => $query
+                ->where('photographer_id', $user->id)
+                ->orWhere('editor_id', $user->id))
             ->whereHas('booking', fn ($booking) => $booking->where('status', '!=', Booking::STATUS_CANCELLED))
             ->where('status', '!=', Project::STATUS_FINAL)
             ->exists();
@@ -87,7 +89,9 @@ class CleanupInactiveClients extends Command
                     $query->where('raw_drive_uploaded_by', $user->id)
                         ->orWhere('final_drive_uploaded_by', $user->id);
                 })
-                ->orWhereHas('scheduleRecord.users', fn ($query) => $query->where('user_id', $user->id))
+                ->orWhereHas('scheduleRecord', fn ($query) => $query
+                    ->where('photographer_id', $user->id)
+                    ->orWhere('editor_id', $user->id))
                 ->exists();
     }
 

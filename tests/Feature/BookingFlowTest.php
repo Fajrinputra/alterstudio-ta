@@ -871,6 +871,147 @@ class BookingFlowTest extends TestCase
         $this->assertSame(200000, $savedAddons[0]['subtotal']);
     }
 
+    /**
+     * Fokus 18 - Klien mengganti jadwal sebelum pemesanan dikonfirmasi.
+     * Hasil yang diharapkan: hanya cabang, tanggal, dan jam yang berubah.
+     * Paket, add-on, jenis pembayaran, dan total biaya tetap terkunci.
+     */
+    public function test_client_can_reschedule_submitted_booking_before_confirmation(): void
+    {
+        config()->set('studio.closed_weekdays', []);
+
+        $client = User::factory()->create(['role' => Role::CLIENT]);
+        $package = ServicePackage::factory()->create([
+            'price' => 500000,
+            'duration_minutes' => 45,
+            'is_active' => true,
+            'addons' => [
+                ['label' => 'Tambah waktu', 'price' => 100000, 'unit' => 'sesi'],
+            ],
+        ]);
+        $oldLocation = StudioLocation::create([
+            'name' => 'Cabang Lama',
+            'slug' => 'cabang-lama',
+            'address' => 'Jl. Lama',
+            'is_active' => true,
+        ]);
+        $newLocation = StudioLocation::create([
+            'name' => 'Cabang Baru',
+            'slug' => 'cabang-baru',
+            'address' => 'Jl. Baru',
+            'is_active' => true,
+        ]);
+        StudioRoom::create(['studio_location_id' => $oldLocation->id, 'name' => 'Studio Lama', 'is_active' => true]);
+        $newRoom = StudioRoom::create(['studio_location_id' => $newLocation->id, 'name' => 'Studio Baru', 'is_active' => true]);
+        $booking = Booking::factory()->create([
+            'client_id' => $client->id,
+            'package_id' => $package->id,
+            'studio_location_id' => $oldLocation->id,
+            'booking_date' => Carbon::now()->addDays(2)->toDateString(),
+            'booking_time' => '11:00',
+            'status' => Booking::STATUS_WAITING_PAYMENT,
+            'confirmed_at' => null,
+            'payment_started_at' => null,
+            'payment_type' => Booking::PAYMENT_TYPE_DP,
+            'addon_total' => 100000,
+            'total_price' => 600000,
+            'selected_addons' => [
+                [
+                    'label' => 'Tambah waktu',
+                    'price' => 100000,
+                    'unit' => 'sesi',
+                    'quantity' => 1,
+                    'subtotal' => 100000,
+                ],
+            ],
+        ]);
+
+        $addonKey = md5('Tambah waktu|100000');
+        $newDate = Carbon::now()->addDays(4)->toDateString();
+
+        $this->actingAs($client)
+            ->get(route('bookings.edit', $booking))
+            ->assertOk()
+            ->assertSee('Ganti Jadwal Pemesanan');
+
+        $this->actingAs($client)
+            ->put(route('bookings.update', $booking), [
+                'studio_location_id' => $newLocation->id,
+                'booking_date' => $newDate,
+                'booking_time' => '13:00',
+                'payment_type' => Booking::PAYMENT_TYPE_FULL,
+                'notes' => 'Ganti ke jadwal sore',
+                'selected_addons' => [],
+                'addon_quantities' => [$addonKey => 3],
+            ])
+            ->assertRedirect(route('bookings.index'));
+
+        $booking->refresh();
+
+        $this->assertSame($package->id, $booking->package_id);
+        $this->assertSame($newLocation->id, $booking->studio_location_id);
+        $this->assertSame($newRoom->id, $booking->studio_room_id);
+        $this->assertSame($newDate, $booking->booking_date->toDateString());
+        $this->assertSame('13:00', $booking->booking_time);
+        $this->assertSame(Booking::PAYMENT_TYPE_DP, $booking->payment_type);
+        $this->assertSame(100000, $booking->addon_total);
+        $this->assertSame(600000.0, (float) $booking->total_price);
+        $this->assertSame(Booking::STATUS_WAITING_PAYMENT, $booking->status);
+        $this->assertNull($booking->confirmed_at);
+        $this->assertSame('Tambah waktu', $booking->selected_addons[0]['label']);
+        $this->assertSame(1, $booking->selected_addons[0]['quantity']);
+    }
+
+    /**
+     * Fokus 19 - Klien tidak boleh mengganti jadwal setelah disetujui.
+     * Hasil yang diharapkan: akses edit ditolak dan data booking tidak berubah.
+     */
+    public function test_client_cannot_reschedule_booking_after_confirmation(): void
+    {
+        config()->set('studio.closed_weekdays', []);
+
+        $client = User::factory()->create(['role' => Role::CLIENT]);
+        $package = ServicePackage::factory()->create(['is_active' => true]);
+        $location = StudioLocation::create([
+            'name' => 'Cabang Terkonfirmasi',
+            'slug' => 'cabang-terkonfirmasi',
+            'address' => 'Jl. Konfirmasi',
+            'is_active' => true,
+        ]);
+        StudioRoom::create(['studio_location_id' => $location->id, 'name' => 'Studio Konfirmasi', 'is_active' => true]);
+        $booking = Booking::factory()->create([
+            'client_id' => $client->id,
+            'package_id' => $package->id,
+            'studio_location_id' => $location->id,
+            'booking_date' => Carbon::now()->addDays(2)->toDateString(),
+            'booking_time' => '11:00',
+            'status' => Booking::STATUS_WAITING_PAYMENT,
+            'confirmed_at' => now(),
+            'payment_started_at' => null,
+            'payment_type' => Booking::PAYMENT_TYPE_DP,
+        ]);
+        $originalDate = $booking->booking_date->toDateString();
+
+        $this->actingAs($client)
+            ->get(route('bookings.edit', $booking))
+            ->assertRedirect(route('bookings.index'));
+
+        $this->actingAs($client)
+            ->put(route('bookings.update', $booking), [
+                'studio_location_id' => $location->id,
+                'booking_date' => Carbon::now()->addDays(5)->toDateString(),
+                'booking_time' => '13:00',
+                'payment_type' => Booking::PAYMENT_TYPE_FULL,
+            ])
+            ->assertRedirect(route('bookings.index'));
+
+        $booking->refresh();
+
+        $this->assertSame($originalDate, $booking->booking_date->toDateString());
+        $this->assertSame('11:00', $booking->booking_time);
+        $this->assertSame(Booking::PAYMENT_TYPE_DP, $booking->payment_type);
+    }
+
     private function invokeBookingControllerMethod(string $method, array $parameters = []): mixed
     {
         $controller = app(BookingController::class);

@@ -55,6 +55,7 @@ class DashboardController extends Controller
             'final_ready' => Project::whereHas('booking', fn ($q) => $q->where('client_id', $userId))
                 ->where('status', Project::STATUS_FINAL)->count(),
         ];
+        $metrics = array_merge($metrics, $this->revenueMetrics($userId));
 
         $latest = $base->with('project')
             ->latest()
@@ -84,8 +85,9 @@ class DashboardController extends Controller
                 ->whereHas('booking', fn ($booking) => $booking->whereIn('status', [Booking::STATUS_DP_PAID, Booking::STATUS_PAID]))
                 ->count(),
         ];
+        $metrics = array_merge($metrics, $this->revenueMetrics());
 
-        $schedules = Project::with(['booking', 'scheduleRecord.photographerAssignment.user', 'scheduleRecord.editorAssignment.user'])
+        $schedules = Project::with(['booking', 'scheduleRecord.photographer', 'scheduleRecord.editor'])
             ->whereNotNull('start_at')
             ->where('start_at', '>=', Carbon::now()->subDay())
             ->orderBy('start_at')
@@ -115,6 +117,7 @@ class DashboardController extends Controller
                 ->whereHas('booking', fn ($booking) => $booking->whereIn('status', [Booking::STATUS_DP_PAID, Booking::STATUS_PAID]))
                 ->count(),
         ];
+        $metrics = array_merge($metrics, $this->revenueMetrics());
 
         $roleCounts = User::query()
             ->where('is_active', true)
@@ -132,30 +135,41 @@ class DashboardController extends Controller
         $data['metrics']['active_users'] = (int) collect($data['roleCounts'])->sum();
         $data['metrics']['managers'] = (int) ($data['roleCounts'][Role::MANAGER->value] ?? 0);
         $data['metrics']['admins'] = (int) ($data['roleCounts'][Role::ADMIN->value] ?? 0);
-        $data['metrics']['revenue_received'] = (int) Payment::query()
-            ->where('status', Payment::STATUS_PAID)
-            ->whereHas('booking', fn ($booking) => $booking->where('status', '!=', Booking::STATUS_CANCELLED))
-            ->sum('amount');
-
         return $data;
+    }
+
+    /** Ringkasan uang yang benar-benar sudah diterima berdasarkan transaksi berstatus PAID. */
+    protected function revenueMetrics(?int $clientId = null): array
+    {
+        $base = Payment::query()
+            ->where('status', Payment::STATUS_PAID)
+            ->whereHas('booking', function ($booking) use ($clientId) {
+                $booking->where('status', '!=', Booking::STATUS_CANCELLED)
+                    ->when($clientId, fn ($query) => $query->where('client_id', $clientId));
+            });
+
+        $dp = (int) (clone $base)->where('type', Payment::TYPE_DP)->sum('amount');
+        $full = (int) (clone $base)->where('type', Payment::TYPE_FULL)->sum('amount');
+
+        return [
+            'revenue_dp' => $dp,
+            'revenue_full' => $full,
+            'revenue_received' => $dp + $full,
+        ];
     }
 
     protected function photographerData(int $userId): array
     {
         // Antrian fotografer hanya project yang masih SCHEDULED.
         $upcoming = Project::with(['booking'])
-            ->whereHas('scheduleRecord.users', fn ($q) => $q
-                ->where('user_id', $userId)
-                ->where('role', Role::PHOTOGRAPHER->value))
+            ->whereHas('scheduleRecord', fn ($q) => $q->where('photographer_id', $userId))
             ->where('status', Project::STATUS_SCHEDULED)
             ->whereHas('booking', fn ($booking) => $booking->whereIn('status', [Booking::STATUS_DP_PAID, Booking::STATUS_PAID]))
             ->whereNotNull('start_at')
             ->orderBy('start_at')
             ->get();
 
-        $completed = Project::whereHas('scheduleRecord.users', fn ($q) => $q
-                ->where('user_id', $userId)
-                ->where('role', Role::PHOTOGRAPHER->value))
+        $completed = Project::whereHas('scheduleRecord', fn ($q) => $q->where('photographer_id', $userId))
             ->where('status', Project::STATUS_FINAL)
             ->count();
 
@@ -169,9 +183,7 @@ class DashboardController extends Controller
     {
         // Antrian editor hanya project yang sudah memiliki permintaan edit.
         $queue = Project::with(['booking'])
-            ->whereHas('scheduleRecord.users', fn ($q) => $q
-                ->where('user_id', $userId)
-                ->where('role', Role::EDITOR->value))
+            ->whereHas('scheduleRecord', fn ($q) => $q->where('editor_id', $userId))
             ->where('status', Project::STATUS_EDITING)
             ->whereHas('booking', fn ($booking) => $booking->whereIn('status', [Booking::STATUS_DP_PAID, Booking::STATUS_PAID]))
             ->whereNotNull('edit_requested_at')
@@ -179,9 +191,7 @@ class DashboardController extends Controller
             ->orderBy('start_at')
             ->get();
 
-        $finalized = Project::whereHas('scheduleRecord.users', fn ($q) => $q
-                ->where('user_id', $userId)
-                ->where('role', Role::EDITOR->value))
+        $finalized = Project::whereHas('scheduleRecord', fn ($q) => $q->where('editor_id', $userId))
             ->where('status', Project::STATUS_FINAL)
             ->count();
 

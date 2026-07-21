@@ -1,0 +1,60 @@
+@startuml
+title SD-B03 Login
+
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam BoxPadding 4
+skinparam sequence {
+    ArrowColor #333333
+    LifeLineBorderColor #999999
+    LifeLineBackgroundColor white
+    ParticipantBorderColor #999999
+    ParticipantBackgroundColor #ECEEF8
+    ParticipantFontColor #111111
+    ActorBorderColor #999999
+    ActorFontColor #111111
+    GroupBorderColor #111111
+    GroupBackgroundColor transparent
+}
+
+actor "Pengguna" as Pengguna
+boundary "Halaman Login" as HalamanLogin
+boundary "Form Login" as FormLogin
+control "AuthenticatedSessionController" as SessionController
+control "Laravel Auth" as LaravelAuth
+entity "Users Model" as User
+
+Pengguna -> HalamanLogin : Membuka halaman login
+HalamanLogin --> Pengguna : Form login tampil
+Pengguna -> FormLogin : Input email dan password
+Pengguna -> FormLogin : Klik login
+FormLogin -> SessionController : store(credentials)
+SessionController -> LaravelAuth : attempt(credentials)
+LaravelAuth -> User : cari user berdasarkan email
+User --> LaravelAuth : user object
+LaravelAuth -> LaravelAuth : verifikasi password
+
+alt Credential valid
+    LaravelAuth -> User : cek status akun dan verifikasi email
+    User --> LaravelAuth : status validasi
+    alt Akun aktif dan email terverifikasi
+        LaravelAuth --> SessionController : login berhasil
+        SessionController -> SessionController : regenerate session
+        SessionController --> HalamanLogin : redirect dashboard sesuai role
+        HalamanLogin --> Pengguna : dashboard tampil
+    else Email belum diverifikasi
+        LaravelAuth --> SessionController : email belum diverifikasi
+        SessionController --> HalamanLogin : redirect halaman verifikasi email
+        HalamanLogin --> Pengguna : notifikasi verifikasi email
+    else Akun nonaktif
+        LaravelAuth --> SessionController : akun nonaktif
+        SessionController --> HalamanLogin : login ditolak
+        HalamanLogin --> Pengguna : pesan akun nonaktif
+    end
+else Credential tidak valid
+    LaravelAuth --> SessionController : login gagal
+    SessionController --> HalamanLogin : tampilkan error login
+    HalamanLogin --> Pengguna : email/password salah
+end
+
+@enduml

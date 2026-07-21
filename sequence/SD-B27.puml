@@ -1,0 +1,64 @@
+@startuml
+title SD-B27 Mengajukan Permintaan Edit
+
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam BoxPadding 4
+skinparam sequence {
+    ArrowColor #333333
+    LifeLineBorderColor #999999
+    LifeLineBackgroundColor white
+    ParticipantBorderColor #999999
+    ParticipantBackgroundColor #ECEEF8
+    ParticipantFontColor #111111
+    ActorBorderColor #999999
+    ActorFontColor #111111
+    GroupBorderColor #111111
+    GroupBackgroundColor transparent
+}
+
+actor "Klien" as Klien
+boundary "Halaman Project Klien" as HalamanProject
+boundary "Form Permintaan Edit" as FormEdit
+control "PhotoSelectionController" as PhotoSelectionController
+entity "Projects Model" as Project
+entity "Bookings Model" as Booking
+
+Klien -> HalamanProject : Membuka riwayat/detail project
+HalamanProject -> PhotoSelectionController : show(projectId)
+PhotoSelectionController -> Project : ambil project milik klien
+Project --> PhotoSelectionController : data project
+PhotoSelectionController --> HalamanProject : tampilkan link Drive dan form edit
+
+Klien -> Klien : Membuka link Google Drive foto mentah
+Klien -> Klien : foto mentah tampil
+Klien -> FormEdit : Mengisi kode foto maksimal 10
+Klien -> FormEdit : Mengisi deskripsi edit
+Klien -> FormEdit : Kirim permintaan edit
+FormEdit -> PhotoSelectionController : submit(projectId, photoCodes, note)
+PhotoSelectionController -> Project : ambil data project
+Project -> Booking : ambil booking
+Booking --> Project : data booking
+Project --> PhotoSelectionController : data project/booking
+PhotoSelectionController -> PhotoSelectionController : validasi link RAW tersedia
+PhotoSelectionController -> PhotoSelectionController : validasi kode foto <= 10
+PhotoSelectionController -> PhotoSelectionController : validasi deskripsi edit
+PhotoSelectionController -> PhotoSelectionController : validasi belum pernah dikirim dan tidak dibatalkan
+
+alt Data valid
+    PhotoSelectionController -> Project : update edit_photo_codes,\nedit_request_note,\nedit_requested_at,\nstatus EDITING
+    Project --> PhotoSelectionController : project diperbarui
+    PhotoSelectionController --> HalamanProject : tampilkan pesan berhasil
+    HalamanProject --> Klien : permintaan edit tersimpan
+else Kode foto lebih dari 10
+    PhotoSelectionController --> FormEdit : tampilkan error maksimal 10 foto
+    FormEdit --> Klien : permintaan ditolak
+else Deskripsi kosong
+    PhotoSelectionController --> FormEdit : minta lengkapi deskripsi
+    FormEdit --> Klien : data belum lengkap
+else Booking dibatalkan / form sudah pernah dikirim / link belum tersedia
+    PhotoSelectionController --> FormEdit : proses tidak dapat dilanjutkan
+    FormEdit --> Klien : permintaan edit ditolak
+end
+
+@enduml

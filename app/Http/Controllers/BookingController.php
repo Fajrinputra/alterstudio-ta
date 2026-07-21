@@ -32,8 +32,8 @@ class BookingController extends Controller
         $query = Booking::with([
             'package',
             'payments',
-            'project.scheduleRecord.photographerAssignment.user',
-            'project.scheduleRecord.editorAssignment.user',
+            'project.scheduleRecord.photographer',
+            'project.scheduleRecord.editor',
             'client',
             'studioLocation',
             'studioRoom',
@@ -131,6 +131,45 @@ class BookingController extends Controller
         return view('client.booking.create', compact('packages', 'locations', 'selectedPackage', 'addonOptions', 'maxBookingDate'));
     }
 
+    /** Menampilkan form perubahan jadwal untuk booking yang belum disetujui. */
+    public function edit(Booking $booking)
+    {
+        if (! $this->canClientReschedule($booking)) {
+            return redirect()
+                ->route('bookings.index')
+                ->with('error', 'Pemesanan hanya dapat diubah sebelum dikonfirmasi admin atau manajer.');
+        }
+
+        $booking->loadMissing(['package', 'studioLocation', 'studioRoom']);
+        $selectedPackage = ServicePackage::query()
+            ->whereKey($booking->package_id)
+            ->where('is_active', true)
+            ->whereNull('deleted_at')
+            ->first();
+
+        if (! $selectedPackage) {
+            return redirect()
+                ->route('bookings.index')
+                ->with('error', 'Paket pada pemesanan ini sudah tidak aktif, sehingga jadwal tidak dapat diubah. Silakan hubungi admin.');
+        }
+
+        $packages = collect([$selectedPackage]);
+        $addonOptions = $this->normalizePackageAddons($selectedPackage);
+        $locations = \App\Models\StudioLocation::where('is_active', true)->orderBy('name')->get();
+        $maxBookingDate = Carbon::today()->addMonth()->toDateString();
+        $isEdit = true;
+
+        return view('client.booking.create', compact(
+            'booking',
+            'packages',
+            'locations',
+            'selectedPackage',
+            'addonOptions',
+            'maxBookingDate',
+            'isEdit'
+        ));
+    }
+
     public function availability(Request $request)
     {
         $maxBookingDate = Carbon::today()->addMonth()->toDateString();
@@ -148,6 +187,7 @@ class BookingController extends Controller
             'selected_addons.*' => ['string'],
             'addon_quantities' => ['nullable', 'array'],
             'addon_quantities.*' => ['nullable', 'integer', 'min:1'],
+            'ignore_booking_id' => ['nullable', 'integer', 'exists:bookings,id'],
         ], [
             'booking_date.required' => 'Tanggal pemesanan wajib dipilih.',
             'booking_date.after_or_equal' => 'Tanggal pemesanan tidak boleh sebelum hari ini.',
@@ -155,8 +195,12 @@ class BookingController extends Controller
         ]);
 
         $package = ServicePackage::findOrFail($validated['package_id']);
+        $ignoreBookingId = $this->ignoreBookingIdForAvailability($request);
+        $rescheduledBooking = $ignoreBookingId ? Booking::find($ignoreBookingId) : null;
         $date = Carbon::parse($validated['booking_date']);
-        $chosenAddons = $this->chosenAddonsFromRequest($package, $validated);
+        $chosenAddons = $rescheduledBooking
+            ? ($rescheduledBooking->selected_addons ?? [])
+            : $this->chosenAddonsFromRequest($package, $validated);
         $extraDuration = Booking::extraDurationMinutesFromAddons($chosenAddons);
         $effectiveDuration = max(1, (int) ($package->duration_minutes ?? 60)) + $extraDuration;
 
@@ -164,7 +208,8 @@ class BookingController extends Controller
             $package,
             (int) $validated['studio_location_id'],
             $date,
-            $extraDuration
+            $extraDuration,
+            $ignoreBookingId
         );
 
         return response()->json([
@@ -311,6 +356,97 @@ class BookingController extends Controller
             ->with('success', 'Pemesanan berhasil dikirim. Admin atau manajer akan meninjau sebelum pembayaran dibuka.');
     }
 
+    /** Memperbarui cabang, tanggal, dan jam booking yang masih berstatus diajukan. */
+    public function update(Request $request, Booking $booking)
+    {
+        if (! $this->canClientReschedule($booking)) {
+            return redirect()
+                ->route('bookings.index')
+                ->with('error', 'Pemesanan hanya dapat diubah sebelum dikonfirmasi admin atau manajer.');
+        }
+
+        $maxBookingDate = Carbon::today()->addMonth()->toDateString();
+        $validated = $request->validate([
+            'booking_date' => ['required', 'date', 'after_or_equal:today', 'before_or_equal:'.$maxBookingDate],
+            'booking_time' => ['required', 'date_format:H:i'],
+            'studio_location_id' => ['required', 'exists:studio_locations,id'],
+        ], [
+            'booking_date.required' => 'Tanggal pemesanan wajib dipilih.',
+            'booking_date.after_or_equal' => 'Tanggal pemesanan tidak boleh sebelum hari ini.',
+            'booking_date.before_or_equal' => 'Tanggal pemesanan hanya dapat dipilih maksimal 1 bulan ke depan.',
+        ]);
+
+        $bookingDate = Carbon::parse($validated['booking_date']);
+
+        if ($this->availability->isClosedDate($bookingDate, (int) $validated['studio_location_id'])) {
+            return back()
+                ->withInput()
+                ->withErrors(['booking_date' => $this->availability->closedReason($bookingDate, (int) $validated['studio_location_id'])]);
+        }
+
+        DB::transaction(function () use ($booking, $bookingDate, $validated) {
+            $lockedBooking = Booking::query()
+                ->whereKey($booking->id)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            if (! $this->canClientReschedule($lockedBooking)) {
+                throw ValidationException::withMessages([
+                    'booking_date' => 'Pemesanan sudah tidak dapat diubah karena statusnya telah diproses.',
+                ]);
+            }
+
+            $package = ServicePackage::query()
+                ->whereKey($lockedBooking->package_id)
+                ->where('is_active', true)
+                ->whereNull('deleted_at')
+                ->lockForUpdate()
+                ->first();
+
+            if (! $package) {
+                throw ValidationException::withMessages([
+                    'package_id' => 'Paket layanan sudah tidak aktif atau tidak tersedia.',
+                ]);
+            }
+
+            // Mengunci ruangan aktif pada cabang agar dua perubahan bersamaan tidak mengambil slot yang sama.
+            StudioRoom::query()
+                ->where('studio_location_id', $validated['studio_location_id'])
+                ->where('is_active', true)
+                ->orderBy('id')
+                ->lockForUpdate()
+                ->get();
+
+            $chosenAddons = $lockedBooking->selected_addons ?? [];
+            $extraDuration = Booking::extraDurationMinutesFromAddons($chosenAddons);
+            $availableRoom = $this->availability->availableRoomForSlot(
+                $package,
+                (int) $validated['studio_location_id'],
+                $bookingDate,
+                $validated['booking_time'],
+                $extraDuration,
+                $lockedBooking->id
+            );
+
+            if (! $availableRoom) {
+                throw ValidationException::withMessages([
+                    'booking_time' => 'Jam yang dipilih sudah tidak tersedia. Silakan pilih slot lain yang masih kosong.',
+                ]);
+            }
+
+            $lockedBooking->update([
+                'studio_location_id' => $validated['studio_location_id'],
+                'studio_room_id' => $availableRoom->id,
+                'booking_date' => $validated['booking_date'],
+                'booking_time' => $validated['booking_time'],
+            ]);
+        }, 3);
+
+        return redirect()
+            ->route('bookings.index')
+            ->with('success', 'Jadwal pemesanan berhasil diperbarui. Pemesanan tetap menunggu konfirmasi admin atau manajer.');
+    }
+
     /** Menampilkan detail pemesanan; klien hanya boleh melihat miliknya sendiri. */
     public function show(Booking $booking)
     {
@@ -446,6 +582,29 @@ class BookingController extends Controller
         }
 
         return view('client.booking.pay', compact('booking'));
+    }
+
+    /** Booking diajukan boleh diubah klien selama belum dikonfirmasi dan belum masuk pembayaran. */
+    protected function canClientReschedule(Booking $booking): bool
+    {
+        $user = Auth::user();
+
+        return $user?->role === Role::CLIENT
+            && (int) $booking->client_id === (int) $user->id
+            && $booking->isSubmitted()
+            && $booking->payment_started_at === null;
+    }
+
+    /** Mengambil ID booking yang boleh diabaikan ketika form edit memuat slot. */
+    protected function ignoreBookingIdForAvailability(Request $request): ?int
+    {
+        if (! $request->filled('ignore_booking_id')) {
+            return null;
+        }
+
+        $booking = Booking::find($request->integer('ignore_booking_id'));
+
+        return $booking && $this->canClientReschedule($booking) ? $booking->id : null;
     }
 
     /**

@@ -1,0 +1,53 @@
+@startuml
+title SD-B07 Reset Password
+
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam BoxPadding 4
+skinparam sequence {
+    ArrowColor #333333
+    LifeLineBorderColor #999999
+    LifeLineBackgroundColor white
+    ParticipantBorderColor #999999
+    ParticipantBackgroundColor #ECEEF8
+    ParticipantFontColor #111111
+    ActorBorderColor #999999
+    ActorFontColor #111111
+    GroupBorderColor #111111
+    GroupBackgroundColor transparent
+}
+
+actor "Pengguna" as Pengguna
+boundary "Email Reset Password" as EmailReset
+boundary "Halaman Reset Password" as HalamanReset
+boundary "Form Password Baru" as FormPassword
+control "NewPasswordController" as NewPasswordController
+entity "PasswordResetToken" as ResetToken
+entity "Users Model" as User
+
+Pengguna -> EmailReset : Membuka link reset password
+EmailReset -> HalamanReset : buka halaman reset password
+HalamanReset --> Pengguna : form reset password tampil
+Pengguna -> FormPassword : Mengisi password baru dan konfirmasi
+Pengguna -> FormPassword : Klik simpan password baru
+FormPassword -> NewPasswordController : store(data reset)
+NewPasswordController -> NewPasswordController : validasi email, password,\ndan konfirmasi
+
+alt Data valid
+    NewPasswordController -> ResetToken : validasi token reset
+    ResetToken --> NewPasswordController : token valid
+    NewPasswordController -> User : update password terenkripsi
+    User --> NewPasswordController : update berhasil
+    NewPasswordController -> ResetToken : hapus token reset
+    ResetToken --> NewPasswordController : token terhapus
+    NewPasswordController --> HalamanReset : redirect halaman login
+    HalamanReset --> Pengguna : password berhasil direset
+else Token tidak valid / kedaluwarsa
+    NewPasswordController --> FormPassword : tampilkan pesan token tidak valid
+    FormPassword --> Pengguna : reset ditolak
+else Password tidak valid / konfirmasi tidak cocok
+    NewPasswordController --> FormPassword : tampilkan error validasi
+    FormPassword --> Pengguna : perbaiki input
+end
+
+@enduml

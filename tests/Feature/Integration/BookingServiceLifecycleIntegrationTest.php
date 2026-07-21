@@ -7,7 +7,6 @@ use App\Models\Booking;
 use App\Models\MediaAsset;
 use App\Models\Payment;
 use App\Models\Project;
-use App\Models\ProjectScheduleUser;
 use App\Models\ServicePackage;
 use App\Models\StudioLocation;
 use App\Models\StudioRoom;
@@ -34,8 +33,7 @@ class BookingServiceLifecycleIntegrationTest extends TestCase
      * - route dan middleware role CLIENT / ADMIN / PHOTOGRAPHER / EDITOR
      * - BookingController, PaymentController, ScheduleController,
      *   MediaAssetController, dan PhotoSelectionController
-     * - relasi tabel bookings, payments, projects, project_schedules,
-     *   dan project_schedule_users
+     * - relasi tabel bookings, payments, projects, dan project_schedules
      * - integrasi eksternal Midtrans yang dipalsukan dengan Http::fake()
      * - notifikasi yang dipalsukan dengan Notification::fake()
      */
@@ -167,16 +165,9 @@ class BookingServiceLifecycleIntegrationTest extends TestCase
             'studio_location_id' => $location->id,
             'studio_room_id' => $room->id,
             'scheduled_by' => $admin->id,
+            'photographer_id' => $photographer->id,
+            'editor_id' => $editor->id,
         ]);
-        $this->assertDatabaseHas('project_schedule_users', [
-            'user_id' => $photographer->id,
-            'role' => Role::PHOTOGRAPHER->value,
-        ]);
-        $this->assertDatabaseHas('project_schedule_users', [
-            'user_id' => $editor->id,
-            'role' => Role::EDITOR->value,
-        ]);
-        $this->assertSame(2, ProjectScheduleUser::query()->count());
         Notification::assertSentTo($photographer, ScheduleAssignedNotification::class);
         Notification::assertSentTo($editor, ScheduleAssignedNotification::class);
 

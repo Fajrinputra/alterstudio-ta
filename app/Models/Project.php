@@ -74,7 +74,7 @@ class Project extends Model
     protected static function booted(): void
     {
         static::saved(function (Project $project) {
-            // Field fotografer/editor lama dipetakan ke tabel pivot project_schedule_users.
+            // Field fotografer/editor lama tetap diterima, lalu disimpan ke record jadwal utama.
             if (! $project->pendingPhotographerId && ! $project->pendingEditorId) {
                 return;
             }
@@ -83,7 +83,15 @@ class Project extends Model
                 return;
             }
 
-            $schedule = $project->scheduleRecord()->updateOrCreate(
+            $existingSchedule = $project->scheduleRecord()->first();
+            $photographerId = $project->pendingPhotographerId ?: $existingSchedule?->photographer_id;
+            $editorId = $project->pendingEditorId ?: $existingSchedule?->editor_id;
+
+            if (! $photographerId || ! $editorId) {
+                return;
+            }
+
+            $project->scheduleRecord()->updateOrCreate(
                 ['project_id' => $project->id],
                 [
                     'booking_id' => $project->booking_id,
@@ -92,25 +100,13 @@ class Project extends Model
                     'scheduled_by' => auth()->id()
                         ?? User::whereIn('role', [Role::ADMIN->value, Role::OWNER->value])->value('id')
                         ?? User::query()->value('id'),
+                    'photographer_id' => $photographerId,
+                    'editor_id' => $editorId,
                     'start_at' => $project->start_at,
                     'end_at' => $project->end_at,
                     'status' => ProjectSchedule::STATUS_SCHEDULED,
                 ]
             );
-
-            $assignments = collect([
-                $project->pendingPhotographerId ? [
-                    'user_id' => $project->pendingPhotographerId,
-                    'role' => Role::PHOTOGRAPHER->value,
-                ] : null,
-                $project->pendingEditorId && $project->pendingEditorId !== $project->pendingPhotographerId ? [
-                    'user_id' => $project->pendingEditorId,
-                    'role' => Role::EDITOR->value,
-                ] : null,
-            ])->filter()->values()->all();
-
-            $schedule->users()->delete();
-            $schedule->users()->createMany($assignments);
 
             $project->unsetRelation('scheduleRecord');
         });
@@ -188,7 +184,7 @@ class Project extends Model
         $scheduleRecord = $this->exists
             ? ($this->relationLoaded('scheduleRecord')
                 ? $this->scheduleRecord
-                : $this->scheduleRecord()->with(['photographerAssignment.user', 'editorAssignment.user'])->first())
+                : $this->scheduleRecord()->with(['photographer', 'editor'])->first())
             : null;
 
         if ($scheduleRecord) {

@@ -1,0 +1,57 @@
+@startuml
+title SD-B47 Tambah Ruangan Studio
+
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam BoxPadding 4
+skinparam sequence {
+    ArrowColor #333333
+    LifeLineBorderColor #999999
+    LifeLineBackgroundColor white
+    ParticipantBorderColor #999999
+    ParticipantBackgroundColor #ECEEF8
+    ParticipantFontColor #111111
+    ActorBorderColor #999999
+    ActorFontColor #111111
+    GroupBorderColor #111111
+    GroupBackgroundColor transparent
+}
+
+actor "Owner" as Owner
+boundary "Halaman Ruangan Studio" as HalamanRuangan
+boundary "Form Tambah Ruangan" as FormTambah
+control "StudioRoomController" as StudioRoomController
+control "StorageService" as StorageService
+entity "StudioLocations Model" as StudioLocation
+entity "StudioRooms Model" as StudioRoom
+
+Owner -> HalamanRuangan : Klik tambah ruangan
+HalamanRuangan -> StudioRoomController : create()
+StudioRoomController -> StudioLocation : ambil daftar cabang aktif
+StudioLocation --> StudioRoomController : data cabang
+StudioRoomController --> FormTambah : tampilkan form tambah ruangan
+Owner -> FormTambah : Isi data ruangan dan pilih cabang
+Owner -> FormTambah : Klik simpan
+FormTambah -> StudioRoomController : store(data)
+StudioRoomController -> StudioRoomController : validasi cabang, nama,\ndeskripsi, foto, status
+
+alt Data valid
+    opt Foto ruangan diunggah
+        StudioRoomController -> StorageService : simpan foto ruangan
+        StorageService -> StorageService : STORE room image
+        StorageService --> StorageService : photo_path
+        StorageService --> StudioRoomController : photo_path
+    end
+    StudioRoomController -> StudioRoom : INSERT studio_rooms
+    StudioRoom --> StudioRoomController : ruangan tersimpan
+    StudioRoomController --> HalamanRuangan : redirect pesan berhasil
+    HalamanRuangan --> Owner : ruangan baru tampil
+else Cabang tidak tersedia
+    StudioRoomController --> FormTambah : tampilkan pesan cabang belum tersedia
+    FormTambah --> Owner : ruangan tidak disimpan
+else Data tidak valid / gagal simpan
+    StudioRoomController --> FormTambah : tampilkan pesan error
+    FormTambah --> Owner : penambahan ditolak
+end
+
+@enduml

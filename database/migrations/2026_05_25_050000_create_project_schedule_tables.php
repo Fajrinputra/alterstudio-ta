@@ -16,21 +16,12 @@ return new class extends Migration
             $table->foreignId('studio_location_id')->constrained('studio_locations')->cascadeOnDelete();
             $table->foreignId('studio_room_id')->constrained('studio_rooms')->cascadeOnDelete();
             $table->foreignId('scheduled_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignId('photographer_id')->constrained('users')->restrictOnDelete();
+            $table->foreignId('editor_id')->constrained('users')->restrictOnDelete();
             $table->dateTime('start_at');
             $table->dateTime('end_at');
             $table->enum('status', ['SCHEDULED', 'LOCKED', 'CANCELLED'])->default('SCHEDULED');
             $table->timestamps();
-        });
-
-        Schema::create('project_schedule_users', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('project_schedule_id')->constrained('project_schedules')->cascadeOnDelete();
-            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
-            $table->enum('role', ['PHOTOGRAPHER', 'EDITOR']);
-            $table->timestamps();
-
-            $table->unique(['project_schedule_id', 'role']);
-            $table->unique(['project_schedule_id', 'user_id']);
         });
 
         $this->backfillExistingSchedules();
@@ -38,7 +29,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('project_schedule_users');
         Schema::dropIfExists('project_schedules');
     }
 
@@ -65,33 +55,18 @@ return new class extends Migration
             ->orderBy('projects.id')
             ->get()
             ->each(function ($row) {
-                $scheduleId = DB::table('project_schedules')->insertGetId([
+                DB::table('project_schedules')->insert([
                     'project_id' => $row->project_id,
                     'booking_id' => $row->booking_id,
                     'studio_location_id' => $row->studio_location_id,
                     'studio_room_id' => $row->studio_room_id,
+                    'photographer_id' => $row->photographer_id,
+                    'editor_id' => $row->editor_id,
                     'start_at' => $row->start_at,
                     'end_at' => $row->end_at,
                     'status' => 'SCHEDULED',
                     'created_at' => now(),
                     'updated_at' => now(),
-                ]);
-
-                DB::table('project_schedule_users')->insert([
-                    [
-                        'project_schedule_id' => $scheduleId,
-                        'user_id' => $row->photographer_id,
-                        'role' => 'PHOTOGRAPHER',
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ],
-                    [
-                        'project_schedule_id' => $scheduleId,
-                        'user_id' => $row->editor_id,
-                        'role' => 'EDITOR',
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ],
                 ]);
             });
     }

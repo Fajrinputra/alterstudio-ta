@@ -33,8 +33,8 @@ class RegisteredUserController extends Controller
     {
         // Validasi data dasar registrasi.
         $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+            'name' => ['required', 'string', 'max:50'],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:50', 'unique:'.User::class],
             'no_hp' => ['required', 'string', 'max:20', 'regex:/^(?:\+62|62|0)[0-9]{9,13}$/'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ], [

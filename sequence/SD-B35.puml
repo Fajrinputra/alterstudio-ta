@@ -1,0 +1,43 @@
+@startuml
+title SD-B35 Tambah Akun Pengguna
+
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam BoxPadding 4
+skinparam sequence {
+    ArrowColor #333333
+    LifeLineBorderColor #999999
+    LifeLineBackgroundColor white
+    ParticipantBorderColor #999999
+    ParticipantBackgroundColor #ECEEF8
+    ParticipantFontColor #111111
+    ActorBorderColor #999999
+    ActorFontColor #111111
+    GroupBorderColor #111111
+    GroupBackgroundColor transparent
+}
+
+actor "Owner" as Owner
+boundary "Halaman Kelola Pengguna" as HalamanPengguna
+boundary "Form Tambah Pengguna" as FormTambah
+control "UserManagementController" as UserManagementController
+entity "Users Model" as User
+
+Owner -> HalamanPengguna : Klik tambah akun
+HalamanPengguna -> UserManagementController : create()
+UserManagementController --> FormTambah : tampilkan form tambah pengguna
+Owner -> FormTambah : Isi nama, email, no HP,\nrole, password
+FormTambah -> UserManagementController : store(data)
+UserManagementController -> UserManagementController : validasi data dan role\nyang boleh dibuat
+
+alt Data valid
+    UserManagementController -> User : INSERT users
+    User --> UserManagementController : user tersimpan
+    UserManagementController --> HalamanPengguna : redirect pesan sukses
+    HalamanPengguna --> Owner : akun baru tampil
+else Data tidak valid / email sudah digunakan
+    UserManagementController --> FormTambah : tampilkan pesan error
+    FormTambah --> Owner : akun tidak dibuat
+end
+
+@enduml

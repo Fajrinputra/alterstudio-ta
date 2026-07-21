@@ -249,17 +249,19 @@ class ReportController extends Controller
      */
     protected function performanceByRole(Role $role, string $start, string $end, ?int $categoryId = null)
     {
-        $projects = Project::with(['booking.package', 'scheduleRecord.users.user'])
-            ->whereHas('scheduleRecord.users', fn ($q) => $q->where('role', $role->value))
+        $column = $role === Role::PHOTOGRAPHER ? 'photographer_id' : 'editor_id';
+
+        $projects = Project::with(['booking.package', "scheduleRecord.{$this->scheduleRelationFor($role)}"])
+            ->whereHas('scheduleRecord', fn ($q) => $q->whereNotNull($column))
             ->whereBetween('start_at', [$start, $end.' 23:59:59'])
             ->when($categoryId, fn ($q) => $q->whereHas('booking.package', fn ($p) => $p->where('category_id', $categoryId)))
             ->get();
 
         return $projects
-            ->groupBy(fn (Project $project) => $project->scheduleRecord?->users->firstWhere('role', $role->value)?->user_id)
+            ->groupBy(fn (Project $project) => $project->scheduleRecord?->{$column})
             ->map(function ($items) use ($role) {
-                $assignment = $items->first()->scheduleRecord?->users->firstWhere('role', $role->value);
-                $user = optional($assignment?->user);
+                $relation = $this->scheduleRelationFor($role);
+                $user = optional($items->first()->scheduleRecord?->{$relation});
                 $packages = $items->groupBy(fn ($project) => $project->booking->package->name ?? 'Tanpa Paket')
                     ->map->count();
 
@@ -278,15 +280,23 @@ class ReportController extends Controller
      */
     protected function scheduledAssigneesCount(Role $role, string $start, string $end, ?int $categoryId = null): int
     {
+        $column = $role === Role::PHOTOGRAPHER ? 'photographer_id' : 'editor_id';
+
         return Project::query()
-            ->whereHas('scheduleRecord.users', fn ($q) => $q->where('role', $role->value))
+            ->whereHas('scheduleRecord', fn ($q) => $q->whereNotNull($column))
             ->whereBetween('start_at', [$start, $end.' 23:59:59'])
             ->when($categoryId, fn ($q) => $q->whereHas('booking.package', fn ($p) => $p->where('category_id', $categoryId)))
-            ->with('scheduleRecord.users')
+            ->with('scheduleRecord')
             ->get()
-            ->flatMap(fn (Project $project) => $project->scheduleRecord?->users->where('role', $role->value)->pluck('user_id') ?? collect())
+            ->pluck("scheduleRecord.{$column}")
+            ->filter()
             ->unique()
             ->count();
+    }
+
+    protected function scheduleRelationFor(Role $role): string
+    {
+        return $role === Role::PHOTOGRAPHER ? 'photographer' : 'editor';
     }
 
     /**

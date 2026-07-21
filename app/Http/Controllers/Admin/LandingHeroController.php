@@ -34,8 +34,8 @@ class LandingHeroController extends Controller
         }
 
         $data = $request->validate([
-            'eyebrow' => ['nullable', 'string', 'max:255'],
-            'title' => ['required', 'string', 'max:255'],
+            'eyebrow' => ['nullable', 'string', 'max:50'],
+            'title' => ['required', 'string', 'max:50'],
             'subtitle' => ['nullable', 'string'],
             'sort_order' => [
                 'required',
@@ -68,8 +68,8 @@ class LandingHeroController extends Controller
     public function update(Request $request, LandingHeroSlide $slide)
     {
         $data = $request->validate([
-            'eyebrow' => ['nullable', 'string', 'max:255'],
-            'title' => ['required', 'string', 'max:255'],
+            'eyebrow' => ['nullable', 'string', 'max:50'],
+            'title' => ['required', 'string', 'max:50'],
             'subtitle' => ['nullable', 'string'],
             'sort_order' => [
                 'required',

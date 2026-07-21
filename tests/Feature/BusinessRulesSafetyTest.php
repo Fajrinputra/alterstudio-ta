@@ -29,6 +29,7 @@ class BusinessRulesSafetyTest extends TestCase
             'role' => Role::PHOTOGRAPHER,
             'is_active' => true,
         ]);
+        $editor = User::factory()->create(['role' => Role::EDITOR]);
         $client = User::factory()->create(['role' => Role::CLIENT]);
         $category = ServiceCategory::create(['name' => 'Wedding']);
         $package = ServicePackage::factory()->create(['category_id' => $category->id]);
@@ -50,6 +51,7 @@ class BusinessRulesSafetyTest extends TestCase
             'booking_id' => $booking->id,
             'status' => Project::STATUS_SCHEDULED,
             'photographer_id' => $photographer->id,
+            'editor_id' => $editor->id,
             'start_at' => now()->addDay(),
             'end_at' => now()->addDay()->addHour(),
         ]);

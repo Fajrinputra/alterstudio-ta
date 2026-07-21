@@ -35,6 +35,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/bookings/availability', [\App\Http\Controllers\BookingController::class, 'availability'])->name('bookings.availability');
         Route::post('/bookings', [\App\Http\Controllers\BookingController::class, 'store'])->name('bookings.store');
         Route::get('/bookings', [\App\Http\Controllers\BookingController::class, 'index'])->name('bookings.index');
+        Route::get('/bookings/{booking}/edit', [\App\Http\Controllers\BookingController::class, 'edit'])->name('bookings.edit');
+        Route::put('/bookings/{booking}', [\App\Http\Controllers\BookingController::class, 'update'])->name('bookings.update');
         Route::get('/bookings/{booking}', [\App\Http\Controllers\BookingController::class, 'show'])->name('bookings.show');
         Route::get('/bookings/{booking}/pay', [\App\Http\Controllers\BookingController::class, 'pay'])->name('bookings.pay');
         Route::post('/bookings/{booking}/pay', [\App\Http\Controllers\PaymentController::class, 'createSnap'])->name('bookings.pay.snap');

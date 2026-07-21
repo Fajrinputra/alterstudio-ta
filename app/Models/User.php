@@ -116,13 +116,11 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function schedulesAsPhotographer(): HasMany
     {
-        return $this->hasMany(ProjectScheduleUser::class, 'user_id')
-            ->where('role', Role::PHOTOGRAPHER->value);
+        return $this->hasMany(ProjectSchedule::class, 'photographer_id');
     }
 
     public function schedulesAsEditor(): HasMany
     {
-        return $this->hasMany(ProjectScheduleUser::class, 'user_id')
-            ->where('role', Role::EDITOR->value);
+        return $this->hasMany(ProjectSchedule::class, 'editor_id');
     }
 }

@@ -2,12 +2,9 @@
 
 namespace App\Models;
 
-use App\Enums\Role;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class ProjectSchedule extends Model
 {
@@ -23,6 +20,8 @@ class ProjectSchedule extends Model
         'studio_location_id',
         'studio_room_id',
         'scheduled_by',
+        'photographer_id',
+        'editor_id',
         'start_at',
         'end_at',
         'status',
@@ -58,38 +57,13 @@ class ProjectSchedule extends Model
         return $this->belongsTo(User::class, 'scheduled_by');
     }
 
-    public function users(): HasMany
+    public function photographer(): BelongsTo
     {
-        return $this->hasMany(ProjectScheduleUser::class);
+        return $this->belongsTo(User::class, 'photographer_id');
     }
 
-    public function photographerAssignment(): HasOne
+    public function editor(): BelongsTo
     {
-        return $this->hasOne(ProjectScheduleUser::class)->where('role', Role::PHOTOGRAPHER->value);
-    }
-
-    public function editorAssignment(): HasOne
-    {
-        return $this->hasOne(ProjectScheduleUser::class)->where('role', Role::EDITOR->value);
-    }
-
-    public function getPhotographerIdAttribute(): ?int
-    {
-        return $this->photographerAssignment?->user_id;
-    }
-
-    public function getEditorIdAttribute(): ?int
-    {
-        return $this->editorAssignment?->user_id;
-    }
-
-    public function getPhotographerAttribute(): ?User
-    {
-        return $this->photographerAssignment?->user;
-    }
-
-    public function getEditorAttribute(): ?User
-    {
-        return $this->editorAssignment?->user;
+        return $this->belongsTo(User::class, 'editor_id');
     }
 }

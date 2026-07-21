@@ -36,6 +36,7 @@ class ScheduleControllerEdgeTest extends TestCase
         $other = $this->projectFor(Booking::STATUS_PAID);
         $other->update([
             'photographer_id' => $otherPhotographer->id,
+            'editor_id' => $editor->id,
             'start_at' => now()->addDays(2)->setTime(13, 0),
             'end_at' => now()->addDays(2)->setTime(14, 0),
             'status' => Project::STATUS_SCHEDULED,

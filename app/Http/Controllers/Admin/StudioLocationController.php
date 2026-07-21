@@ -153,7 +153,7 @@ class StudioLocationController extends Controller
     {
         // Satu aturan validasi dipakai bersama agar hasil create dan update konsisten.
         return $request->validate([
-            'name' => ['required', 'string', 'max:255'],
+            'name' => ['required', 'string', 'max:50'],
             'address' => ['nullable', 'string', 'max:500'],
             'description' => ['nullable', 'string'],
             'map_url' => ['nullable', 'url', 'max:500'],
@@ -169,7 +169,7 @@ class StudioLocationController extends Controller
     {
         $data = $request->validate([
             'studio_location_id' => ['required', 'exists:studio_locations,id'],
-            'name' => ['required','string','max:255'],
+            'name' => ['required','string','max:50'],
             'description' => ['nullable','string'],
             'photo' => ImageUploadValidation::rules(),
             'is_active' => ['nullable', 'boolean'],
@@ -192,7 +192,7 @@ class StudioLocationController extends Controller
     public function updateRoom(Request $request, StudioRoom $studioRoom)
     {
         $data = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
+            'name' => ['required', 'string', 'max:50'],
             'description' => ['nullable', 'string'],
             'photo' => ImageUploadValidation::rules(),
             'is_active' => ['nullable', 'boolean'],

@@ -1,0 +1,64 @@
+@startuml
+title SD-B10 Ubah Password Profil
+
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam BoxPadding 4
+skinparam sequence {
+    ArrowColor #333333
+    LifeLineBorderColor #999999
+    LifeLineBackgroundColor white
+    ParticipantBorderColor #999999
+    ParticipantBackgroundColor #ECEEF8
+    ParticipantFontColor #111111
+    ActorBorderColor #999999
+    ActorFontColor #111111
+    GroupBorderColor #111111
+    GroupBackgroundColor transparent
+}
+
+actor "Pengguna" as Pengguna
+boundary "Halaman Profil" as HalamanProfil
+boundary "Form Ubah Password" as FormPassword
+boundary "Halaman Login" as HalamanLogin
+control "PasswordController" as PasswordController
+control "AuthGuard" as AuthGuard
+control "SessionStore" as SessionStore
+entity "Users Model" as User
+
+Pengguna -> HalamanProfil : Membuka halaman edit profil
+HalamanProfil -> FormPassword : tampilkan form ubah password
+FormPassword --> Pengguna : form ubah password tampil
+Pengguna -> FormPassword : Mengisi password saat ini
+Pengguna -> FormPassword : Mengisi password baru dan konfirmasi
+Pengguna -> FormPassword : Klik simpan password baru
+FormPassword -> PasswordController : update(request)
+PasswordController -> PasswordController : validasi input password
+PasswordController -> AuthGuard : cek password saat ini
+AuthGuard -> User : ambil user login
+User --> AuthGuard : user object
+AuthGuard --> PasswordController : hasil cek password
+
+alt Validasi berhasil
+    PasswordController -> User : update password terenkripsi
+    User --> PasswordController : user diperbarui
+    PasswordController -> AuthGuard : logout pengguna
+    AuthGuard --> PasswordController : logout berhasil
+    PasswordController -> SessionStore : invalidate session
+    SessionStore --> PasswordController : session invalidated
+    PasswordController -> SessionStore : regenerate CSRF token
+    SessionStore --> PasswordController : token baru
+    PasswordController --> HalamanLogin : redirect halaman login
+    HalamanLogin --> Pengguna : masuk ulang dengan password baru
+else Password saat ini salah
+    PasswordController --> FormPassword : tampilkan error password lama
+    FormPassword --> Pengguna : perbaiki password saat ini
+else Password baru tidak valid / konfirmasi tidak cocok
+    PasswordController --> FormPassword : tampilkan error validasi
+    FormPassword --> Pengguna : perbaiki password baru
+else Gagal menyimpan perubahan
+    PasswordController --> FormPassword : tampilkan pesan gagal
+    FormPassword --> Pengguna : password belum diperbarui
+end
+
+@enduml

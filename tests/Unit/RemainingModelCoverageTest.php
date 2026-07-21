@@ -2,12 +2,10 @@
 
 namespace Tests\Unit;
 
-use App\Enums\Role;
 use App\Models\Booking;
 use App\Models\LandingHeroSlide;
 use App\Models\Project;
 use App\Models\ProjectSchedule;
-use App\Models\ProjectScheduleUser;
 use App\Models\ServicePackage;
 use App\Models\StudioLocation;
 use App\Models\StudioRoom;
@@ -23,7 +21,6 @@ class RemainingModelCoverageTest extends TestCase
         $location = new StudioLocation();
         $slide = new LandingHeroSlide();
         $schedule = new ProjectSchedule();
-        $scheduleUser = new ProjectScheduleUser();
         $user = new User();
 
         $this->assertSame('studio_location_id', $booking->studioLocation()->getForeignKeyName());
@@ -36,9 +33,10 @@ class RemainingModelCoverageTest extends TestCase
         $this->assertSame('studio_location_id', $schedule->studioLocation()->getForeignKeyName());
         $this->assertSame('studio_room_id', $schedule->studioRoom()->getForeignKeyName());
         $this->assertSame('scheduled_by', $schedule->scheduler()->getForeignKeyName());
-        $this->assertSame('project_schedule_id', $scheduleUser->schedule()->getForeignKeyName());
-        $this->assertSame('user_id', $user->schedulesAsPhotographer()->getForeignKeyName());
-        $this->assertSame('user_id', $user->schedulesAsEditor()->getForeignKeyName());
+        $this->assertSame('photographer_id', $schedule->photographer()->getForeignKeyName());
+        $this->assertSame('editor_id', $schedule->editor()->getForeignKeyName());
+        $this->assertSame('photographer_id', $user->schedulesAsPhotographer()->getForeignKeyName());
+        $this->assertSame('editor_id', $user->schedulesAsEditor()->getForeignKeyName());
     }
 
     public function test_remaining_model_normalizers_handle_non_array_items(): void
@@ -119,21 +117,11 @@ class RemainingModelCoverageTest extends TestCase
         $editor = new User(['name' => 'Editor Test']);
         $editor->id = 22;
 
-        $photographerAssignment = new ProjectScheduleUser([
-            'user_id' => $photographer->id,
-            'role' => Role::PHOTOGRAPHER->value,
-        ]);
-        $photographerAssignment->setRelation('user', $photographer);
-
-        $editorAssignment = new ProjectScheduleUser([
-            'user_id' => $editor->id,
-            'role' => Role::EDITOR->value,
-        ]);
-        $editorAssignment->setRelation('user', $editor);
-
         $schedule = new ProjectSchedule();
-        $schedule->setRelation('photographerAssignment', $photographerAssignment);
-        $schedule->setRelation('editorAssignment', $editorAssignment);
+        $schedule->photographer_id = $photographer->id;
+        $schedule->editor_id = $editor->id;
+        $schedule->setRelation('photographer', $photographer);
+        $schedule->setRelation('editor', $editor);
 
         $this->assertSame(21, $schedule->photographer_id);
         $this->assertSame(22, $schedule->editor_id);

@@ -8,12 +8,13 @@ Alter Studio membantu mengelola proses layanan fotografi dari awal sampai akhir:
 
 1. Klien melihat katalog dan membuat pemesanan.
 2. Admin atau Manajer mengonfirmasi/menolak pemesanan.
-3. Klien melakukan pembayaran DP 10% atau lunas melalui Midtrans.
-4. Admin menjadwalkan fotografer, editor, dan ruangan studio.
-5. Fotografer menyimpan link Google Drive foto mentah.
-6. Klien mengirim kode foto dan deskripsi permintaan edit.
-7. Editor menyimpan link/pesan hasil final.
-8. Manajer dan Owner melihat laporan operasional.
+3. Klien masih dapat mengganti jadwal pemesanan selama pemesanan belum dikonfirmasi.
+4. Klien melakukan pembayaran DP 10% atau lunas melalui Midtrans.
+5. Admin menjadwalkan fotografer, editor, dan ruangan studio.
+6. Fotografer menyimpan link Google Drive foto mentah.
+7. Klien mengirim kode foto dan deskripsi permintaan edit.
+8. Editor menyimpan link/pesan hasil final.
+9. Manajer dan Owner melihat laporan operasional.
 
 ## Role dan Hak Akses
 
@@ -22,7 +23,7 @@ Alter Studio membantu mengelola proses layanan fotografi dari awal sampai akhir:
 | Owner | Mengelola akun pengguna, cabang studio, ruangan studio, melihat dashboard, melihat laporan owner, dan mengelola profil. |
 | Admin | Mengelola kategori/paket layanan, melihat pemesanan, mengonfirmasi/menolak pemesanan, menandai pelunasan di lokasi, menjadwalkan kru, memantau project, dan mengelola profil. |
 | Manajer | Melihat dashboard operasional, mengelola laporan, mengekspor laporan, mengelola hero landing page, mengelola status pemesanan, dan mengelola profil. |
-| Klien | Registrasi, login, membuat pemesanan, membayar melalui Midtrans, melihat status pemesanan, mengakses link Drive, mengirim permintaan edit, dan mengelola profil. |
+| Klien | Registrasi, login, membuat pemesanan, mengganti jadwal sebelum pemesanan dikonfirmasi, membayar melalui Midtrans, melihat status pemesanan, mengakses link Drive, mengirim permintaan edit, dan mengelola profil. |
 | Fotografer | Melihat jadwal/project yang ditugaskan, menyimpan link Google Drive foto mentah, melihat status pekerjaan, dan mengelola profil. |
 | Editor | Melihat jadwal/project yang ditugaskan, melihat permintaan edit klien, menyimpan link/pesan hasil final, melihat status pekerjaan, dan mengelola profil. |
 
@@ -60,7 +61,7 @@ resources/views/                 Halaman Blade
 routes/web.php                   Route utama dan pembatasan role
 routes/auth.php                  Route autentikasi
 tests/                           Unit, feature, dan integration test
-diagrams/sequence/               File PlantUML sequence diagram
+sequence/                        File PlantUML sequence diagram
 ```
 
 ## Database Utama
@@ -77,10 +78,49 @@ diagrams/sequence/               File PlantUML sequence diagram
 | `bookings` | Data pemesanan klien. |
 | `payments` | Data pembayaran DP/lunas. |
 | `projects` | Data project produksi/pasca-produksi. |
-| `project_schedules` | Jadwal project. |
-| `project_schedule_users` | Fotografer/editor yang ditugaskan. |
+| `project_schedules` | Jadwal project sekaligus penugasan fotografer, editor, ruangan, waktu mulai, dan waktu selesai. |
 | `media_assets` | Link media foto mentah/final. |
 | `photo_selections` | Kode foto dan permintaan edit klien. |
+
+## Catatan Primary Key dan Business Key
+
+Sebagian besar tabel inti tetap memakai `id` bertipe `BIGINT UNSIGNED` sebagai primary key karena tabel tersebut menjadi pusat relasi transaksi dan dipakai langsung oleh Eloquent, foreign key, route model binding, factory, serta fitur pengujian Laravel. Mengganti seluruh primary key menjadi `varchar` atau field bisnis seperti `email`, `slug`, atau `order_id` akan membuat relasi lebih rapuh karena field tersebut bisa berubah atau berasal dari proses eksternal.
+
+Penyesuaian yang diterapkan:
+
+| Tabel | Primary Key | Catatan |
+|---|---|---|
+| `users` | `id` | `email` tetap menjadi unique key, bukan PK, karena email dapat berubah. |
+| `password_reset_tokens` | `user_id` | Satu user hanya membutuhkan satu token reset aktif, sehingga `user_id` dipakai sebagai PK sekaligus FK ke `users`. |
+| `studio_locations` | `id` | `slug` tetap unique key agar bisa dipakai untuk URL tanpa menjadi PK relasi. |
+| `projects` | `id` | `booking_id` tetap unique key untuk menjaga relasi satu booking satu project. |
+| `project_schedules` | `id` | `project_id` tetap unique key untuk menjaga satu project satu jadwal produksi. |
+| `payments` | `id` | `order_id` dari Midtrans tetap unique key karena nilainya berasal dari transaksi eksternal dan bisa kosong sebelum transaksi dibuat. |
+
+## Catatan Revisi Struktur Jadwal
+
+Pada revisi terbaru, tabel `project_schedule_users` sudah dihapus dari sistem. Penugasan fotografer dan editor sekarang disimpan langsung di tabel `project_schedules` melalui kolom:
+
+- `photographer_id`
+- `editor_id`
+- `scheduled_by`
+
+Alasan perubahan ini adalah agar struktur jadwal lebih sederhana: satu jadwal project berisi satu fotografer dan satu editor, sehingga tidak memerlukan tabel pivot tambahan. Relasi project tetap satu ke satu terhadap jadwal produksi melalui `project_schedules.project_id`.
+
+## Catatan Revisi Sequence Diagram
+
+Folder sequence diagram berada di `sequence/`. Diagram yang terdampak oleh penghapusan `project_schedule_users` adalah:
+
+| Diagram | Perbaikan |
+|---|---|
+| `sequence_penjadwalan_kru.puml` | Penyimpanan jadwal diarahkan ke `ProjectSchedules Model` dengan `photographer_id` dan `editor_id`. |
+| `SD-B25.puml` | Edit jadwal memperbarui `project_schedules`, termasuk fotografer, editor, ruangan, dan waktu. |
+| `SD-B26.puml` | Lihat jadwal tugas tidak lagi memakai `ProjectScheduleUser`; jadwal kru difilter dari `project_schedules.photographer_id` atau `project_schedules.editor_id`. |
+| `sequence_menyimpan_link_drive.puml` | Project fotografer diambil melalui jadwal pada `project_schedules.photographer_id`. |
+| `SD-B28.puml` | Project editor diambil dan divalidasi melalui `project_schedules.editor_id`. |
+| `SD-B29.puml` | Detail project mengambil data jadwal kru dari `ProjectSchedules Model`. |
+| `sequence_laporan_kinerja_kru.puml` | Laporan kinerja kru menghitung penugasan dari `ProjectSchedules Model`. |
+| `SD-B39.puml` | Ekspor laporan mengambil data jadwal dan penugasan kru dari `ProjectSchedules Model`. |
 
 ## Notifikasi Email
 
@@ -131,6 +171,7 @@ APP_NAME="Alter Studio"
 APP_ENV=local
 APP_DEBUG=true
 APP_URL=http://127.0.0.1:8000
+APP_TIMEZONE=Asia/Jakarta
 
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
@@ -214,8 +255,11 @@ Catatan hasil pengujian terakhir:
 
 | Komponen | Hasil |
 |---|---|
-| Unit, feature, dan integration test | Lulus |
+| Unit, feature, dan integration test | 211 test lulus, 1.222 assertion |
 | Integration lifecycle booking sampai final | Lulus |
+| Build frontend production | Lulus |
+| Route aplikasi | 86 route berhasil dimuat |
+| Migration database | Seluruh migration berstatus `Ran` |
 | Mailtrap SMTP Sandbox | Berhasil diuji |
 | Midtrans Snap Sandbox | Berhasil diuji |
 
@@ -327,4 +371,3 @@ php artisan app:cleanup-inactive-clients
 - Gunakan HTTPS saat hosting.
 - Gunakan webhook Midtrans yang dapat diakses publik.
 - Gunakan akun email production jika aplikasi dipakai user asli.
-

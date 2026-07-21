@@ -1,0 +1,105 @@
+@startuml
+title Sequence Diagram Mengajukan Pemesanan Layanan
+
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam BoxPadding 4
+skinparam sequence {
+    ArrowColor #333333
+    LifeLineBorderColor #999999
+    LifeLineBackgroundColor white
+    ParticipantBorderColor #999999
+    ParticipantBackgroundColor #ECEEF8
+    ParticipantFontColor #111111
+    ActorBorderColor #999999
+    ActorFontColor #111111
+    BoxBorderColor #111111
+    GroupBorderColor #111111
+    GroupBackgroundColor transparent
+    DividerBorderColor #999999
+    DividerFontColor #111111
+}
+
+actor "Klien" as Klien
+boundary "Katalog Layanan" as Katalog
+boundary "Detail Paket" as Detail
+boundary "Form Pemesanan" as Form
+control "BookingController" as BookingController
+control "BookingAvailability" as BookingAvailability
+entity "Bookings Model" as Booking
+entity "Projects Model" as Project
+
+Klien -> Katalog : Membuka halaman layanan
+Katalog -> BookingController : request daftar layanan
+BookingController -> Booking : ambil kategori dan paket aktif
+Booking --> BookingController : data kategori dan paket
+BookingController --> Katalog : tampilkan daftar layanan
+Katalog --> Klien : Menampilkan kategori dan paket layanan
+
+Klien -> Katalog : Memilih kategori dan paket
+Katalog -> Detail : buka detail paket
+Detail -> BookingController : request detail paket
+BookingController -> Booking : ambil detail paket
+Booking --> BookingController : data paket
+BookingController --> Detail : tampilkan detail paket
+Detail --> Klien : Menampilkan detail paket
+
+Klien -> Detail : Membuka formulir pemesanan
+Detail -> Form : tampilkan form pemesanan
+Form -> BookingController : request data form
+BookingController -> Booking : ambil cabang dan ruangan aktif
+Booking --> BookingController : data cabang dan ruangan
+BookingController --> Form : tampilkan form pemesanan
+Form --> Klien : Form pemesanan ditampilkan
+
+Klien -> Form : Memilih cabang, ruangan, tanggal, dan add-on
+Form -> BookingController : cek ketersediaan slot
+BookingController -> Booking : ambil data paket terpilih
+Booking --> BookingController : data paket
+BookingController -> BookingAvailability : hitung slot tersedia
+BookingAvailability -> Booking : ambil ruangan aktif dan booking aktif
+Booking --> BookingAvailability : data ruangan dan booking
+
+BookingAvailability -> BookingAvailability : validasi tanggal maksimal 1 bulan
+BookingAvailability -> BookingAvailability : abaikan slot hari-H yang sudah lewat
+BookingAvailability -> BookingAvailability : hitung durasi paket + add-on waktu
+BookingAvailability -> BookingAvailability : tambah jeda antar sesi 15 menit
+BookingAvailability -> BookingAvailability : validasi jam operasional dan bentrok slot
+
+BookingAvailability --> BookingController : daftar slot tersedia
+BookingController --> Form : tampilkan slot tersedia
+Form --> Klien : Menampilkan jadwal tersedia
+
+Klien -> Form : Mengisi data pemesanan
+Klien -> Form : Klik simpan dan kirim pemesanan
+Form -> BookingController : store(data pemesanan)
+BookingController -> BookingController : validasi data pemesanan
+BookingController -> Booking : ambil paket terpilih
+Booking --> BookingController : data paket
+BookingController -> BookingAvailability : validasi ulang slot pemesanan
+BookingAvailability -> Booking : cek bentrok booking
+Booking --> BookingAvailability : hasil pengecekan booking
+BookingAvailability --> BookingController : hasil validasi slot
+
+alt Data valid dan slot tersedia
+    BookingController -> BookingController : hitung total biaya pemesanan
+    BookingController -> Booking : create booking
+    Booking -> Booking : simpan booking status DIAJUKAN
+    Booking --> BookingController : booking tersimpan
+    BookingController -> Project : create project draft
+    Project -> Project : simpan project status DRAFT
+    Project --> BookingController : project tersimpan
+    BookingController --> Form : redirect detail/status pemesanan
+    Form --> Klien : Menampilkan status menunggu konfirmasi admin
+else Data tidak lengkap atau tidak valid
+    BookingController --> Form : tampilkan pesan kesalahan
+    Form --> Klien : Pemesanan belum tersimpan
+else Tanggal tidak valid
+    BookingController --> Form : tampilkan pesan tanggal tidak valid
+    Form --> Klien : Tanggal lewat atau lebih dari 1 bulan ditolak
+else Slot tidak tersedia
+    BookingController --> Form : tampilkan pilihan waktu lain
+    Form --> Klien : Pemesanan ditolak karena slot tidak tersedia
+end
+
+@enduml

@@ -38,8 +38,8 @@ class ProjectController extends Controller
             'booking.client',
             'booking.studioLocation',
             'booking.studioRoom',
-            'scheduleRecord.photographerAssignment.user',
-            'scheduleRecord.editorAssignment.user',
+            'scheduleRecord.photographer',
+            'scheduleRecord.editor',
         ]);
 
         return view('projects.show', compact('project'));

@@ -35,7 +35,8 @@ return new class extends Migration
 
         $this->addIndexIfMissing('project_schedules', ['start_at', 'end_at'], 'schedules_start_end_idx');
         $this->addIndexIfMissing('project_schedules', ['studio_room_id', 'start_at', 'end_at'], 'schedules_room_start_end_idx');
-        $this->addIndexIfMissing('project_schedule_users', ['user_id', 'role'], 'schedule_users_user_role_idx');
+        $this->addIndexIfMissing('project_schedules', ['photographer_id', 'start_at', 'end_at'], 'schedules_photographer_time_idx');
+        $this->addIndexIfMissing('project_schedules', ['editor_id', 'start_at', 'end_at'], 'schedules_editor_time_idx');
     }
 
     public function down(): void
@@ -77,9 +78,8 @@ return new class extends Migration
             'project_schedules' => [
                 'schedules_start_end_idx',
                 'schedules_room_start_end_idx',
-            ],
-            'project_schedule_users' => [
-                'schedule_users_user_role_idx',
+                'schedules_photographer_time_idx',
+                'schedules_editor_time_idx',
             ],
         ] as $table => $indexes) {
             foreach ($indexes as $index) {

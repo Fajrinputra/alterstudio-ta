@@ -53,8 +53,8 @@ class UserManagementController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
+            'name' => ['required', 'string', 'max:50'],
+            'email' => ['required', 'email', 'max:50', 'unique:users,email'],
             'role' => ['required', Rule::in($this->assignableRoles())],
             'password' => ['required', 'string', Rules\Password::defaults()],
             'no_hp' => ['nullable', 'string', 'max:20', 'regex:/^(?:\+62|62|0)[0-9]{9,13}$/'],
@@ -79,8 +79,8 @@ class UserManagementController extends Controller
     public function update(Request $request, User $user)
     {
         $data = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
+            'name' => ['required', 'string', 'max:50'],
+            'email' => ['required', 'email', 'max:50', Rule::unique('users', 'email')->ignore($user->id)],
             'role' => ['required', Rule::in($this->assignableRoles($user))],
             'password' => ['nullable', 'string', Rules\Password::defaults()],
             'no_hp' => ['nullable', 'string', 'max:20', 'regex:/^(?:\+62|62|0)[0-9]{9,13}$/'],
@@ -203,7 +203,9 @@ class UserManagementController extends Controller
         }
 
         return Project::query()
-            ->whereHas('scheduleRecord.users', fn ($query) => $query->where('user_id', $user->id))
+            ->whereHas('scheduleRecord', fn ($query) => $query
+                ->where('photographer_id', $user->id)
+                ->orWhere('editor_id', $user->id))
             ->whereHas('booking', fn ($booking) => $booking->where('status', '!=', Booking::STATUS_CANCELLED))
             ->where('status', '!=', Project::STATUS_FINAL)
             ->exists();

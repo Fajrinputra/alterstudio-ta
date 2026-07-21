@@ -21,13 +21,13 @@ class ProfileUpdateRequest extends FormRequest
     {
         // Email tetap unik kecuali milik user yang sedang login.
         return [
-            'name' => ['required', 'string', 'max:255'],
+            'name' => ['required', 'string', 'max:50'],
             'email' => [
                 'required',
                 'string',
                 'lowercase',
                 'email',
-                'max:255',
+                'max:50',
                 Rule::unique(User::class)->ignore($this->user()->id),
             ],
             'no_hp' => ['nullable', 'string', 'max:20', 'regex:/^(?:\+62|62|0)[0-9]{9,13}$/'],

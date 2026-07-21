@@ -161,6 +161,10 @@
                                             <p class="text-sm text-amber-600">Admin akan meninjau jadwal yang Anda ajukan terlebih dahulu. Pembayaran akan dibuka setelah pemesanan dikonfirmasi.</p>
                                         </div>
                                     </div>
+                                    <a href="{{ route('bookings.edit', $booking) }}"
+                                       class="inline-flex min-h-[44px] w-full items-center justify-center rounded-2xl border border-amber-300 bg-white px-5 py-2.5 text-center text-sm font-semibold leading-none text-amber-700 transition-all hover:bg-amber-100 sm:ml-auto sm:w-36">
+                                        <span class="block w-full text-center">Ganti Jadwal</span>
+                                    </a>
                                 </div>
                             </div>
                         @endif

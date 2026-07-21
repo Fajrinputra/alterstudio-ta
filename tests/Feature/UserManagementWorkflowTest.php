@@ -194,6 +194,7 @@ class UserManagementWorkflowTest extends TestCase
     {
         $owner = User::factory()->create(['role' => Role::OWNER]);
         $photographer = User::factory()->create(['role' => Role::PHOTOGRAPHER]);
+        $editor = User::factory()->create(['role' => Role::EDITOR]);
         $client = User::factory()->create(['role' => Role::CLIENT]);
         $package = ServicePackage::factory()->create();
         $location = StudioLocation::create([
@@ -211,6 +212,7 @@ class UserManagementWorkflowTest extends TestCase
         Project::factory()->create([
             'booking_id' => $booking->id,
             'photographer_id' => $photographer->id,
+            'editor_id' => $editor->id,
             'status' => Project::STATUS_SCHEDULED,
             'start_at' => now()->addDay()->setTime(11, 0),
             'end_at' => now()->addDay()->setTime(12, 0),

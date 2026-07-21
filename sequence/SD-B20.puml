@@ -1,0 +1,63 @@
+@startuml
+title SD-B20 Konfirmasi Pemesanan
+
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam BoxPadding 4
+skinparam sequence {
+    ArrowColor #333333
+    LifeLineBorderColor #999999
+    LifeLineBackgroundColor white
+    ParticipantBorderColor #999999
+    ParticipantBackgroundColor #ECEEF8
+    ParticipantFontColor #111111
+    ActorBorderColor #999999
+    ActorFontColor #111111
+    GroupBorderColor #111111
+    GroupBackgroundColor transparent
+}
+
+actor "Admin / Manajer" as Operator
+boundary "Halaman Daftar Pemesanan" as HalamanDaftar
+boundary "Detail Pemesanan" as DetailPemesanan
+control "BookingController" as BookingController
+control "NotificationService" as NotificationService
+entity "Bookings Model" as Booking
+
+Operator -> HalamanDaftar : Membuka halaman daftar pemesanan
+HalamanDaftar -> BookingController : index()
+BookingController -> Booking : ambil booking status diajukan
+Booking --> BookingController : data booking masuk
+BookingController --> HalamanDaftar : tampilkan daftar pemesanan
+HalamanDaftar --> Operator : daftar pemesanan tampil
+
+Operator -> HalamanDaftar : Memilih pemesanan status diajukan
+HalamanDaftar -> DetailPemesanan : buka detail pemesanan
+DetailPemesanan -> BookingController : show(bookingId)
+BookingController -> Booking : ambil detail booking
+Booking --> BookingController : detail booking
+BookingController --> DetailPemesanan : tampilkan detail pemesanan
+DetailPemesanan --> Operator : detail pemesanan tampil
+
+Operator -> DetailPemesanan : Menekan aksi konfirmasi
+DetailPemesanan -> BookingController : confirm(bookingId)
+BookingController -> Booking : validasi booking
+Booking --> BookingController : booking ditemukan
+
+alt Booking valid dan status diajukan
+    BookingController -> Booking : perbarui status booking
+    Booking -> Booking : status WAITING_PAYMENT,\nconfirmed_at terisi
+    Booking --> BookingController : booking terkonfirmasi
+    BookingController -> NotificationService : kirim notifikasi ke klien
+    NotificationService --> BookingController : notifikasi terkirim
+    BookingController --> DetailPemesanan : tampilkan informasi siap pembayaran
+    DetailPemesanan --> Operator : pemesanan berhasil dikonfirmasi
+else Booking tidak ditemukan
+    BookingController --> DetailPemesanan : tampilkan pesan kesalahan
+    DetailPemesanan --> Operator : data pemesanan tidak ditemukan
+else Status tidak valid untuk dikonfirmasi
+    BookingController --> DetailPemesanan : tampilkan pesan status tidak valid
+    DetailPemesanan --> Operator : proses konfirmasi ditolak
+end
+
+@enduml

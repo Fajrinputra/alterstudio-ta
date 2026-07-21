@@ -117,13 +117,13 @@ class ServicePackageController extends Controller
         // Data file (gallery/overview) diproses di method terpisah.
         $validated = $request->validate([
             'category_id' => ['required', 'exists:service_categories,id'],
-            'name' => ['required', 'string', 'max:255'],
+            'name' => ['required', 'string', 'max:50'],
             'price' => ['required', 'integer', 'min:0'],
             'max_people' => ['nullable', 'integer', 'min:1'],
             'description' => ['nullable', 'string'],
             'features' => ['nullable'],
             'addons' => ['nullable', 'array'],
-            'addons.*.label' => ['nullable', 'string', 'max:255'],
+            'addons.*.label' => ['nullable', 'string', 'max:50'],
             'addons.*.price' => ['nullable', 'integer', 'min:0'],
             'addons.*.unit' => ['nullable', 'string', 'max:50'],
             'terms' => ['nullable', 'string'],
