@@ -23,7 +23,7 @@ entity "LandingHeroSlides Model" as LandingHeroSlide
 
 Manajer -> MenuHero : Membuka menu kelola hero
 MenuHero -> LandingHeroController : index()
-LandingHeroController -> LandingHeroSlide : SELECT landing_hero_slides
+LandingHeroController -> LandingHeroSlide : SELECT landing_hero_slides\nberdasarkan slide_code dan sort_order
 LandingHeroSlide --> LandingHeroController : data hero slide
 LandingHeroController --> HalamanHero : tampilkan daftar hero slide
 HalamanHero --> Manajer : menu kelola hero tampil

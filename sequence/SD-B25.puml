@@ -52,7 +52,7 @@ ScheduleController -> ScheduleController : cek bentrok fotografer/editor/ruangan
 ScheduleController -> ScheduleController : cek project belum berjalan/pasca-produksi
 
 alt Jadwal valid
-    ScheduleController -> ProjectSchedule : update jadwal, fotografer_id,\neditor_id, ruangan, dan waktu
+    ScheduleController -> ProjectSchedule : update schedule_code, scheduled_by,\nphotographer_id, editor_id,\nroom_code, start_at, dan end_at
     ProjectSchedule --> ScheduleController : jadwal diperbarui
     ScheduleController --> HalamanJadwal : tampilkan pesan berhasil
     HalamanJadwal --> Admin : jadwal diperbarui

@@ -243,7 +243,7 @@ class MediaWorkflowStatusTest extends TestCase
             'is_active' => true,
         ]);
         $room = StudioRoom::create([
-            'studio_location_id' => $location->id,
+            'studio_location_code' => $location->location_code,
             'name' => 'Studio Workflow',
             'is_active' => true,
         ]);
@@ -251,8 +251,8 @@ class MediaWorkflowStatusTest extends TestCase
         $booking = Booking::factory()->create([
             'client_id' => $client->id,
             'package_id' => $package->id,
-            'studio_location_id' => $location->id,
-            'studio_room_id' => $room->id,
+            'studio_location_code' => $location->location_code,
+            'studio_room_code' => $room->room_code,
             'status' => Booking::STATUS_PAID,
         ]);
 

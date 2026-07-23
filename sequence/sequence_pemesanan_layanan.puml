@@ -27,6 +27,8 @@ boundary "Form Pemesanan" as Form
 control "BookingController" as BookingController
 control "BookingAvailability" as BookingAvailability
 entity "Bookings Model" as Booking
+entity "StudioLocations Model" as StudioLocation
+entity "StudioRooms Model" as StudioRoom
 entity "Projects Model" as Project
 
 Klien -> Katalog : Membuka halaman layanan
@@ -47,8 +49,10 @@ Detail --> Klien : Menampilkan detail paket
 Klien -> Detail : Membuka formulir pemesanan
 Detail -> Form : tampilkan form pemesanan
 Form -> BookingController : request data form
-BookingController -> Booking : ambil cabang dan ruangan aktif
-Booking --> BookingController : data cabang dan ruangan
+BookingController -> StudioLocation : ambil cabang aktif\nberdasarkan location_code
+StudioLocation --> BookingController : data cabang
+BookingController -> StudioRoom : ambil ruangan aktif\nberdasarkan room_code
+StudioRoom --> BookingController : data ruangan
 BookingController --> Form : tampilkan form pemesanan
 Form --> Klien : Form pemesanan ditampilkan
 
@@ -57,8 +61,10 @@ Form -> BookingController : cek ketersediaan slot
 BookingController -> Booking : ambil data paket terpilih
 Booking --> BookingController : data paket
 BookingController -> BookingAvailability : hitung slot tersedia
-BookingAvailability -> Booking : ambil ruangan aktif dan booking aktif
-Booking --> BookingAvailability : data ruangan dan booking
+BookingAvailability -> StudioRoom : ambil ruangan aktif\nberdasarkan room_code
+StudioRoom --> BookingAvailability : data ruangan
+BookingAvailability -> Booking : ambil booking aktif\npada location_code dan room_code
+Booking --> BookingAvailability : data booking
 
 BookingAvailability -> BookingAvailability : validasi tanggal maksimal 1 bulan
 BookingAvailability -> BookingAvailability : abaikan slot hari-H yang sudah lewat
@@ -77,14 +83,14 @@ BookingController -> BookingController : validasi data pemesanan
 BookingController -> Booking : ambil paket terpilih
 Booking --> BookingController : data paket
 BookingController -> BookingAvailability : validasi ulang slot pemesanan
-BookingAvailability -> Booking : cek bentrok booking
+BookingAvailability -> Booking : cek bentrok booking\nberdasarkan location_code dan room_code
 Booking --> BookingAvailability : hasil pengecekan booking
 BookingAvailability --> BookingController : hasil validasi slot
 
 alt Data valid dan slot tersedia
     BookingController -> BookingController : hitung total biaya pemesanan
     BookingController -> Booking : create booking
-    Booking -> Booking : simpan booking status DIAJUKAN
+    Booking -> Booking : simpan package_id, client_id,\nlocation_code, room_code, tanggal,\nwaktu, dan status pengajuan
     Booking --> BookingController : booking tersimpan
     BookingController -> Project : create project draft
     Project -> Project : simpan project status DRAFT

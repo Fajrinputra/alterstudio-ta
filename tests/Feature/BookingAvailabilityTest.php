@@ -35,15 +35,15 @@ class BookingAvailabilityTest extends TestCase
             'is_active' => true,
         ]);
         $room = StudioRoom::create([
-            'studio_location_id' => $location->id,
+            'studio_location_code' => $location->location_code,
             'name' => 'Studio 1',
             'is_active' => true,
         ]);
 
         Booking::factory()->create([
             'package_id' => $package->id,
-            'studio_location_id' => $location->id,
-            'studio_room_id' => $room->id,
+            'studio_location_code' => $location->location_code,
+            'studio_room_code' => $room->room_code,
             'booking_date' => $bookingDate,
             'booking_time' => '14:00',
             'status' => Booking::STATUS_WAITING_PAYMENT,
@@ -52,7 +52,7 @@ class BookingAvailabilityTest extends TestCase
         $response = $this->actingAs($client)
             ->getJson(route('bookings.availability', [
                 'package_id' => $package->id,
-                'studio_location_id' => $location->id,
+                'studio_location_code' => $location->location_code,
                 'booking_date' => $bookingDate,
             ]))
             ->assertOk();
@@ -84,13 +84,13 @@ class BookingAvailabilityTest extends TestCase
             'address' => 'Jl. Multi Room',
             'is_active' => true,
         ]);
-        $roomA = StudioRoom::create(['studio_location_id' => $location->id, 'name' => 'Studio A', 'is_active' => true]);
-        $roomB = StudioRoom::create(['studio_location_id' => $location->id, 'name' => 'Studio B', 'is_active' => true]);
+        $roomA = StudioRoom::create(['studio_location_code' => $location->location_code, 'name' => 'Studio A', 'is_active' => true]);
+        $roomB = StudioRoom::create(['studio_location_code' => $location->location_code, 'name' => 'Studio B', 'is_active' => true]);
 
         Booking::factory()->create([
             'package_id' => $package->id,
-            'studio_location_id' => $location->id,
-            'studio_room_id' => $roomA->id,
+            'studio_location_code' => $location->location_code,
+            'studio_room_code' => $roomA->room_code,
             'booking_date' => $bookingDate,
             'booking_time' => '14:00',
             'status' => Booking::STATUS_WAITING_PAYMENT,
@@ -99,7 +99,7 @@ class BookingAvailabilityTest extends TestCase
         $response = $this->actingAs($client)
             ->getJson(route('bookings.availability', [
                 'package_id' => $package->id,
-                'studio_location_id' => $location->id,
+                'studio_location_code' => $location->location_code,
                 'booking_date' => $bookingDate,
             ]))
             ->assertOk();
@@ -108,8 +108,8 @@ class BookingAvailabilityTest extends TestCase
 
         Booking::factory()->create([
             'package_id' => $package->id,
-            'studio_location_id' => $location->id,
-            'studio_room_id' => $roomB->id,
+            'studio_location_code' => $location->location_code,
+            'studio_room_code' => $roomB->room_code,
             'booking_date' => $bookingDate,
             'booking_time' => '14:00',
             'status' => Booking::STATUS_WAITING_PAYMENT,
@@ -118,7 +118,7 @@ class BookingAvailabilityTest extends TestCase
         $response = $this->actingAs($client)
             ->getJson(route('bookings.availability', [
                 'package_id' => $package->id,
-                'studio_location_id' => $location->id,
+                'studio_location_code' => $location->location_code,
                 'booking_date' => $bookingDate,
             ]))
             ->assertOk();
@@ -151,12 +151,12 @@ class BookingAvailabilityTest extends TestCase
             'address' => 'Jl. Extra Time',
             'is_active' => true,
         ]);
-        $room = StudioRoom::create(['studio_location_id' => $location->id, 'name' => 'Studio A', 'is_active' => true]);
+        $room = StudioRoom::create(['studio_location_code' => $location->location_code, 'name' => 'Studio A', 'is_active' => true]);
 
         Booking::factory()->create([
             'package_id' => $package->id,
-            'studio_location_id' => $location->id,
-            'studio_room_id' => $room->id,
+            'studio_location_code' => $location->location_code,
+            'studio_room_code' => $room->room_code,
             'booking_date' => $bookingDate,
             'booking_time' => '13:45',
             'status' => Booking::STATUS_WAITING_PAYMENT,
@@ -165,7 +165,7 @@ class BookingAvailabilityTest extends TestCase
         $response = $this->actingAs($client)
             ->getJson(route('bookings.availability', [
                 'package_id' => $package->id,
-                'studio_location_id' => $location->id,
+                'studio_location_code' => $location->location_code,
                 'booking_date' => $bookingDate,
             ]))
             ->assertOk();
@@ -176,7 +176,7 @@ class BookingAvailabilityTest extends TestCase
         $response = $this->actingAs($client)
             ->getJson(route('bookings.availability', [
                 'package_id' => $package->id,
-                'studio_location_id' => $location->id,
+                'studio_location_code' => $location->location_code,
                 'booking_date' => $bookingDate,
                 'selected_addons' => [$addonKey],
                 'addon_quantities' => [$addonKey => 1],
@@ -213,7 +213,7 @@ class BookingAvailabilityTest extends TestCase
                 'is_active' => true,
             ]);
             StudioRoom::create([
-                'studio_location_id' => $location->id,
+                'studio_location_code' => $location->location_code,
                 'name' => 'Studio 1',
                 'is_active' => true,
             ]);
@@ -221,7 +221,7 @@ class BookingAvailabilityTest extends TestCase
             $response = $this->actingAs($client)
                 ->getJson(route('bookings.availability', [
                     'package_id' => $package->id,
-                    'studio_location_id' => $location->id,
+                    'studio_location_code' => $location->location_code,
                     'booking_date' => Carbon::now()->toDateString(),
                 ]))
                 ->assertOk()
@@ -266,7 +266,7 @@ class BookingAvailabilityTest extends TestCase
                 'is_active' => true,
             ]);
             StudioRoom::create([
-                'studio_location_id' => $location->id,
+                'studio_location_code' => $location->location_code,
                 'name' => 'Studio 1',
                 'is_active' => true,
             ]);
@@ -275,7 +275,7 @@ class BookingAvailabilityTest extends TestCase
                 ->from(route('bookings.create'))
                 ->post(route('bookings.store'), [
                     'package_id' => $package->id,
-                    'studio_location_id' => $location->id,
+                    'studio_location_code' => $location->location_code,
                     'booking_date' => Carbon::now()->toDateString(),
                     'booking_time' => '15:00',
                     'payment_type' => Booking::PAYMENT_TYPE_FULL,
@@ -309,7 +309,7 @@ class BookingAvailabilityTest extends TestCase
         $this->actingAs($client)
             ->getJson(route('bookings.availability', [
                 'package_id' => $package->id,
-                'studio_location_id' => $location->id,
+                'studio_location_code' => $location->location_code,
                 'booking_date' => $weekendDate,
             ]))
             ->assertOk()
@@ -334,7 +334,7 @@ class BookingAvailabilityTest extends TestCase
             'is_active' => true,
         ]);
         StudioRoom::create([
-            'studio_location_id' => $location->id,
+            'studio_location_code' => $location->location_code,
             'name' => 'Studio Batas',
             'is_active' => true,
         ]);
@@ -344,7 +344,7 @@ class BookingAvailabilityTest extends TestCase
         $this->actingAs($client)
             ->getJson(route('bookings.availability', [
                 'package_id' => $package->id,
-                'studio_location_id' => $location->id,
+                'studio_location_code' => $location->location_code,
                 'booking_date' => $tooFarDate,
             ]))
             ->assertStatus(422);
@@ -353,7 +353,7 @@ class BookingAvailabilityTest extends TestCase
             ->from(route('bookings.create'))
             ->post(route('bookings.store'), [
                 'package_id' => $package->id,
-                'studio_location_id' => $location->id,
+                'studio_location_code' => $location->location_code,
                 'booking_date' => $tooFarDate,
                 'booking_time' => '13:00',
                 'payment_type' => Booking::PAYMENT_TYPE_FULL,

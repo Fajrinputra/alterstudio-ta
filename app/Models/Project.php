@@ -94,17 +94,17 @@ class Project extends Model
             $project->scheduleRecord()->updateOrCreate(
                 ['project_id' => $project->id],
                 [
-                    'booking_id' => $project->booking_id,
-                    'studio_location_id' => (int) $project->booking->studio_location_id,
-                    'studio_room_id' => (int) $project->booking->studio_room_id,
-                    'scheduled_by' => auth()->id()
+                    'booking_id'           => $project->booking_id,
+                    'studio_location_code' => $project->booking->studio_location_code,
+                    'studio_room_code'     => $project->booking->studio_room_code,
+                    'scheduled_by'         => auth()->id()
                         ?? User::whereIn('role', [Role::ADMIN->value, Role::OWNER->value])->value('id')
                         ?? User::query()->value('id'),
-                    'photographer_id' => $photographerId,
-                    'editor_id' => $editorId,
-                    'start_at' => $project->start_at,
-                    'end_at' => $project->end_at,
-                    'status' => ProjectSchedule::STATUS_SCHEDULED,
+                    'photographer_id'      => $photographerId,
+                    'editor_id'            => $editorId,
+                    'start_at'             => $project->start_at,
+                    'end_at'               => $project->end_at,
+                    'status'               => ProjectSchedule::STATUS_SCHEDULED,
                 ]
             );
 

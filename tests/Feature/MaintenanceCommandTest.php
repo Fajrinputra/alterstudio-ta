@@ -38,21 +38,21 @@ class MaintenanceCommandTest extends TestCase
         $expired = Booking::factory()->create([
             'client_id' => $client->id,
             'package_id' => $package->id,
-            'studio_location_id' => $location->id,
+            'studio_location_code' => $location->location_code,
             'status' => Booking::STATUS_WAITING_PAYMENT,
             'payment_started_at' => now()->subMinutes(31),
         ]);
         $active = Booking::factory()->create([
             'client_id' => $client->id,
             'package_id' => $package->id,
-            'studio_location_id' => $location->id,
+            'studio_location_code' => $location->location_code,
             'status' => Booking::STATUS_WAITING_PAYMENT,
             'payment_started_at' => now()->subMinutes(10),
         ]);
         $notStarted = Booking::factory()->create([
             'client_id' => $client->id,
             'package_id' => $package->id,
-            'studio_location_id' => $location->id,
+            'studio_location_code' => $location->location_code,
             'status' => Booking::STATUS_WAITING_PAYMENT,
             'payment_started_at' => null,
         ]);
@@ -104,8 +104,8 @@ class MaintenanceCommandTest extends TestCase
 
         Storage::disk('public')->assertMissing('projects/1/expired.jpg');
         Storage::disk('public')->assertExists('projects/1/current.jpg');
-        $this->assertDatabaseMissing('media_assets', ['id' => $expired->id]);
-        $this->assertDatabaseHas('media_assets', ['id' => $current->id]);
+        $this->assertDatabaseMissing('media_assets', ['media_code' => $expired->media_code]);
+        $this->assertDatabaseHas('media_assets', ['media_code' => $current->media_code]);
     }
 
     /**
@@ -140,7 +140,7 @@ class MaintenanceCommandTest extends TestCase
         Booking::factory()->create([
             'client_id' => $recent->id,
             'package_id' => $package->id,
-            'studio_location_id' => $location->id,
+            'studio_location_code' => $location->location_code,
             'created_at' => now()->subMonth(),
         ]);
 

@@ -27,12 +27,12 @@ entity "Bookings Model" as Booking
 Owner -> DetailCabang : Klik hapus cabang
 DetailCabang -> ModalHapus : tampilkan konfirmasi hapus
 Owner -> ModalHapus : konfirmasi hapus
-ModalHapus -> StudioLocationController : destroy(locationId)
-StudioLocationController -> Booking : cek booking aktif pada cabang
+ModalHapus -> StudioLocationController : destroy(location_code)
+StudioLocationController -> Booking : cek booking aktif pada location_code
 Booking --> StudioLocationController : hasil pengecekan
 
 alt Cabang tidak digunakan
-    StudioLocationController -> StudioLocation : DELETE/UPDATE studio_locations
+    StudioLocationController -> StudioLocation : DELETE/UPDATE studio_locations\nberdasarkan location_code
     StudioLocation --> StudioLocationController : cabang terhapus
     StudioLocationController --> DetailCabang : redirect ke menu cabang
     DetailCabang --> Owner : pesan sukses tampil

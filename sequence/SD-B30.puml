@@ -24,9 +24,9 @@ entity "StudioRooms Model" as StudioRoom
 
 Owner -> MenuCabang : Membuka menu cabang
 MenuCabang -> LocationController : index/manage()
-LocationController -> StudioLocation : ambil daftar cabang studio
+LocationController -> StudioLocation : ambil daftar cabang studio\nberdasarkan location_code
 StudioLocation --> LocationController : data cabang
-LocationController -> StudioRoom : hitung jumlah ruangan per cabang
+LocationController -> StudioRoom : hitung jumlah ruangan per location_code
 StudioRoom --> LocationController : ringkasan ruangan
 LocationController --> HalamanCabang : tampilkan daftar cabang
 HalamanCabang --> Owner : menu cabang studio tampil

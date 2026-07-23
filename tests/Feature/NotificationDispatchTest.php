@@ -41,7 +41,7 @@ class NotificationDispatchTest extends TestCase
             'is_active' => true,
         ]);
         StudioRoom::create([
-            'studio_location_id' => $location->id,
+            'studio_location_code' => $location->location_code,
             'name' => 'Studio A',
             'is_active' => true,
         ]);
@@ -53,7 +53,7 @@ class NotificationDispatchTest extends TestCase
         $this->actingAs($client)
             ->post('/bookings', [
                 'package_id' => $package->id,
-                'studio_location_id' => $location->id,
+                'studio_location_code' => $location->location_code,
                 'booking_date' => now()->addDays(2)->toDateString(),
                 'booking_time' => '13:00',
                 'payment_type' => Booking::PAYMENT_TYPE_FULL,
@@ -85,13 +85,13 @@ class NotificationDispatchTest extends TestCase
             'is_active' => true,
         ]);
         $room = StudioRoom::create([
-            'studio_location_id' => $location->id,
+            'studio_location_code' => $location->location_code,
             'name' => 'Studio A',
             'is_active' => true,
         ]);
         $booking = Booking::factory()->create([
             'package_id' => $package->id,
-            'studio_location_id' => $location->id,
+            'studio_location_code' => $location->location_code,
             'status' => Booking::STATUS_PAID,
         ]);
         $project = Project::factory()->create([
@@ -103,7 +103,7 @@ class NotificationDispatchTest extends TestCase
             ->post("/projects/{$project->id}/schedule", [
                 'photographer_id' => $photographer->id,
                 'editor_id' => $editor->id,
-                'studio_room_id' => $room->id,
+                'studio_room_code' => $room->room_code,
             ])
             ->assertRedirect();
 
@@ -191,7 +191,7 @@ class NotificationDispatchTest extends TestCase
             'is_active' => true,
         ]);
         $room = StudioRoom::create([
-            'studio_location_id' => $location->id,
+            'studio_location_code' => $location->location_code,
             'name' => 'Studio Notif',
             'is_active' => true,
         ]);
@@ -199,8 +199,8 @@ class NotificationDispatchTest extends TestCase
         $booking = Booking::factory()->create([
             'client_id' => $client->id,
             'package_id' => $package->id,
-            'studio_location_id' => $location->id,
-            'studio_room_id' => $room->id,
+            'studio_location_code' => $location->location_code,
+            'studio_room_code' => $room->room_code,
             'status' => Booking::STATUS_PAID,
         ]);
 

@@ -27,8 +27,8 @@ entity "LandingHeroSlides Model" as LandingHeroSlide
 Manajer -> HalamanHero : Klik hapus pada slide hero
 HalamanHero -> ModalHapus : tampilkan modal konfirmasi hapus
 Manajer -> ModalHapus : konfirmasi hapus slide
-ModalHapus -> LandingHeroController : destroy(slideId)
-LandingHeroController -> LandingHeroSlide : SELECT landing_hero_slides
+ModalHapus -> LandingHeroController : destroy(slide_code)
+LandingHeroController -> LandingHeroSlide : SELECT landing_hero_slides\nberdasarkan slide_code
 LandingHeroSlide --> LandingHeroController : data slide
 
 alt Slide ditemukan
@@ -36,7 +36,7 @@ alt Slide ditemukan
     StorageService -> StorageService : DELETE image_path
     StorageService --> StorageService : file terhapus
     StorageService --> LandingHeroController : file terhapus
-    LandingHeroController -> LandingHeroSlide : DELETE landing_hero_slides
+    LandingHeroController -> LandingHeroSlide : DELETE landing_hero_slides\nberdasarkan slide_code
     LandingHeroSlide --> LandingHeroController : slide terhapus
     LandingHeroController --> HalamanHero : redirect dengan pesan berhasil
     HalamanHero --> Manajer : daftar slide hero diperbarui

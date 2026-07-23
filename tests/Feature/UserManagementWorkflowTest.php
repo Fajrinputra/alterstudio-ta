@@ -147,7 +147,7 @@ class UserManagementWorkflowTest extends TestCase
         Booking::factory()->create([
             'client_id' => $client->id,
             'package_id' => $package->id,
-            'studio_location_id' => $location->id,
+            'studio_location_code' => $location->location_code,
             'status' => Booking::STATUS_PAID,
         ]);
 
@@ -206,7 +206,7 @@ class UserManagementWorkflowTest extends TestCase
         $booking = Booking::factory()->create([
             'client_id' => $client->id,
             'package_id' => $package->id,
-            'studio_location_id' => $location->id,
+            'studio_location_code' => $location->location_code,
             'status' => Booking::STATUS_PAID,
         ]);
         Project::factory()->create([

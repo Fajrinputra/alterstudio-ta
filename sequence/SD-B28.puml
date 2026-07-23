@@ -52,7 +52,7 @@ MediaAssetController -> ProjectSchedule : validasi editor sesuai jadwal
 ProjectSchedule --> MediaAssetController : hasil validasi editor
 
 alt Valid
-    MediaAssetController -> Project : update final_drive_url,\nfinal_message,\nfinal_uploaded_at,\nstatus FINAL
+    MediaAssetController -> Project : update final_drive_url,\nfinal_message, final_drive_uploaded_by,\nfinal_drive_uploaded_at, status FINAL
     Project --> MediaAssetController : project diperbarui
     MediaAssetController -> NotificationService : kirim notifikasi hasil final ke klien
     NotificationService --> MediaAssetController : notifikasi terkirim

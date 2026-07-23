@@ -184,7 +184,7 @@ class ScheduleController extends Controller
         $validated = $request->validate([
             'photographer_id' => ['required', 'exists:users,id'],
             'editor_id' => ['required', 'exists:users,id'],
-            'studio_room_id' => ['required', 'exists:studio_rooms,id'],
+            'studio_room_code' => ['required', 'exists:studio_rooms,room_code'],
         ]);
 
         if ($message = $this->validateAssignees($validated['photographer_id'], $validated['editor_id'])) {
@@ -193,7 +193,7 @@ class ScheduleController extends Controller
                 : back()->with('error', $message);
         }
 
-        $room = $this->resolveRoom($booking->studio_location_id, $validated['studio_room_id'], $request);
+        $room = $this->resolveRoom($booking->studio_location_code, $validated['studio_room_code'], $request);
         if (! $room) {
             return $request->wantsJson()
                 ? response()->json(['message' => 'Ruangan tidak valid untuk cabang ini'], 422)
@@ -201,7 +201,7 @@ class ScheduleController extends Controller
         }
 
         [$start, $end] = $this->buildScheduleWindow($project);
-        if ($this->hasRoomOverlap($booking, $room->id, $start, $end)) {
+        if ($this->hasRoomOverlap($booking, $room->room_code, $start, $end)) {
             return $request->wantsJson()
                 ? response()->json(['message' => 'Jadwal bentrok: ruangan yang dipilih sudah memiliki jadwal pada waktu tersebut.'], 422)
                 : back()->with('error', 'Jadwal bentrok: ruangan yang dipilih sudah memiliki jadwal pada waktu tersebut.');
@@ -214,7 +214,7 @@ class ScheduleController extends Controller
         }
 
         DB::transaction(function () use ($booking, $room, $project, $validated, $start, $end, $request) {
-            $booking->update(['studio_room_id' => $room->id]);
+            $booking->update(['studio_room_code' => $room->room_code]);
             $project->update([
                 'start_at' => $start,
                 'end_at' => $end,
@@ -268,7 +268,7 @@ class ScheduleController extends Controller
         $validated = $request->validate([
             'photographer_id' => ['required', 'exists:users,id'],
             'editor_id' => ['required', 'exists:users,id'],
-            'studio_room_id' => ['required', 'exists:studio_rooms,id'],
+            'studio_room_code' => ['required', 'exists:studio_rooms,room_code'],
         ]);
 
         if ($message = $this->validateAssignees($validated['photographer_id'], $validated['editor_id'])) {
@@ -277,7 +277,7 @@ class ScheduleController extends Controller
                 : back()->with('error', $message);
         }
 
-        $room = $this->resolveRoom($project->booking->studio_location_id, $validated['studio_room_id'], $request);
+        $room = $this->resolveRoom($project->booking->studio_location_code, $validated['studio_room_code'], $request);
         if (! $room) {
             return $request->wantsJson()
                 ? response()->json(['message' => 'Ruangan tidak valid untuk cabang ini'], 422)
@@ -285,7 +285,7 @@ class ScheduleController extends Controller
         }
 
         [$start, $end] = $this->buildScheduleWindow($project);
-        if ($this->hasRoomOverlap($project->booking, $room->id, $start, $end)) {
+        if ($this->hasRoomOverlap($project->booking, $room->room_code, $start, $end)) {
             return $request->wantsJson()
                 ? response()->json(['message' => 'Jadwal bentrok: ruangan yang dipilih sudah memiliki jadwal pada waktu tersebut.'], 422)
                 : back()->with('error', 'Jadwal bentrok: ruangan yang dipilih sudah memiliki jadwal pada waktu tersebut.');
@@ -298,7 +298,7 @@ class ScheduleController extends Controller
         }
 
         DB::transaction(function () use ($project, $room, $validated, $start, $end, $request) {
-            $project->booking->update(['studio_room_id' => $room->id]);
+            $project->booking->update(['studio_room_code' => $room->room_code]);
             $project->update([
                 'start_at' => $start,
                 'end_at' => $end,
@@ -354,6 +354,7 @@ class ScheduleController extends Controller
             : back()->with('success', 'Jadwal berhasil dihapus.');
     }
 
+
     protected function hasOverlap(DateTimeInterface $start, DateTimeInterface $end, int $photographerId, int $editorId, int $projectId): bool
     {
         $assignedIds = array_values(array_unique([$photographerId, $editorId]));
@@ -391,7 +392,7 @@ class ScheduleController extends Controller
             ->all();
     }
 
-    protected function hasRoomOverlap(Booking $booking, int $roomId, DateTimeInterface $start, DateTimeInterface $end): bool
+    protected function hasRoomOverlap(Booking $booking, string $roomCode, DateTimeInterface $start, DateTimeInterface $end): bool
     {
         $buffer = max(0, (int) config('studio.booking_buffer_minutes', 15));
         $candidateStart = Carbon::parse($start->format('Y-m-d H:i:s'));
@@ -399,7 +400,7 @@ class ScheduleController extends Controller
 
         $scheduleOverlap = ProjectSchedule::query()
             ->where('booking_id', '!=', $booking->id)
-            ->where('studio_room_id', $roomId)
+            ->where('studio_room_code', $roomCode)
             ->whereHas('booking', fn ($q) => $q->where('status', '!=', Booking::STATUS_CANCELLED))
             ->where('start_at', '<', $candidateBlockedEnd->format('Y-m-d H:i:s'))
             ->where('end_at', '>', $candidateStart->format('Y-m-d H:i:s'))
@@ -412,7 +413,7 @@ class ScheduleController extends Controller
         return Booking::query()
             ->with('package:id,duration_minutes')
             ->whereKeyNot($booking->id)
-            ->where('studio_room_id', $roomId)
+            ->where('studio_room_code', $roomCode)
             ->where('status', '!=', Booking::STATUS_CANCELLED)
             ->whereDate('booking_date', $candidateStart->toDateString())
             ->get()
@@ -492,31 +493,31 @@ class ScheduleController extends Controller
         return [$start, $end];
     }
 
-    protected function resolveRoom(?int $locationId, int $roomId, Request $request): ?StudioRoom
+    protected function resolveRoom(?string $locationCode, string $roomCode, Request $request): ?StudioRoom
     {
-        return StudioRoom::where('id', $roomId)
-            ->where('studio_location_id', $locationId)
+        return StudioRoom::where('room_code', $roomCode)
+            ->where('studio_location_code', $locationCode)
             ->where('is_active', true)
             ->first();
     }
 
     /**
-     * @param  array{photographer_id:int, editor_id:int, studio_room_id:int}  $validated
+     * @param  array{photographer_id:int, editor_id:int, studio_room_code:string}  $validated
      */
     protected function syncScheduleRecord(Project $project, Booking $booking, StudioRoom $room, array $validated, DateTimeInterface $start, DateTimeInterface $end, ?int $scheduledBy): ProjectSchedule
     {
         $schedule = ProjectSchedule::updateOrCreate(
             ['project_id' => $project->id],
             [
-                'booking_id' => $booking->id,
-                'studio_location_id' => (int) $booking->studio_location_id,
-                'studio_room_id' => $room->id,
-                'scheduled_by' => $scheduledBy,
-                'photographer_id' => $validated['photographer_id'],
-                'editor_id' => $validated['editor_id'],
-                'start_at' => $start,
-                'end_at' => $end,
-                'status' => ProjectSchedule::STATUS_SCHEDULED,
+                'booking_id'           => $booking->id,
+                'studio_location_code' => $booking->studio_location_code,
+                'studio_room_code'     => $room->room_code,
+                'scheduled_by'         => $scheduledBy,
+                'photographer_id'      => $validated['photographer_id'],
+                'editor_id'            => $validated['editor_id'],
+                'start_at'             => $start,
+                'end_at'               => $end,
+                'status'               => ProjectSchedule::STATUS_SCHEDULED,
             ]
         );
 

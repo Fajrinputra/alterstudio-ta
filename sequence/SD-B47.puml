@@ -27,7 +27,7 @@ entity "StudioRooms Model" as StudioRoom
 
 Owner -> HalamanRuangan : Klik tambah ruangan
 HalamanRuangan -> StudioRoomController : create()
-StudioRoomController -> StudioLocation : ambil daftar cabang aktif
+StudioRoomController -> StudioLocation : ambil daftar cabang aktif\nberdasarkan location_code
 StudioLocation --> StudioRoomController : data cabang
 StudioRoomController --> FormTambah : tampilkan form tambah ruangan
 Owner -> FormTambah : Isi data ruangan dan pilih cabang
@@ -42,7 +42,7 @@ alt Data valid
         StorageService --> StorageService : photo_path
         StorageService --> StudioRoomController : photo_path
     end
-    StudioRoomController -> StudioRoom : INSERT studio_rooms
+    StudioRoomController -> StudioRoom : INSERT studio_rooms\ndengan room_code dan location_code
     StudioRoom --> StudioRoomController : ruangan tersimpan
     StudioRoomController --> HalamanRuangan : redirect pesan berhasil
     HalamanRuangan --> Owner : ruangan baru tampil

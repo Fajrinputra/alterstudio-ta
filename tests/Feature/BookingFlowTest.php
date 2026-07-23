@@ -43,14 +43,14 @@ class BookingFlowTest extends TestCase
         Booking::factory()->create([
             'client_id' => $clientA->id,
             'package_id' => $package->id,
-            'studio_location_id' => $location->id,
+            'studio_location_code' => $location->location_code,
             'status' => Booking::STATUS_WAITING_PAYMENT,
             'confirmed_at' => null,
         ]);
         Booking::factory()->create([
             'client_id' => $clientB->id,
             'package_id' => $package->id,
-            'studio_location_id' => $location->id,
+            'studio_location_code' => $location->location_code,
             'status' => Booking::STATUS_WAITING_PAYMENT,
             'confirmed_at' => null,
         ]);
@@ -113,7 +113,7 @@ class BookingFlowTest extends TestCase
             'is_active' => true,
         ]);
         $room = StudioRoom::create([
-            'studio_location_id' => $location->id,
+            'studio_location_code' => $location->location_code,
             'name' => 'Studio 1',
             'is_active' => true,
         ]);
@@ -121,7 +121,7 @@ class BookingFlowTest extends TestCase
 
         $payload = [
             'package_id' => $package->id,
-            'studio_location_id' => $location->id,
+            'studio_location_code' => $location->location_code,
             'booking_date' => Carbon::now()->addDays(2)->toDateString(),
             'booking_time' => '13:00',
             'location' => 'Studio A',
@@ -163,7 +163,7 @@ class BookingFlowTest extends TestCase
             'is_active' => true,
         ]);
         StudioRoom::create([
-            'studio_location_id' => $location->id,
+            'studio_location_code' => $location->location_code,
             'name' => 'Studio Paket Nonaktif',
             'is_active' => true,
         ]);
@@ -172,7 +172,7 @@ class BookingFlowTest extends TestCase
         $this->actingAs($client)
             ->postJson('/bookings', [
                 'package_id' => $package->id,
-                'studio_location_id' => $location->id,
+                'studio_location_code' => $location->location_code,
                 'booking_date' => Carbon::now()->addDays(2)->toDateString(),
                 'booking_time' => '13:00',
                 'payment_type' => Booking::PAYMENT_TYPE_FULL,
@@ -197,7 +197,7 @@ class BookingFlowTest extends TestCase
             'is_active' => true,
         ]);
         StudioRoom::create([
-            'studio_location_id' => $location->id,
+            'studio_location_code' => $location->location_code,
             'name' => 'Studio Rollback',
             'is_active' => true,
         ]);
@@ -213,7 +213,7 @@ class BookingFlowTest extends TestCase
                 ->actingAs($client)
                 ->postJson('/bookings', [
                     'package_id' => $package->id,
-                    'studio_location_id' => $location->id,
+                    'studio_location_code' => $location->location_code,
                     'booking_date' => Carbon::now()->addDays(2)->toDateString(),
                     'booking_time' => '13:00',
                     'payment_type' => Booking::PAYMENT_TYPE_FULL,
@@ -248,7 +248,7 @@ class BookingFlowTest extends TestCase
         $booking = Booking::factory()->create([
             'client_id' => $client->id,
             'package_id' => $package->id,
-            'studio_location_id' => $location->id,
+            'studio_location_code' => $location->location_code,
         ]);
         Project::factory()->create([
             'booking_id' => $booking->id,
@@ -290,7 +290,7 @@ class BookingFlowTest extends TestCase
         $booking = Booking::factory()->create([
             'client_id' => $client->id,
             'package_id' => $package->id,
-            'studio_location_id' => $location->id,
+            'studio_location_code' => $location->location_code,
             'status' => Booking::STATUS_WAITING_PAYMENT,
             'confirmed_at' => null,
             'payment_type' => Booking::PAYMENT_TYPE_FULL,
@@ -324,7 +324,7 @@ class BookingFlowTest extends TestCase
         $booking = Booking::factory()->create([
             'client_id' => $client->id,
             'package_id' => $package->id,
-            'studio_location_id' => $location->id,
+            'studio_location_code' => $location->location_code,
             'status' => Booking::STATUS_WAITING_PAYMENT,
             'confirmed_at' => null,
             'payment_type' => Booking::PAYMENT_TYPE_FULL,
@@ -360,7 +360,7 @@ class BookingFlowTest extends TestCase
         $booking = Booking::factory()->create([
             'client_id' => $client->id,
             'package_id' => $package->id,
-            'studio_location_id' => $location->id,
+            'studio_location_code' => $location->location_code,
             'status' => Booking::STATUS_WAITING_PAYMENT,
             'confirmed_at' => null,
             'payment_type' => Booking::PAYMENT_TYPE_FULL,
@@ -402,7 +402,7 @@ class BookingFlowTest extends TestCase
         $booking = Booking::factory()->create([
             'client_id' => $client->id,
             'package_id' => $package->id,
-            'studio_location_id' => $location->id,
+            'studio_location_code' => $location->location_code,
             'status' => Booking::STATUS_WAITING_PAYMENT,
             'confirmed_at' => now()->subMinutes(10),
             'payment_started_at' => null,
@@ -434,7 +434,7 @@ class BookingFlowTest extends TestCase
         $booking = Booking::factory()->create([
             'client_id' => $client->id,
             'package_id' => $package->id,
-            'studio_location_id' => $location->id,
+            'studio_location_code' => $location->location_code,
             'status' => Booking::STATUS_WAITING_PAYMENT,
             'confirmed_at' => now()->subHour(),
             'payment_started_at' => now()->subMinutes(31),
@@ -484,7 +484,7 @@ class BookingFlowTest extends TestCase
         $booking = Booking::factory()->create([
             'client_id' => $client->id,
             'package_id' => $package->id,
-            'studio_location_id' => $location->id,
+            'studio_location_code' => $location->location_code,
             'status' => Booking::STATUS_DP_PAID,
             'confirmed_at' => now()->subHour(),
             'payment_type' => Booking::PAYMENT_TYPE_DP,
@@ -537,7 +537,7 @@ class BookingFlowTest extends TestCase
         $booking = Booking::factory()->create([
             'client_id' => $client->id,
             'package_id' => $package->id,
-            'studio_location_id' => $location->id,
+            'studio_location_code' => $location->location_code,
             'status' => Booking::STATUS_DP_PAID,
             'confirmed_at' => now()->subHour(),
             'payment_type' => Booking::PAYMENT_TYPE_DP,
@@ -596,7 +596,7 @@ class BookingFlowTest extends TestCase
         $booking = Booking::factory()->create([
             'client_id' => $client->id,
             'package_id' => $package->id,
-            'studio_location_id' => $location->id,
+            'studio_location_code' => $location->location_code,
             'status' => Booking::STATUS_DP_PAID,
             'confirmed_at' => now()->subHour(),
             'payment_type' => Booking::PAYMENT_TYPE_DP,
@@ -650,7 +650,7 @@ class BookingFlowTest extends TestCase
         $booking = Booking::factory()->create([
             'client_id' => $client->id,
             'package_id' => $package->id,
-            'studio_location_id' => $location->id,
+            'studio_location_code' => $location->location_code,
             'status' => Booking::STATUS_DP_PAID,
             'confirmed_at' => now()->subHour(),
             'payment_type' => Booking::PAYMENT_TYPE_DP,
@@ -700,7 +700,7 @@ class BookingFlowTest extends TestCase
         $booking = Booking::factory()->create([
             'client_id' => $client->id,
             'package_id' => $package->id,
-            'studio_location_id' => $location->id,
+            'studio_location_code' => $location->location_code,
             'status' => Booking::STATUS_PAID,
             'confirmed_at' => now()->subHour(),
             'payment_type' => Booking::PAYMENT_TYPE_FULL,
@@ -747,7 +747,7 @@ class BookingFlowTest extends TestCase
         $booking = Booking::factory()->create([
             'client_id' => $client->id,
             'package_id' => $package->id,
-            'studio_location_id' => $location->id,
+            'studio_location_code' => $location->location_code,
             'status' => Booking::STATUS_WAITING_PAYMENT,
             'confirmed_at' => now(),
             'payment_type' => Booking::PAYMENT_TYPE_FULL,
@@ -847,7 +847,7 @@ class BookingFlowTest extends TestCase
         $booking = Booking::factory()->create([
             'client_id' => $client->id,
             'package_id' => $package->id,
-            'studio_location_id' => $location->id,
+            'studio_location_code' => $location->location_code,
             'total_price' => 500000,
         ]);
 
@@ -901,12 +901,12 @@ class BookingFlowTest extends TestCase
             'address' => 'Jl. Baru',
             'is_active' => true,
         ]);
-        StudioRoom::create(['studio_location_id' => $oldLocation->id, 'name' => 'Studio Lama', 'is_active' => true]);
-        $newRoom = StudioRoom::create(['studio_location_id' => $newLocation->id, 'name' => 'Studio Baru', 'is_active' => true]);
+        StudioRoom::create(['studio_location_code' => $oldLocation->location_code, 'name' => 'Studio Lama', 'is_active' => true]);
+        $newRoom = StudioRoom::create(['studio_location_code' => $newLocation->location_code, 'name' => 'Studio Baru', 'is_active' => true]);
         $booking = Booking::factory()->create([
             'client_id' => $client->id,
             'package_id' => $package->id,
-            'studio_location_id' => $oldLocation->id,
+            'studio_location_code' => $oldLocation->location_code,
             'booking_date' => Carbon::now()->addDays(2)->toDateString(),
             'booking_time' => '11:00',
             'status' => Booking::STATUS_WAITING_PAYMENT,
@@ -936,7 +936,7 @@ class BookingFlowTest extends TestCase
 
         $this->actingAs($client)
             ->put(route('bookings.update', $booking), [
-                'studio_location_id' => $newLocation->id,
+                'studio_location_code' => $newLocation->location_code,
                 'booking_date' => $newDate,
                 'booking_time' => '13:00',
                 'payment_type' => Booking::PAYMENT_TYPE_FULL,
@@ -978,11 +978,11 @@ class BookingFlowTest extends TestCase
             'address' => 'Jl. Konfirmasi',
             'is_active' => true,
         ]);
-        StudioRoom::create(['studio_location_id' => $location->id, 'name' => 'Studio Konfirmasi', 'is_active' => true]);
+        StudioRoom::create(['studio_location_code' => $location->location_code, 'name' => 'Studio Konfirmasi', 'is_active' => true]);
         $booking = Booking::factory()->create([
             'client_id' => $client->id,
             'package_id' => $package->id,
-            'studio_location_id' => $location->id,
+            'studio_location_code' => $location->location_code,
             'booking_date' => Carbon::now()->addDays(2)->toDateString(),
             'booking_time' => '11:00',
             'status' => Booking::STATUS_WAITING_PAYMENT,
@@ -998,7 +998,7 @@ class BookingFlowTest extends TestCase
 
         $this->actingAs($client)
             ->put(route('bookings.update', $booking), [
-                'studio_location_id' => $location->id,
+                'studio_location_code' => $location->location_code,
                 'booking_date' => Carbon::now()->addDays(5)->toDateString(),
                 'booking_time' => '13:00',
                 'payment_type' => Booking::PAYMENT_TYPE_FULL,

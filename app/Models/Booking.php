@@ -9,26 +9,15 @@ use Illuminate\Support\Carbon;
 
 /**
  * Entitas pemesanan utama (client memilih paket + jadwal + pembayaran).
+ *
+ * Setelah migrasi 2026_07_22_100000:
+ *  - studio_location_code (varchar FK → studio_locations.location_code)
+ *  - studio_room_code     (varchar FK → studio_rooms.room_code)
+ *  - studio_location_id dan studio_room_id dihapus dari tabel
  */
 class Booking extends Model
 {
     use HasFactory;
-
-    protected static function booted(): void
-    {
-        static::creating(function (Booking $booking) {
-            if ($booking->studio_location_id && ! $booking->studio_room_id) {
-                $room = StudioRoom::where('studio_location_id', $booking->studio_location_id)->first()
-                    ?? StudioRoom::create([
-                        'studio_location_id' => $booking->studio_location_id,
-                        'name' => 'Studio Utama',
-                        'is_active' => true,
-                    ]);
-
-                $booking->studio_room_id = $room->id;
-            }
-        });
-    }
 
     protected $fillable = [
         'client_id',
@@ -42,18 +31,18 @@ class Booking extends Model
         'payment_type',
         'addon_total',
         'total_price',
-        'studio_location_id',
-        'studio_room_id',
+        'studio_location_code',
+        'studio_room_code',
         'selected_addons',
     ];
 
     protected $casts = [
-        'booking_date' => 'datetime',
-        'confirmed_at' => 'datetime',
+        'booking_date'       => 'datetime',
+        'confirmed_at'       => 'datetime',
         'payment_started_at' => 'datetime',
-        'addon_total' => 'integer',
-        'total_price' => 'integer',
-        'selected_addons' => 'array',
+        'addon_total'        => 'integer',
+        'total_price'        => 'integer',
+        'selected_addons'    => 'array',
     ];
 
     /** Status yang dipakai booking. */
@@ -101,13 +90,13 @@ class Booking extends Model
     /** Cabang/studio lokasi yang dipilih saat booking. */
     public function studioLocation(): BelongsTo
     {
-        return $this->belongsTo(StudioLocation::class, 'studio_location_id');
+        return $this->belongsTo(StudioLocation::class, 'studio_location_code', 'location_code');
     }
 
     /** Ruangan studio spesifik di dalam cabang yang dipilih. */
     public function studioRoom(): BelongsTo
     {
-        return $this->belongsTo(StudioRoom::class, 'studio_room_id');
+        return $this->belongsTo(StudioRoom::class, 'studio_room_code', 'room_code');
     }
 
     public function getSelectedAddonsAttribute($value): array
@@ -126,9 +115,9 @@ class Booking extends Model
                 }
 
                 return [
-                    'label' => $label,
-                    'price' => (int) ($addon['price'] ?? 0),
-                    'unit' => trim((string) ($addon['unit'] ?? '')),
+                    'label'    => $label,
+                    'price'    => (int) ($addon['price'] ?? 0),
+                    'unit'     => trim((string) ($addon['unit'] ?? '')),
                     'quantity' => max(1, (int) ($addon['quantity'] ?? 1)),
                     'subtotal' => isset($addon['subtotal'])
                         ? max(0, (int) $addon['subtotal'])
@@ -186,12 +175,12 @@ class Booking extends Model
     public function statusLabel(): string
     {
         return match (true) {
-            $this->isSubmitted() => 'Diajukan',
-            $this->isConfirmedAwaitingPayment() => 'Dikonfirmasi',
-            $this->status === self::STATUS_DP_PAID => 'DP Dibayar',
-            $this->status === self::STATUS_PAID => 'Lunas',
-            $this->status === self::STATUS_CANCELLED => 'Dibatalkan',
-            default => $this->status,
+            $this->isSubmitted()                      => 'Diajukan',
+            $this->isConfirmedAwaitingPayment()       => 'Dikonfirmasi',
+            $this->status === self::STATUS_DP_PAID    => 'DP Dibayar',
+            $this->status === self::STATUS_PAID       => 'Lunas',
+            $this->status === self::STATUS_CANCELLED  => 'Dibatalkan',
+            default                                   => $this->status,
         };
     }
 

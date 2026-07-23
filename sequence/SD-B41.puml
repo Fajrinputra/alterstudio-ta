@@ -35,7 +35,7 @@ alt Validasi berhasil
     StorageService -> StorageService : STORE landing/hero image
     StorageService --> StorageService : image path
     StorageService --> LandingHeroController : image path
-    LandingHeroController -> LandingHeroSlide : INSERT landing_hero_slides
+    LandingHeroController -> LandingHeroSlide : INSERT landing_hero_slides\ndengan slide_code
     LandingHeroSlide --> LandingHeroController : slide tersimpan
     LandingHeroController --> HalamanHero : redirect dengan pesan berhasil
     HalamanHero --> Manajer : slide baru tampil pada daftar hero

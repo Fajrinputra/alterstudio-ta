@@ -253,7 +253,7 @@ class PaymentControllerEdgeTest extends TestCase
         return Booking::factory()->create([
             'client_id' => $client->id,
             'package_id' => $package->id,
-            'studio_location_id' => $location->id,
+            'studio_location_code' => $location->location_code,
             'status' => $status,
             'payment_type' => $paymentType,
             'total_price' => 500000,

@@ -5,8 +5,8 @@
     $isCrewUser = $currentUser
         && $currentUser->isRole(Role::PHOTOGRAPHER, Role::EDITOR)
         && ! $currentUser->isRole(Role::OWNER, Role::ADMIN, Role::MANAGER, Role::CLIENT);
-    $isPhotographerTask = $isCrewUser && $project->photographer_id === $currentUser->id;
-    $isEditorTask = $isCrewUser && $project->editor_id === $currentUser->id;
+    $isPhotographerTask = false;
+    $isEditorTask = false;
     $driveUrl = $project->final_drive_url ?: $project->raw_drive_url;
     $rawDriveExpiresAt = $project->raw_drive_uploaded_at?->copy()->addDays(3);
     $finalDriveExpiresAt = $project->final_drive_uploaded_at?->copy()->addDays(3);
@@ -188,9 +188,11 @@
 
 
         @if($isPhotographerTask || $isEditorTask)
-            <section class="bg-white border border-[#EDE0D0] rounded-3xl p-7 shadow-xl">
-                <h4 class="font-display text-2xl text-[#3F2B1B] mb-3">Tugas Anda</h4>
-                <div class="flex flex-wrap gap-3">
+            <section class="bg-white border border-[#EDE0D0] rounded-3xl p-5 shadow-xl sm:p-7">
+                <h4 class="font-display text-2xl text-[#3F2B1B] mb-5">Tugas Anda</h4>
+
+                {{-- Badge peran --}}
+                <div class="flex flex-wrap gap-3 mb-6">
                     @if($isPhotographerTask)
                         <span class="inline-flex items-center gap-2 px-5 py-2.5 rounded-3xl bg-blue-100 text-blue-700 text-sm font-medium">
                             <i class="fa-solid fa-camera"></i> Fotografer
@@ -202,6 +204,112 @@
                         </span>
                     @endif
                 </div>
+
+                @if(!$canContinueProduction)
+                    <div class="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
+                        <p class="font-semibold flex items-center gap-2"><i class="fa-solid fa-circle-xmark"></i> Proses pasca-produksi belum dapat dilanjutkan</p>
+                        <p class="mt-1">{{ $productionBlockMessage }}</p>
+                    </div>
+                @else
+                    {{-- Form Fotografer: upload link Drive RAW --}}
+                    @if($isPhotographerTask)
+                        <div class="space-y-4 border-t border-[#EDE0D0] pt-5">
+                            <h5 class="font-display text-lg text-[#3F2B1B] flex items-center gap-2">
+                                <i class="fa-brands fa-google-drive text-[#D4A017]"></i>
+                                Bagikan Link Drive Foto Mentah
+                            </h5>
+                            @if(!$project->hasRawDriveLink())
+                                <p class="text-sm text-[#7A5B3A]">Upload foto mentah ke Google Drive, lalu tempel link folder di sini. Klien akan diberi tahu dan link berlaku <strong>3 hari</strong>.</p>
+                                <form method="POST" action="{{ route('projects.drive-assets.store', $project) }}" class="mt-3">
+                                    @csrf
+                                    <input type="hidden" name="type" value="RAW">
+                                    <div class="flex flex-col gap-3 sm:flex-row">
+                                        <input type="url" name="raw_drive_url" required placeholder="https://drive.google.com/..."
+                                               class="flex-1 rounded-2xl border border-[#E1D3C5] bg-white px-4 py-3 text-sm focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20 transition-all">
+                                        <button type="submit"
+                                                class="px-6 py-3 rounded-2xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] text-sm text-white font-semibold hover:shadow-xl transition-all whitespace-nowrap">
+                                            <i class="fa-solid fa-paper-plane mr-2"></i>Simpan Link
+                                        </button>
+                                    </div>
+                                </form>
+                            @else
+                                <div class="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+                                    <p class="flex items-center gap-2 text-emerald-700 font-medium text-sm">
+                                        <i class="fa-solid fa-circle-check"></i> Link Drive foto mentah telah dikirim ke klien.
+                                    </p>
+                                    <a href="{{ $project->raw_drive_url }}" target="_blank" rel="noopener"
+                                       class="mt-3 inline-flex items-center gap-2 px-5 py-2.5 bg-white border border-[#EDE0D0] rounded-3xl text-sm hover:border-[#D4A017] transition-all">
+                                        <i class="fa-solid fa-arrow-up-right-from-square text-[#D4A017]"></i>Buka Drive
+                                    </a>
+                                </div>
+                            @endif
+                        </div>
+                    @endif
+
+                    {{-- Form Editor: lihat permintaan edit + upload final --}}
+                    @if($isEditorTask)
+                        <div class="space-y-5 border-t border-[#EDE0D0] pt-5">
+                            <h5 class="font-display text-lg text-[#3F2B1B] flex items-center gap-2">
+                                <i class="fa-solid fa-pen-ruler text-[#D4A017]"></i>
+                                Permintaan Edit dari Klien
+                            </h5>
+
+                            @if($project->hasEditRequest())
+                                <div class="space-y-3">
+                                    <div class="rounded-2xl bg-[#FAF6F0] px-4 py-3">
+                                        <p class="text-xs uppercase tracking-wide text-[#8B7359]">Kode Foto</p>
+                                        <p class="mt-1 whitespace-pre-line text-sm text-[#3F2B1B]">{{ $project->edit_photo_codes }}</p>
+                                    </div>
+                                    <div class="rounded-2xl bg-[#FAF6F0] px-4 py-3">
+                                        <p class="text-xs uppercase tracking-wide text-[#8B7359]">Catatan Edit</p>
+                                        <p class="mt-1 whitespace-pre-line text-sm text-[#3F2B1B]">{{ $project->edit_request_note }}</p>
+                                    </div>
+                                </div>
+
+                                {{-- Form upload hasil final --}}
+                                @if(!$project->hasFinalDelivery())
+                                    <div class="border-t border-[#EDE0D0] pt-5">
+                                        <h5 class="font-display text-lg text-[#3F2B1B] flex items-center gap-2 mb-3">
+                                            <i class="fa-solid fa-star text-[#D4A017]"></i>Tandai Hasil Final Tersedia
+                                        </h5>
+                                        <p class="text-sm text-[#7A5B3A] mb-4">Tempel link Google Drive hasil final. Jika tidak diisi, link foto mentah akan dipakai.</p>
+                                        <form method="POST" action="{{ route('projects.drive-assets.store', $project) }}">
+                                            @csrf
+                                            <input type="hidden" name="type" value="FINAL">
+                                            <div class="space-y-3">
+                                                <input type="url" name="final_drive_url" placeholder="https://drive.google.com/... (opsional)"
+                                                       class="w-full rounded-2xl border border-[#E1D3C5] bg-white px-4 py-3 text-sm focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20 transition-all">
+                                                <textarea name="final_message" rows="2" placeholder="Pesan untuk klien (opsional, maks. 1000 karakter)" maxlength="1000"
+                                                          class="w-full rounded-2xl border border-[#E1D3C5] bg-white px-4 py-3 text-sm focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20 transition-all"></textarea>
+                                                <button type="submit"
+                                                        class="px-6 py-3 rounded-2xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] text-sm text-white font-semibold hover:shadow-xl transition-all">
+                                                    <i class="fa-solid fa-check mr-2"></i>Tandai Hasil Final Siap
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                @else
+                                    <div class="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+                                        <p class="flex items-center gap-2 text-emerald-700 font-medium text-sm">
+                                            <i class="fa-solid fa-circle-check"></i> Hasil final sudah ditandai tersedia untuk klien.
+                                        </p>
+                                        @if($project->final_drive_url)
+                                            <a href="{{ $project->final_drive_url }}" target="_blank" rel="noopener"
+                                               class="mt-3 inline-flex items-center gap-2 px-5 py-2.5 bg-white border border-[#EDE0D0] rounded-3xl text-sm hover:border-[#D4A017] transition-all">
+                                                <i class="fa-solid fa-arrow-up-right-from-square text-[#D4A017]"></i>Buka Drive Final
+                                            </a>
+                                        @endif
+                                    </div>
+                                @endif
+                            @else
+                                <div class="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+                                    <p class="font-semibold flex items-center gap-2"><i class="fa-solid fa-hourglass-half"></i> Menunggu Permintaan Edit Klien</p>
+                                    <p class="mt-1">Klien belum mengirim kode foto dan deskripsi edit. Anda akan mendapat notifikasi setelah klien mengirim.</p>
+                                </div>
+                            @endif
+                        </div>
+                    @endif
+                @endif
             </section>
         @endif
     </div>

@@ -34,16 +34,16 @@ alt Konfirmasi dibatalkan
     HalamanRuangan --> Owner : ruangan tidak dihapus
 else Konfirmasi hapus
     Owner -> ModalHapus : konfirmasi hapus
-    ModalHapus -> StudioRoomController : destroy(roomId)
-    StudioRoomController -> StudioRoom : SELECT studio_rooms
+    ModalHapus -> StudioRoomController : destroy(room_code)
+    StudioRoomController -> StudioRoom : SELECT studio_rooms\nberdasarkan room_code
     StudioRoom --> StudioRoomController : data ruangan
-    StudioRoomController -> Booking : cek booking aktif pada ruangan
+    StudioRoomController -> Booking : cek booking aktif pada room_code
     Booking --> StudioRoomController : hasil pengecekan booking
-    StudioRoomController -> Project : cek project aktif pada ruangan
+    StudioRoomController -> Project : cek project aktif melalui\nproject_schedules.room_code
     Project --> StudioRoomController : hasil pengecekan project
 
     alt Ruangan tidak digunakan
-        StudioRoomController -> StudioRoom : DELETE/UPDATE studio_rooms
+        StudioRoomController -> StudioRoom : DELETE/UPDATE studio_rooms\nberdasarkan room_code
         StudioRoom --> StudioRoomController : ruangan terhapus/dinonaktifkan
         StudioRoomController --> HalamanRuangan : redirect pesan berhasil
         HalamanRuangan --> Owner : ruangan berhasil dihapus

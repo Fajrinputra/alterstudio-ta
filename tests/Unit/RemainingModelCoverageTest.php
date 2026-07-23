@@ -23,15 +23,15 @@ class RemainingModelCoverageTest extends TestCase
         $schedule = new ProjectSchedule();
         $user = new User();
 
-        $this->assertSame('studio_location_id', $booking->studioLocation()->getForeignKeyName());
-        $this->assertSame('studio_room_id', $booking->studioRoom()->getForeignKeyName());
+        $this->assertSame('studio_location_code', $booking->studioLocation()->getForeignKeyName());
+        $this->assertSame('studio_room_code', $booking->studioRoom()->getForeignKeyName());
         $this->assertSame('project_id', $project->selections()->getForeignKeyName());
-        $this->assertSame('studio_location_id', $location->bookings()->getForeignKeyName());
+        $this->assertSame('studio_location_code', $location->bookings()->getForeignKeyName());
         $this->assertSame('user_id', $slide->creator()->getForeignKeyName());
         $this->assertSame('user_id', $slide->updater()->getForeignKeyName());
         $this->assertSame('project_id', $schedule->project()->getForeignKeyName());
-        $this->assertSame('studio_location_id', $schedule->studioLocation()->getForeignKeyName());
-        $this->assertSame('studio_room_id', $schedule->studioRoom()->getForeignKeyName());
+        $this->assertSame('studio_location_code', $schedule->studioLocation()->getForeignKeyName());
+        $this->assertSame('studio_room_code', $schedule->studioRoom()->getForeignKeyName());
         $this->assertSame('scheduled_by', $schedule->scheduler()->getForeignKeyName());
         $this->assertSame('photographer_id', $schedule->photographer()->getForeignKeyName());
         $this->assertSame('editor_id', $schedule->editor()->getForeignKeyName());

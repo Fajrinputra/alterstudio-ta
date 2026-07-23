@@ -265,7 +265,7 @@ class RemainingControllerCoverageTest extends TestCase
             'is_active' => true,
         ]);
         $room = StudioRoom::create([
-            'studio_location_id' => $location->id,
+            'studio_location_code' => $location->location_code,
             'name' => 'Studio Booking Filter',
             'is_active' => true,
         ]);
@@ -273,8 +273,8 @@ class RemainingControllerCoverageTest extends TestCase
         $submitted = Booking::factory()->create([
             'client_id' => $client->id,
             'package_id' => $package->id,
-            'studio_location_id' => $location->id,
-            'studio_room_id' => $room->id,
+            'studio_location_code' => $location->location_code,
+            'studio_room_code' => $room->room_code,
             'status' => Booking::STATUS_WAITING_PAYMENT,
             'confirmed_at' => null,
             'booking_date' => now()->addWeekday()->toDateString(),
@@ -285,8 +285,8 @@ class RemainingControllerCoverageTest extends TestCase
         $scheduled = Booking::factory()->create([
             'client_id' => $client->id,
             'package_id' => $package->id,
-            'studio_location_id' => $location->id,
-            'studio_room_id' => $room->id,
+            'studio_location_code' => $location->location_code,
+            'studio_room_code' => $room->room_code,
             'status' => Booking::STATUS_PAID,
             'booking_date' => now()->addWeekday()->toDateString(),
             'booking_time' => '13:00',
@@ -323,7 +323,7 @@ class RemainingControllerCoverageTest extends TestCase
             ->from(route('bookings.create'))
             ->post(route('bookings.store'), [
                 'package_id' => $package->id,
-                'studio_location_id' => $location->id,
+                'studio_location_code' => $location->location_code,
                 'booking_date' => $closedDate,
                 'booking_time' => '11:00',
                 'payment_type' => Booking::PAYMENT_TYPE_FULL,
@@ -340,7 +340,7 @@ class RemainingControllerCoverageTest extends TestCase
             ->from(route('bookings.create'))
             ->post(route('bookings.store'), [
                 'package_id' => $package->id,
-                'studio_location_id' => $emptyLocation->id,
+                'studio_location_code' => $emptyLocation->location_code,
                 'booking_date' => now()->addWeekday()->toDateString(),
                 'booking_time' => '11:00',
                 'payment_type' => Booking::PAYMENT_TYPE_FULL,
@@ -360,8 +360,8 @@ class RemainingControllerCoverageTest extends TestCase
         $cancelled = Booking::factory()->create([
             'client_id' => $client->id,
             'package_id' => $package->id,
-            'studio_location_id' => $location->id,
-            'studio_room_id' => $room->id,
+            'studio_location_code' => $location->location_code,
+            'studio_room_code' => $room->room_code,
             'status' => Booking::STATUS_CANCELLED,
         ]);
 
@@ -378,8 +378,8 @@ class RemainingControllerCoverageTest extends TestCase
         $dpBooking = Booking::factory()->create([
             'client_id' => $client->id,
             'package_id' => $package->id,
-            'studio_location_id' => $location->id,
-            'studio_room_id' => $room->id,
+            'studio_location_code' => $location->location_code,
+            'studio_room_code' => $room->room_code,
             'status' => Booking::STATUS_DP_PAID,
             'total_price' => 1000000,
         ]);
@@ -428,7 +428,7 @@ class RemainingControllerCoverageTest extends TestCase
             'is_active' => true,
         ]);
         $room = StudioRoom::create([
-            'studio_location_id' => $location->id,
+            'studio_location_code' => $location->location_code,
             'name' => 'Studio Payment Edge',
             'is_active' => true,
         ]);
@@ -436,8 +436,8 @@ class RemainingControllerCoverageTest extends TestCase
         $expiredBooking = Booking::factory()->create([
             'client_id' => $client->id,
             'package_id' => $package->id,
-            'studio_location_id' => $location->id,
-            'studio_room_id' => $room->id,
+            'studio_location_code' => $location->location_code,
+            'studio_room_code' => $room->room_code,
             'status' => Booking::STATUS_WAITING_PAYMENT,
             'confirmed_at' => now()->subHour(),
             'payment_started_at' => now()->subMinutes(31),
@@ -460,8 +460,8 @@ class RemainingControllerCoverageTest extends TestCase
         $zeroRemaining = Booking::factory()->create([
             'client_id' => $client->id,
             'package_id' => $package->id,
-            'studio_location_id' => $location->id,
-            'studio_room_id' => $room->id,
+            'studio_location_code' => $location->location_code,
+            'studio_room_code' => $room->room_code,
             'status' => Booking::STATUS_DP_PAID,
             'total_price' => 500000,
             'payment_type' => Booking::PAYMENT_TYPE_DP,
@@ -484,8 +484,8 @@ class RemainingControllerCoverageTest extends TestCase
         $expiredConfirm = Booking::factory()->create([
             'client_id' => $client->id,
             'package_id' => $package->id,
-            'studio_location_id' => $location->id,
-            'studio_room_id' => $room->id,
+            'studio_location_code' => $location->location_code,
+            'studio_room_code' => $room->room_code,
             'status' => Booking::STATUS_WAITING_PAYMENT,
             'confirmed_at' => now()->subHour(),
             'payment_started_at' => now()->subMinutes(31),
@@ -577,7 +577,7 @@ class RemainingControllerCoverageTest extends TestCase
         $activeBooking = Booking::factory()->create([
             'client_id' => $oldActiveClient->id,
             'package_id' => $package->id,
-            'studio_location_id' => $location->id,
+            'studio_location_code' => $location->location_code,
             'status' => Booking::STATUS_PAID,
             'created_at' => now()->subMonths(7),
         ]);
@@ -604,7 +604,7 @@ class RemainingControllerCoverageTest extends TestCase
         $historicBooking = Booking::factory()->create([
             'client_id' => $oldReferencedClient->id,
             'package_id' => $package->id,
-            'studio_location_id' => $location->id,
+            'studio_location_code' => $location->location_code,
             'status' => Booking::STATUS_CANCELLED,
             'created_at' => now()->subMonths(7),
         ]);
@@ -689,15 +689,15 @@ class RemainingControllerCoverageTest extends TestCase
             'is_active' => true,
         ]);
         $room = StudioRoom::create([
-            'studio_location_id' => $location->id,
+            'studio_location_code' => $location->location_code,
             'name' => 'Studio Media '.uniqid(),
             'is_active' => true,
         ]);
         $booking = Booking::factory()->create([
             'client_id' => $client->id,
             'package_id' => $package->id,
-            'studio_location_id' => $location->id,
-            'studio_room_id' => $room->id,
+            'studio_location_code' => $location->location_code,
+            'studio_room_code' => $room->room_code,
             'status' => Booking::STATUS_PAID,
             'booking_date' => now()->addDay()->toDateString(),
             'booking_time' => '10:00',

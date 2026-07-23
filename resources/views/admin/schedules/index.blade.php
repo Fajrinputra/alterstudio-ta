@@ -404,12 +404,12 @@
                                             <label class="block text-xs font-medium text-[#7A5B3A] tracking-widest mb-2">
                                                 <i class="fa-solid fa-door-open text-[#D4A017]"></i> Ruangan
                                             </label>
-                                            <select name="studio_room_id" required 
+                                            <select name="studio_room_code" required 
                                                     class="w-full px-5 py-4 rounded-3xl border border-[#E1D3C5] bg-white/70 backdrop-blur-md text-[#3F2B1B] focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20 transition-all">
                                                 <option value="">Pilih Ruangan</option>
                                                 @foreach(($project->booking->studioLocation->rooms ?? collect())->where('is_active', true) as $room)
-                                                    <option value="{{ $room->id }}" 
-                                                            @selected($project->booking->studio_room_id == $room->id)>
+                                                    <option value="{{ $room->room_code }}" 
+                                                            @selected($project->booking->studio_room_code == $room->room_code)>
                                                         {{ $room->name }}
                                                     </option>
                                                 @endforeach
@@ -489,14 +489,26 @@
                                                 </div>
                                                 <div>
                                                     <label class="block text-xs font-medium text-[#7A5B3A] tracking-widest mb-2">Ubah Ruangan</label>
-                                                    <select name="studio_room_id" required class="w-full px-5 py-4 rounded-3xl border border-[#E1D3C5] bg-white/70 backdrop-blur-md focus:border-[#D4A017]">
+                                                    <select name="studio_room_code" required class="w-full px-5 py-4 rounded-3xl border border-[#E1D3C5] bg-white/70 backdrop-blur-md focus:border-[#D4A017]">
                                                         @foreach(($project->booking->studioLocation->rooms ?? collect())->where('is_active', true) as $room)
-                                                            <option value="{{ $room->id }}" @selected($project->booking->studio_room_id == $room->id)>{{ $room->name }}</option>
+                                                            <option value="{{ $room->room_code }}" @selected($project->booking->studio_room_code == $room->room_code)>{{ $room->name }}</option>
                                                         @endforeach
                                                     </select>
                                                 </div>
                                                 <button class="h-14 rounded-3xl bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold hover:shadow-xl transition-all flex items-center justify-center gap-3">
                                                     <i class="fa-solid fa-pen-to-square"></i> Simpan Perubahan
+                                                </button>
+                                            </form>
+
+                                            {{-- Hapus Jadwal --}}
+                                            <form method="POST" action="{{ route('projects.schedule.destroy', $project) }}"
+                                                  class="mt-4"
+                                                  onsubmit="return confirm('Hapus jadwal untuk project ini? Tindakan ini tidak dapat diurungkan.')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit"
+                                                        class="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl border border-rose-300 text-rose-600 text-sm font-medium hover:bg-rose-50 transition-all">
+                                                    <i class="fa-solid fa-trash"></i> Hapus Jadwal
                                                 </button>
                                             </form>
                                         </div>

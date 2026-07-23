@@ -41,7 +41,7 @@ Project -> Booking : ambil booking
 Booking --> Project : data booking
 Project -> Payment : ambil pembayaran
 Payment --> Project : data pembayaran
-Project -> ProjectSchedule : ambil jadwal, fotografer, editor
+Project -> ProjectSchedule : ambil jadwal berdasarkan schedule_code,\nfotografer, editor, dan scheduled_by
 ProjectSchedule --> Project : data jadwal kru
 Project -> User : ambil klien
 User --> Project : data user

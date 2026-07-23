@@ -66,7 +66,7 @@ class ScheduleControllerEdgeTest extends TestCase
         $payload = [
             'photographer_id' => $photographer->id,
             'editor_id' => $editor->id,
-            'studio_room_id' => $room->id,
+            'studio_room_code' => $room->room_code,
         ];
 
         $missingBooking = Project::factory()->make(['id' => 999, 'booking_id' => 999]);
@@ -74,19 +74,19 @@ class ScheduleControllerEdgeTest extends TestCase
         $request->setUserResolver(fn () => $admin);
         $this->assertSame(404, app(ScheduleController::class)->store($request, $missingBooking)->getStatusCode());
 
-        $cancelled = $this->projectFor(Booking::STATUS_CANCELLED, $room->studio_location_id);
+        $cancelled = $this->projectFor(Booking::STATUS_CANCELLED, $room->studio_location_code);
         $this->actingAs($admin)
             ->postJson("/projects/{$cancelled->id}/schedule", $payload)
             ->assertStatus(422)
             ->assertJsonPath('message', 'Pemesanan sudah dibatalkan dan tidak dapat dijadwalkan.');
 
-        $unpaid = $this->projectFor(Booking::STATUS_WAITING_PAYMENT, $room->studio_location_id);
+        $unpaid = $this->projectFor(Booking::STATUS_WAITING_PAYMENT, $room->studio_location_code);
         $this->actingAs($admin)
             ->postJson("/projects/{$unpaid->id}/schedule", $payload)
             ->assertStatus(422)
             ->assertJsonPath('message', 'Pemesanan harus sudah dibayar minimal DP sebelum dijadwalkan.');
 
-        $locked = $this->projectFor(Booking::STATUS_PAID, $room->studio_location_id);
+        $locked = $this->projectFor(Booking::STATUS_PAID, $room->studio_location_code);
         $locked->update(['start_at' => now()->addDay(), 'end_at' => now()->addDay()->addHour()]);
         $this->actingAs($admin)
             ->postJson("/projects/{$locked->id}/schedule", $payload)
@@ -98,13 +98,13 @@ class ScheduleControllerEdgeTest extends TestCase
     {
         $admin = User::factory()->create(['role' => Role::ADMIN]);
         [$photographer, $editor, $room] = $this->crewAndRoom();
-        $project = $this->projectFor(Booking::STATUS_PAID, $room->studio_location_id);
+        $project = $this->projectFor(Booking::STATUS_PAID, $room->studio_location_code);
 
         $this->actingAs($admin)
             ->postJson("/projects/{$project->id}/schedule", [
                 'photographer_id' => $photographer->id,
                 'editor_id' => $photographer->id,
-                'studio_room_id' => $room->id,
+                'studio_room_code' => $room->room_code,
             ])
             ->assertStatus(422)
             ->assertJsonPath('message', 'Fotografer dan editor harus menggunakan akun yang berbeda.');
@@ -114,7 +114,7 @@ class ScheduleControllerEdgeTest extends TestCase
             ->postJson("/projects/{$project->id}/schedule", [
                 'photographer_id' => $inactivePhotographer->id,
                 'editor_id' => $editor->id,
-                'studio_room_id' => $room->id,
+                'studio_room_code' => $room->room_code,
             ])
             ->assertStatus(422)
             ->assertJsonPath('message', 'Akun fotografer yang dipilih tidak memiliki akses fotografer aktif.');
@@ -124,18 +124,18 @@ class ScheduleControllerEdgeTest extends TestCase
             ->postJson("/projects/{$project->id}/schedule", [
                 'photographer_id' => $photographer->id,
                 'editor_id' => $inactiveEditor->id,
-                'studio_room_id' => $room->id,
+                'studio_room_code' => $room->room_code,
             ])
             ->assertStatus(422)
             ->assertJsonPath('message', 'Akun editor yang dipilih tidak memiliki akses editor aktif.');
 
         $otherLocation = StudioLocation::create(['name' => 'Cabang Lain', 'slug' => 'cabang-lain', 'is_active' => true]);
-        $wrongRoom = StudioRoom::create(['studio_location_id' => $otherLocation->id, 'name' => 'Studio Lain', 'is_active' => true]);
+        $wrongRoom = StudioRoom::create(['studio_location_code' => $otherLocation->location_code, 'name' => 'Studio Lain', 'is_active' => true]);
         $this->actingAs($admin)
             ->postJson("/projects/{$project->id}/schedule", [
                 'photographer_id' => $photographer->id,
                 'editor_id' => $editor->id,
-                'studio_room_id' => $wrongRoom->id,
+                'studio_room_code' => $wrongRoom->room_code,
             ])
             ->assertStatus(422)
             ->assertJsonPath('message', 'Ruangan tidak valid untuk cabang ini');
@@ -148,7 +148,7 @@ class ScheduleControllerEdgeTest extends TestCase
         $payload = [
             'photographer_id' => $photographer->id,
             'editor_id' => $editor->id,
-            'studio_room_id' => $room->id,
+            'studio_room_code' => $room->room_code,
         ];
 
         $missingBooking = Project::factory()->make(['id' => 1999, 'booking_id' => 1999]);
@@ -170,12 +170,12 @@ class ScheduleControllerEdgeTest extends TestCase
 
         $scheduled = $this->scheduledProject($room);
         $otherLocation = StudioLocation::create(['name' => 'Cabang Update Lain', 'slug' => 'update-lain', 'is_active' => true]);
-        $wrongRoom = StudioRoom::create(['studio_location_id' => $otherLocation->id, 'name' => 'Studio Update Lain', 'is_active' => true]);
+        $wrongRoom = StudioRoom::create(['studio_location_code' => $otherLocation->location_code, 'name' => 'Studio Update Lain', 'is_active' => true]);
         $this->actingAs($admin)
             ->putJson("/projects/{$scheduled->id}/schedule", [
                 'photographer_id' => $photographer->id,
                 'editor_id' => $editor->id,
-                'studio_room_id' => $wrongRoom->id,
+                'studio_room_code' => $wrongRoom->room_code,
             ])
             ->assertStatus(422)
             ->assertJsonPath('message', 'Ruangan tidak valid untuk cabang ini');
@@ -187,7 +187,7 @@ class ScheduleControllerEdgeTest extends TestCase
         $controller = app(ScheduleController::class);
         $request = Request::create('/fake', 'DELETE', [], [], [], ['HTTP_ACCEPT' => 'application/json']);
 
-        $unscheduled = $this->projectFor(Booking::STATUS_PAID, $room->studio_location_id);
+        $unscheduled = $this->projectFor(Booking::STATUS_PAID, $room->studio_location_code);
         $this->assertSame(404, $controller->destroy($request, $unscheduled)->getStatusCode());
 
         $locked = $this->scheduledProject($room, Project::STATUS_EDITING);
@@ -210,21 +210,21 @@ class ScheduleControllerEdgeTest extends TestCase
         $photographer = User::factory()->create(['role' => Role::PHOTOGRAPHER, 'is_active' => true]);
         $editor = User::factory()->create(['role' => Role::EDITOR, 'is_active' => true]);
         $location = StudioLocation::create(['name' => 'Cabang Schedule '.uniqid(), 'slug' => 'schedule-'.uniqid(), 'is_active' => true]);
-        $room = StudioRoom::create(['studio_location_id' => $location->id, 'name' => 'Studio Schedule', 'is_active' => true]);
+        $room = StudioRoom::create(['studio_location_code' => $location->location_code, 'name' => 'Studio Schedule', 'is_active' => true]);
 
         return [$photographer, $editor, $room];
     }
 
-    private function projectFor(string $bookingStatus, ?int $locationId = null): Project
+    private function projectFor(string $bookingStatus, ?string $locationCode = null): Project
     {
-        $location = $locationId
-            ? StudioLocation::find($locationId)
+        $location = $locationCode
+            ? StudioLocation::find($locationCode)
             : StudioLocation::create(['name' => 'Cabang Project '.uniqid(), 'slug' => 'project-'.uniqid(), 'is_active' => true]);
         $package = ServicePackage::factory()->create(['duration_minutes' => 60]);
         $booking = Booking::factory()->create([
             'status' => $bookingStatus,
             'package_id' => $package->id,
-            'studio_location_id' => $location->id,
+            'studio_location_code' => $location->location_code,
             'booking_date' => now()->addDay()->toDateString(),
             'booking_time' => '13:00',
         ]);
@@ -237,8 +237,8 @@ class ScheduleControllerEdgeTest extends TestCase
 
     private function scheduledProject(StudioRoom $room, string $status = Project::STATUS_SCHEDULED): Project
     {
-        $project = $this->projectFor(Booking::STATUS_PAID, $room->studio_location_id);
-        $project->booking->update(['studio_room_id' => $room->id]);
+        $project = $this->projectFor(Booking::STATUS_PAID, $room->studio_location_code);
+        $project->booking->update(['studio_room_code' => $room->room_code]);
         $project->update([
             'status' => $status,
             'start_at' => now()->addDay()->setTime(13, 0),

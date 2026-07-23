@@ -32,9 +32,9 @@ FormTambah -> StudioLocationController : store(data)
 StudioLocationController -> StudioLocationController : validasi nama, alamat, kontak,\nmaps, foto, ruangan
 
 alt Data valid
-    StudioLocationController -> StudioLocation : INSERT studio_locations
+    StudioLocationController -> StudioLocation : INSERT studio_locations\ndengan location_code
     StudioLocation --> StudioLocationController : cabang tersimpan
-    StudioLocationController -> StudioRoom : INSERT studio_rooms jika ada
+    StudioLocationController -> StudioRoom : INSERT studio_rooms dengan room_code\njika ada
     StudioRoom --> StudioLocationController : ruangan tersimpan
     StudioLocationController --> HalamanCabang : redirect pesan sukses
     HalamanCabang --> Owner : cabang baru tampil

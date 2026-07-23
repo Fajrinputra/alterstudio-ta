@@ -26,13 +26,13 @@ class ScheduleOverlapTest extends TestCase
         $photographer = User::factory()->create(['role' => Role::PHOTOGRAPHER]);
         $editor = User::factory()->create(['role' => Role::EDITOR]);
         $location = StudioLocation::create(['name' => 'Cabang 1', 'slug' => 'cabang-1', 'is_active' => true]);
-        $roomA = StudioRoom::create(['studio_location_id' => $location->id, 'name' => 'Studio 1', 'is_active' => true]);
-        $roomB = StudioRoom::create(['studio_location_id' => $location->id, 'name' => 'Studio 2', 'is_active' => true]);
+        $roomA = StudioRoom::create(['studio_location_code' => $location->location_code, 'name' => 'Studio 1', 'is_active' => true]);
+        $roomB = StudioRoom::create(['studio_location_code' => $location->location_code, 'name' => 'Studio 2', 'is_active' => true]);
 
         $package = ServicePackage::factory()->create();
 
-        $bookingA = Booking::factory()->create(['status' => 'PAID', 'package_id' => $package->id, 'studio_location_id' => $location->id, 'studio_room_id' => $roomA->id]);
-        $bookingB = Booking::factory()->create(['status' => 'PAID', 'package_id' => $package->id, 'studio_location_id' => $location->id, 'studio_room_id' => $roomB->id]);
+        $bookingA = Booking::factory()->create(['status' => 'PAID', 'package_id' => $package->id, 'studio_location_code' => $location->location_code, 'studio_room_code' => $roomA->room_code]);
+        $bookingB = Booking::factory()->create(['status' => 'PAID', 'package_id' => $package->id, 'studio_location_code' => $location->location_code, 'studio_room_code' => $roomB->room_code]);
 
         $projectA = Project::factory()->create(['booking_id' => $bookingA->id]);
         $projectB = Project::factory()->create(['booking_id' => $bookingB->id]);
@@ -41,7 +41,7 @@ class ScheduleOverlapTest extends TestCase
             ->postJson("/projects/{$projectA->id}/schedule", [
                 'photographer_id' => $photographer->id,
                 'editor_id' => $editor->id,
-                'studio_room_id' => $roomA->id,
+                'studio_room_code' => $roomA->room_code,
             ])
             ->assertOk();
 
@@ -49,7 +49,7 @@ class ScheduleOverlapTest extends TestCase
             ->postJson("/projects/{$projectB->id}/schedule", [
                 'photographer_id' => $photographer->id,
                 'editor_id' => $editor->id,
-                'studio_room_id' => $roomB->id,
+                'studio_room_code' => $roomB->room_code,
             ])
             ->assertStatus(422);
     }
@@ -66,8 +66,8 @@ class ScheduleOverlapTest extends TestCase
         $editorA = User::factory()->create(['role' => Role::EDITOR]);
         $editorB = User::factory()->create(['role' => Role::EDITOR]);
         $location = StudioLocation::create(['name' => 'Cabang Room Overlap', 'slug' => 'cabang-room-overlap', 'is_active' => true]);
-        $roomA = StudioRoom::create(['studio_location_id' => $location->id, 'name' => 'Studio A', 'is_active' => true]);
-        $roomB = StudioRoom::create(['studio_location_id' => $location->id, 'name' => 'Studio B', 'is_active' => true]);
+        $roomA = StudioRoom::create(['studio_location_code' => $location->location_code, 'name' => 'Studio A', 'is_active' => true]);
+        $roomB = StudioRoom::create(['studio_location_code' => $location->location_code, 'name' => 'Studio B', 'is_active' => true]);
         $package = ServicePackage::factory()->create(['duration_minutes' => 60]);
         $bookingDate = now()->addDay()->toDateString();
 
@@ -76,16 +76,16 @@ class ScheduleOverlapTest extends TestCase
             'package_id' => $package->id,
             'booking_date' => $bookingDate,
             'booking_time' => '13:00',
-            'studio_location_id' => $location->id,
-            'studio_room_id' => $roomA->id,
+            'studio_location_code' => $location->location_code,
+            'studio_room_code' => $roomA->room_code,
         ]);
         $bookingB = Booking::factory()->create([
             'status' => Booking::STATUS_PAID,
             'package_id' => $package->id,
             'booking_date' => $bookingDate,
             'booking_time' => '13:30',
-            'studio_location_id' => $location->id,
-            'studio_room_id' => $roomB->id,
+            'studio_location_code' => $location->location_code,
+            'studio_room_code' => $roomB->room_code,
         ]);
 
         $projectA = Project::factory()->create(['booking_id' => $bookingA->id]);
@@ -95,7 +95,7 @@ class ScheduleOverlapTest extends TestCase
             ->postJson("/projects/{$projectA->id}/schedule", [
                 'photographer_id' => $photographerA->id,
                 'editor_id' => $editorA->id,
-                'studio_room_id' => $roomA->id,
+                'studio_room_code' => $roomA->room_code,
             ])
             ->assertOk();
 
@@ -103,7 +103,7 @@ class ScheduleOverlapTest extends TestCase
             ->postJson("/projects/{$projectB->id}/schedule", [
                 'photographer_id' => $photographerB->id,
                 'editor_id' => $editorB->id,
-                'studio_room_id' => $roomA->id,
+                'studio_room_code' => $roomA->room_code,
             ])
             ->assertStatus(422);
     }
@@ -125,7 +125,7 @@ class ScheduleOverlapTest extends TestCase
             'is_active' => true,
         ]);
         $room = StudioRoom::create([
-            'studio_location_id' => $location->id,
+            'studio_location_code' => $location->location_code,
             'name' => 'Studio Booking Overlap',
             'is_active' => true,
         ]);
@@ -137,16 +137,16 @@ class ScheduleOverlapTest extends TestCase
             'package_id' => $package->id,
             'booking_date' => $bookingDate,
             'booking_time' => '11:00',
-            'studio_location_id' => $location->id,
-            'studio_room_id' => $room->id,
+            'studio_location_code' => $location->location_code,
+            'studio_room_code' => $room->room_code,
         ]);
         $bookingToSchedule = Booking::factory()->create([
             'status' => Booking::STATUS_PAID,
             'package_id' => $package->id,
             'booking_date' => $bookingDate,
             'booking_time' => '11:30',
-            'studio_location_id' => $location->id,
-            'studio_room_id' => $room->id,
+            'studio_location_code' => $location->location_code,
+            'studio_room_code' => $room->room_code,
         ]);
         $project = Project::factory()->create(['booking_id' => $bookingToSchedule->id]);
 
@@ -154,7 +154,7 @@ class ScheduleOverlapTest extends TestCase
             ->postJson("/projects/{$project->id}/schedule", [
                 'photographer_id' => $photographer->id,
                 'editor_id' => $editor->id,
-                'studio_room_id' => $room->id,
+                'studio_room_code' => $room->room_code,
             ])
             ->assertStatus(422)
             ->assertJsonPath('message', 'Jadwal bentrok: ruangan yang dipilih sudah memiliki jadwal pada waktu tersebut.');

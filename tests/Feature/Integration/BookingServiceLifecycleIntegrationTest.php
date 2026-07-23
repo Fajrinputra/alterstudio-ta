@@ -73,7 +73,7 @@ class BookingServiceLifecycleIntegrationTest extends TestCase
             'is_active' => true,
         ]);
         $room = StudioRoom::create([
-            'studio_location_id' => $location->id,
+            'studio_location_code' => $location->location_code,
             'name' => 'Studio Integration',
             'is_active' => true,
         ]);
@@ -83,7 +83,7 @@ class BookingServiceLifecycleIntegrationTest extends TestCase
         $this->actingAs($client)
             ->postJson(route('bookings.store'), [
                 'package_id' => $package->id,
-                'studio_location_id' => $location->id,
+                'studio_location_code' => $location->location_code,
                 'booking_date' => $bookingDate,
                 'booking_time' => '11:00',
                 'payment_type' => Booking::PAYMENT_TYPE_FULL,
@@ -150,7 +150,7 @@ class BookingServiceLifecycleIntegrationTest extends TestCase
             ->postJson("/projects/{$project->id}/schedule", [
                 'photographer_id' => $photographer->id,
                 'editor_id' => $editor->id,
-                'studio_room_id' => $room->id,
+                'studio_room_code' => $room->room_code,
             ])
             ->assertOk()
             ->assertJsonPath('status', Project::STATUS_SCHEDULED);
@@ -162,8 +162,8 @@ class BookingServiceLifecycleIntegrationTest extends TestCase
         $this->assertDatabaseHas('project_schedules', [
             'booking_id' => $booking->id,
             'project_id' => $project->id,
-            'studio_location_id' => $location->id,
-            'studio_room_id' => $room->id,
+            'studio_location_code' => $location->location_code,
+            'studio_room_code' => $room->room_code,
             'scheduled_by' => $admin->id,
             'photographer_id' => $photographer->id,
             'editor_id' => $editor->id,

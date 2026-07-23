@@ -50,7 +50,7 @@
                     $isEditMode = (bool) ($isEdit ?? false);
                     $basePrice = (int) $selectedPackage->price;
                     $oldDate = old('booking_date', isset($booking) ? $booking->booking_date?->toDateString() : null);
-                    $oldLocationId = old('studio_location_id', $booking->studio_location_id ?? null);
+                    $oldLocationCode = old('studio_location_code', $booking->studio_location_code ?? null);
                     $oldTime = old('booking_time', $booking->booking_time ?? null);
                     $oldNotes = old('notes', $booking->notes ?? '');
                     $oldPaymentType = old('payment_type', $booking->payment_type ?? 'DP');
@@ -203,13 +203,13 @@
 
                     <div class="space-y-2">
                         <label class="block text-sm font-medium text-[#5C432C]">Cabang Studio</label>
-                        <select name="studio_location_id"
+                        <select name="studio_location_code"
                                 id="studio-location-id"
                                 required
                                 class="w-full rounded-3xl border border-[#E1D3C5] bg-white px-4 py-3 text-sm transition-all focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20 sm:px-5 sm:py-4 sm:text-base">
                             <option value="">Pilih cabang studio</option>
                             @foreach($locations as $loc)
-                                <option value="{{ $loc->id }}" @selected($oldLocationId == $loc->id)>
+                                <option value="{{ $loc->location_code }}" @selected($oldLocationCode == $loc->location_code)>
                                     {{ $loc->name }} - {{ $loc->address }}
                                 </option>
                             @endforeach
@@ -460,7 +460,7 @@
                 try {
                     const url = new URL(form.dataset.availabilityUrl, window.location.origin);
                     url.searchParams.set('package_id', packageId);
-                    url.searchParams.set('studio_location_id', locationId);
+                    url.searchParams.set('studio_location_code', locationId);
                     url.searchParams.set('booking_date', bookingDate);
                     if (form.dataset.ignoreBookingId) {
                         url.searchParams.set('ignore_booking_id', form.dataset.ignoreBookingId);

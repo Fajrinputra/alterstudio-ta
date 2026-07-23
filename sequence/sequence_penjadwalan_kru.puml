@@ -61,14 +61,14 @@ ScheduleController -> User : validasi fotografer dan editor aktif
 User --> ScheduleController : hasil validasi kru
 ScheduleController -> StudioRoom : validasi ruangan sesuai cabang booking
 StudioRoom --> ScheduleController : hasil validasi ruangan
-ScheduleController -> Project : cek bentrok jadwal kru dan ruangan
-Project --> ScheduleController : hasil validasi bentrok
+ScheduleController -> ProjectSchedule : cek bentrok jadwal kru dan ruangan
+ProjectSchedule --> ScheduleController : hasil validasi bentrok
 
 alt Jadwal valid
     ScheduleController -> Booking : simpan ruangan booking
-    Booking -> Booking : update studio_room_id
+    Booking -> Booking : update studio_room_code
     Booking --> ScheduleController : data booking
-    ScheduleController -> ProjectSchedule : simpan jadwal, fotografer,\neditor, ruangan, start_at, end_at
+    ScheduleController -> ProjectSchedule : simpan schedule_code, scheduled_by,\nphotographer_id, editor_id,\nlocation_code, room_code, start_at, end_at
     ProjectSchedule --> ScheduleController : data jadwal project
     ScheduleController -> Project : ubah status project menjadi TERJADWAL
     Project --> ScheduleController : data project

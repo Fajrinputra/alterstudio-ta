@@ -74,7 +74,7 @@ class RoleAccessTest extends TestCase
         $this->actingAs($manager)
             ->get(route('manager.landing.hero'))
             ->assertOk()
-            ->assertViewIs('admin.landing.hero');
+            ->assertViewIs('admin.landing.hero.index');
     }
 
     /**

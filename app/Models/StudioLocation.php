@@ -2,18 +2,30 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasPublicCode;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * Master data cabang/lokasi studio.
+ *
+ * Primary key: location_code (varchar 50, format LOC-XXXXXXXX)
  */
 class StudioLocation extends Model
 {
     use HasFactory;
+    use HasPublicCode;
+
+    /** Primary key adalah kode lokasi, bukan auto-increment integer. */
+    protected $primaryKey = 'location_code';
+
+    public $incrementing = false;
+
+    protected $keyType = 'string';
 
     protected $fillable = [
+        'location_code',
         'name',
         'slug',
         'address',
@@ -32,13 +44,13 @@ class StudioLocation extends Model
 
     public function rooms(): HasMany
     {
-        return $this->hasMany(StudioRoom::class);
+        return $this->hasMany(StudioRoom::class, 'studio_location_code', 'location_code');
     }
 
     /** Booking yang memilih cabang ini. */
     public function bookings(): HasMany
     {
-        return $this->hasMany(Booking::class, 'studio_location_id');
+        return $this->hasMany(Booking::class, 'studio_location_code', 'location_code');
     }
 
     public function getPhotoGalleryAttribute($value): array
@@ -65,5 +77,15 @@ class StudioLocation extends Model
     public function getPhotoPathAttribute($value): ?string
     {
         return collect($this->photo_gallery)->first();
+    }
+
+    protected function publicCodeColumn(): string
+    {
+        return 'location_code';
+    }
+
+    protected function publicCodePrefix(): string
+    {
+        return 'LOC';
     }
 }

@@ -25,20 +25,20 @@ entity "StudioLocations Model" as StudioLocation
 entity "StudioRooms Model" as StudioRoom
 
 Owner -> DetailCabang : Klik edit cabang
-DetailCabang -> StudioLocationController : edit(locationId)
+DetailCabang -> StudioLocationController : edit(location_code)
 StudioLocationController -> StudioLocation : ambil detail cabang
 StudioLocation --> StudioLocationController : data cabang
 StudioLocationController -> StudioRoom : ambil ruangan cabang
 StudioRoom --> StudioLocationController : data ruangan
 StudioLocationController --> FormEdit : tampilkan form edit
 Owner -> FormEdit : Ubah data cabang dan ruangan
-FormEdit -> StudioLocationController : update(locationId, data)
+FormEdit -> StudioLocationController : update(location_code, data)
 StudioLocationController -> StudioLocationController : validasi data perubahan
 
 alt Data valid
-    StudioLocationController -> StudioLocation : UPDATE studio_locations
+    StudioLocationController -> StudioLocation : UPDATE studio_locations\nberdasarkan location_code
     StudioLocation --> StudioLocationController : cabang diperbarui
-    StudioLocationController -> StudioRoom : UPDATE/INSERT studio_rooms
+    StudioLocationController -> StudioRoom : UPDATE/INSERT studio_rooms\nberdasarkan room_code
     StudioRoom --> StudioLocationController : ruangan diperbarui
     StudioLocationController --> DetailCabang : redirect pesan sukses
     DetailCabang --> Owner : detail cabang terbaru tampil

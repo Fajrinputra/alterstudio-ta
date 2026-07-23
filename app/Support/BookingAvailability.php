@@ -8,18 +8,25 @@ use App\Models\StudioRoom;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 
+/**
+ * Mengelola pengecekan ketersediaan slot booking per cabang studio.
+ *
+ * Setelah migrasi 2026_07_22_100000, semua lookup lokasi/ruangan
+ * memakai varchar code (studio_location_code, studio_room_code / room_code)
+ * bukan integer id lagi.
+ */
 class BookingAvailability
 {
     /** Menentukan apakah studio tutup pada tanggal tertentu. */
-    public function isClosedDate(Carbon $date, ?int $locationId = null): bool
+    public function isClosedDate(Carbon $date, ?string $locationCode = null): bool
     {
         return in_array($date->dayOfWeek, config('studio.closed_weekdays', []), true);
     }
 
     /** Mengembalikan alasan penutupan tanggal agar mudah ditampilkan ke UI. */
-    public function closedReason(Carbon $date, ?int $locationId = null): ?string
+    public function closedReason(Carbon $date, ?string $locationCode = null): ?string
     {
-        if ($this->isClosedDate($date, $locationId)) {
+        if ($this->isClosedDate($date, $locationCode)) {
             return 'Studio tutup pada akhir pekan. Silakan pilih hari kerja.';
         }
 
@@ -27,28 +34,28 @@ class BookingAvailability
     }
 
     /** Menghasilkan daftar slot jam yang masih tersedia untuk tanggal dan cabang tertentu. */
-    public function availableSlots(ServicePackage $package, int $locationId, Carbon $date, int $extraDurationMinutes = 0, ?int $ignoreBookingId = null): array
+    public function availableSlots(ServicePackage $package, string $locationCode, Carbon $date, int $extraDurationMinutes = 0, ?int $ignoreBookingId = null): array
     {
-        if ($this->isClosedDate($date, $locationId)) {
+        if ($this->isClosedDate($date, $locationCode)) {
             return [];
         }
 
         [$openAt, $closeAt] = $this->operationalWindow($date);
-        $duration = $this->durationMinutes($package, $extraDurationMinutes);
-        $buffer = $this->bufferMinutes();
+        $duration   = $this->durationMinutes($package, $extraDurationMinutes);
+        $buffer     = $this->bufferMinutes();
         $slotInterval = $this->slotIntervalMinutes();
-        $lastStart = $closeAt->copy()->subMinutes($duration);
+        $lastStart  = $closeAt->copy()->subMinutes($duration);
 
         if ($lastStart->lt($openAt)) {
             return [];
         }
 
-        $roomIds = $this->activeRoomIds($locationId);
-        if ($roomIds->isEmpty()) {
+        $roomCodes = $this->activeRoomCodes($locationCode);
+        if ($roomCodes->isEmpty()) {
             return [];
         }
 
-        $bookedRanges = $this->bookedRanges($locationId, $date, $ignoreBookingId);
+        $bookedRanges = $this->bookedRanges($locationCode, $date, $ignoreBookingId);
         $slots = [];
         $now = Carbon::now();
         $isToday = $date->isSameDay($now);
@@ -58,16 +65,16 @@ class BookingAvailability
                 continue;
             }
 
-            $candidateEnd = $cursor->copy()->addMinutes($duration);
+            $candidateEnd        = $cursor->copy()->addMinutes($duration);
             $candidateBlockedEnd = $candidateEnd->copy()->addMinutes($buffer);
-            $availableRoomId = $this->firstAvailableRoomId($roomIds, $bookedRanges, $cursor, $candidateBlockedEnd);
+            $availableRoomCode   = $this->firstAvailableRoomCode($roomCodes, $bookedRanges, $cursor, $candidateBlockedEnd);
 
-            if ($availableRoomId !== null) {
+            if ($availableRoomCode !== null) {
                 $slots[] = [
-                    'value' => $cursor->format('H:i'),
-                    'label' => $cursor->format('H:i').' - '.$candidateEnd->format('H:i'),
+                    'value'           => $cursor->format('H:i'),
+                    'label'           => $cursor->format('H:i').' - '.$candidateEnd->format('H:i'),
                     'duration_minutes' => $duration,
-                    'buffer_minutes' => $buffer,
+                    'buffer_minutes'  => $buffer,
                 ];
             }
         }
@@ -76,23 +83,23 @@ class BookingAvailability
     }
 
     /** Memastikan slot yang dipilih klien benar-benar masih tersedia. */
-    public function isSlotAvailable(ServicePackage $package, int $locationId, Carbon $date, string $time, int $extraDurationMinutes = 0, ?int $ignoreBookingId = null): bool
+    public function isSlotAvailable(ServicePackage $package, string $locationCode, Carbon $date, string $time, int $extraDurationMinutes = 0, ?int $ignoreBookingId = null): bool
     {
-        return $this->availableRoomForSlot($package, $locationId, $date, $time, $extraDurationMinutes, $ignoreBookingId) !== null;
+        return $this->availableRoomForSlot($package, $locationCode, $date, $time, $extraDurationMinutes, $ignoreBookingId) !== null;
     }
 
     /** Mengambil ruangan aktif pertama yang bisa menampung slot tertentu. */
-    public function availableRoomForSlot(ServicePackage $package, int $locationId, Carbon $date, string $time, int $extraDurationMinutes = 0, ?int $ignoreBookingId = null): ?StudioRoom
+    public function availableRoomForSlot(ServicePackage $package, string $locationCode, Carbon $date, string $time, int $extraDurationMinutes = 0, ?int $ignoreBookingId = null): ?StudioRoom
     {
-        if ($this->isClosedDate($date, $locationId)) {
+        if ($this->isClosedDate($date, $locationCode)) {
             return null;
         }
 
         [$openAt, $closeAt] = $this->operationalWindow($date);
-        $start = Carbon::parse($date->toDateString().' '.$time);
+        $start    = Carbon::parse($date->toDateString().' '.$time);
         $duration = $this->durationMinutes($package, $extraDurationMinutes);
-        $buffer = $this->bufferMinutes();
-        $end = $start->copy()->addMinutes($duration);
+        $buffer   = $this->bufferMinutes();
+        $end      = $start->copy()->addMinutes($duration);
 
         if ($start->lt($openAt) || $end->gt($closeAt)) {
             return null;
@@ -106,19 +113,20 @@ class BookingAvailability
             return null;
         }
 
-        $roomIds = $this->activeRoomIds($locationId);
-        if ($roomIds->isEmpty()) {
+        $roomCodes = $this->activeRoomCodes($locationCode);
+        if ($roomCodes->isEmpty()) {
             return null;
         }
 
-        $roomId = $this->firstAvailableRoomId(
-            $roomIds,
-            $this->bookedRanges($locationId, $date, $ignoreBookingId),
+        $roomCode = $this->firstAvailableRoomCode(
+            $roomCodes,
+            $this->bookedRanges($locationCode, $date, $ignoreBookingId),
             $start,
             $end->copy()->addMinutes($buffer)
         );
 
-        return $roomId ? StudioRoom::find($roomId) : null;
+        // find() menggunakan primaryKey ('room_code'), jadi ini langsung mencari berdasarkan room_code
+        return $roomCode ? StudioRoom::find($roomCode) : null;
     }
 
     /**
@@ -128,7 +136,7 @@ class BookingAvailability
      */
     public function operationalWindow(Carbon $date): array
     {
-        $openTime = (string) config('studio.open_time', '11:00');
+        $openTime  = (string) config('studio.open_time', '11:00');
         $closeTime = (string) config('studio.close_time', '22:00');
 
         return [
@@ -137,67 +145,66 @@ class BookingAvailability
         ];
     }
 
-    protected function bookedRanges(int $locationId, Carbon $date, ?int $ignoreBookingId = null): Collection
+    protected function bookedRanges(string $locationCode, Carbon $date, ?int $ignoreBookingId = null): Collection
     {
         $buffer = $this->bufferMinutes();
 
-        // Booking aktif pada tanggal yang sama dianggap menahan ruangan sampai buffer selesai.
         return Booking::query()
             ->with('package:id,duration_minutes')
-            ->where('studio_location_id', $locationId)
+            ->where('studio_location_code', $locationCode)
             ->where('status', '!=', Booking::STATUS_CANCELLED)
             ->whereDate('booking_date', $date->toDateString())
             ->when($ignoreBookingId, fn ($query) => $query->whereKeyNot($ignoreBookingId))
             ->get()
             ->map(function (Booking $booking) use ($date, $buffer) {
                 $duration = $booking->effectiveDurationMinutes();
-                $start = Carbon::parse($date->toDateString().' '.($booking->booking_time ?? '00:00'));
-                $end = $start->copy()->addMinutes($duration);
+                $start    = Carbon::parse($date->toDateString().' '.($booking->booking_time ?? '00:00'));
+                $end      = $start->copy()->addMinutes($duration);
 
                 return [
-                    'room_id' => $booking->studio_room_id ? (int) $booking->studio_room_id : null,
-                    'start' => $start,
-                    'end' => $end,
+                    'room_code'   => $booking->studio_room_code,
+                    'start'       => $start,
+                    'end'         => $end,
                     'blocked_end' => $end->copy()->addMinutes($buffer),
                 ];
             });
     }
 
-    protected function firstAvailableRoomId(Collection $roomIds, Collection $bookedRanges, Carbon $start, Carbon $blockedEnd): ?int
+    /**
+     * Mengambil kode ruangan aktif di cabang tertentu.
+     * Urutan room_code dipakai agar pilihan ruangan konsisten.
+     */
+    protected function activeRoomCodes(string $locationCode): Collection
     {
-        // Slot valid jika masih ada minimal satu ruangan aktif yang tidak bentrok.
+        return StudioRoom::query()
+            ->where('studio_location_code', $locationCode)
+            ->where('is_active', true)
+            ->orderBy('room_code')
+            ->pluck('room_code')
+            ->values();
+    }
+
+    protected function firstAvailableRoomCode(Collection $roomCodes, Collection $bookedRanges, Carbon $start, Carbon $blockedEnd): ?string
+    {
         $conflicts = $bookedRanges->filter(function (array $range) use ($start, $blockedEnd) {
             return $start->lt($range['blocked_end']) && $blockedEnd->gt($range['start']);
         });
 
-        $blockedRoomIds = $conflicts
-            ->pluck('room_id')
+        $blockedCodes = $conflicts
+            ->pluck('room_code')
             ->filter()
-            ->map(fn ($id) => (int) $id)
             ->unique()
             ->values();
 
         $unassignedConflictCount = $conflicts
-            ->filter(fn (array $range) => empty($range['room_id']))
+            ->filter(fn (array $range) => empty($range['room_code']))
             ->count();
 
-        $availableRoomIds = $roomIds
-            ->reject(fn (int $roomId) => $blockedRoomIds->contains($roomId))
+        $availableCodes = $roomCodes
+            ->reject(fn (string $code) => $blockedCodes->contains($code))
             ->values();
 
-        return $availableRoomIds->slice($unassignedConflictCount)->first();
-    }
-
-    protected function activeRoomIds(int $locationId): Collection
-    {
-        // Urutan id dipakai agar pilihan ruangan konsisten dari request ke request.
-        return StudioRoom::query()
-            ->where('studio_location_id', $locationId)
-            ->where('is_active', true)
-            ->orderBy('id')
-            ->pluck('id')
-            ->map(fn ($id) => (int) $id)
-            ->values();
+        return $availableCodes->slice($unassignedConflictCount)->first();
     }
 
     protected function durationMinutes(ServicePackage $package, int $extraDurationMinutes = 0): int
@@ -217,7 +224,6 @@ class BookingAvailability
 
     protected function isAlignedToSlotGrid(Carbon $start, Carbon $openAt): bool
     {
-        // Menolak jam manual yang tidak mengikuti interval slot sistem.
         $minutesFromOpen = (int) $openAt->diffInMinutes($start, false);
 
         return $minutesFromOpen >= 0 && $minutesFromOpen % $this->slotIntervalMinutes() === 0;

@@ -56,6 +56,7 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:ADMIN')->group(function () {
         Route::post('/projects/{project}/schedule', [\App\Http\Controllers\ScheduleController::class, 'store']);
         Route::put('/projects/{project}/schedule', [\App\Http\Controllers\ScheduleController::class, 'update'])->name('projects.schedule.update');
+        Route::delete('/projects/{project}/schedule', [\App\Http\Controllers\ScheduleController::class, 'destroy'])->name('projects.schedule.destroy');
     });
 
     // Admin dan manajer dapat mengonfirmasi, menolak, membatalkan, atau menandai lunas.
@@ -66,7 +67,9 @@ Route::middleware('auth')->group(function () {
     // Kelola hero landing page dipindahkan ke manajer.
     Route::middleware('role:MANAGER')->group(function () {
         Route::get('/manager/landing/hero', [\App\Http\Controllers\Admin\LandingHeroController::class, 'index'])->name('manager.landing.hero');
+        Route::get('/manager/landing/hero/create', [\App\Http\Controllers\Admin\LandingHeroController::class, 'create'])->name('manager.landing.hero.create');
         Route::post('/manager/landing/hero', [\App\Http\Controllers\Admin\LandingHeroController::class, 'store'])->name('manager.landing.hero.store');
+        Route::get('/manager/landing/hero/{slide}/edit', [\App\Http\Controllers\Admin\LandingHeroController::class, 'edit'])->name('manager.landing.hero.edit');
         Route::put('/manager/landing/hero/{slide}', [\App\Http\Controllers\Admin\LandingHeroController::class, 'update'])->name('manager.landing.hero.update');
         Route::delete('/manager/landing/hero/{slide}', [\App\Http\Controllers\Admin\LandingHeroController::class, 'destroy'])->name('manager.landing.hero.destroy');
     });
@@ -112,6 +115,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/admin/locations/room', [\App\Http\Controllers\Admin\StudioLocationController::class, 'storeRoom'])->name('admin.locations.room.store');
         Route::put('/admin/locations/room/{studioRoom}', [\App\Http\Controllers\Admin\StudioLocationController::class, 'updateRoom'])->name('admin.locations.room.update');
         Route::delete('/admin/locations/room/{studioRoom}', [\App\Http\Controllers\Admin\StudioLocationController::class, 'destroyRoom'])->name('admin.locations.room.destroy');
+        Route::delete('/admin/locations/{studioLocation}/photos', [\App\Http\Controllers\Admin\StudioLocationController::class, 'destroyPhoto'])->name('admin.locations.photo.destroy');
     });
 
     // Laporan dapat difilter/diolah manajer dan dilihat owner.

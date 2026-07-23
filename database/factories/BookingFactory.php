@@ -12,6 +12,10 @@ use App\Enums\Role;
 /**
  * Factory booking untuk kebutuhan test/seed ringan.
  *
+ * Menggunakan kolom code (varchar) bukan integer id untuk:
+ *  - studio_location_code → studio_locations.location_code
+ *  - studio_room_code     → studio_rooms.room_code
+ *
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Booking>
  */
 class BookingFactory extends Factory
@@ -23,31 +27,30 @@ class BookingFactory extends Factory
      */
     public function definition(): array
     {
-        // Reuse data existing agar tidak membuat relasi duplikat berlebihan.
-        $package = ServicePackage::first() ?? ServicePackage::factory()->create();
-        $client = User::first() ?? User::factory()->create(['role' => Role::CLIENT]);
+        $package  = ServicePackage::first() ?? ServicePackage::factory()->create();
+        $client   = User::first() ?? User::factory()->create(['role' => Role::CLIENT]);
         $location = StudioLocation::first() ?? StudioLocation::create([
-            'name' => 'Cabang Test',
-            'slug' => 'cabang-test',
+            'name'      => 'Cabang Test',
+            'slug'      => 'cabang-test-' . uniqid(),
             'is_active' => true,
         ]);
-        $room = StudioRoom::where('studio_location_id', $location->id)->first()
+        $room = StudioRoom::where('studio_location_code', $location->location_code)->first()
             ?? StudioRoom::create([
-                'studio_location_id' => $location->id,
-                'name' => 'Studio Test',
-                'is_active' => true,
+                'studio_location_code' => $location->location_code,
+                'name'                 => 'Studio Test',
+                'is_active'            => true,
             ]);
 
         return [
-            'client_id' => $client->id,
-            'package_id' => $package->id,
-            'booking_date' => now()->addDays(1),
-            'notes' => fake()->sentence(),
-            'status' => 'WAITING_PAYMENT',
-            'payment_type' => 'FULL',
-            'studio_location_id' => $location->id,
-            'studio_room_id' => $room->id,
-            'total_price' => $package->price,
+            'client_id'            => $client->id,
+            'package_id'           => $package->id,
+            'booking_date'         => now()->addDays(1),
+            'notes'                => fake()->sentence(),
+            'status'               => 'WAITING_PAYMENT',
+            'payment_type'         => 'FULL',
+            'studio_location_code' => $location->location_code,
+            'studio_room_code'     => $room->room_code,
+            'total_price'          => $package->price,
         ];
     }
 }

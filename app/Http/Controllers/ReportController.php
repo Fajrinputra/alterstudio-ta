@@ -42,7 +42,7 @@ class ReportController extends Controller
         $dateTo = $validated['date_to'];
         $isOwnerReport = $request->user()?->isRole(Role::OWNER) === true;
         $canExportReport = $request->user()?->isRole(Role::MANAGER) === true;
-        $categoryId = $isOwnerReport ? null : $request->input('category_id');
+        $categoryId = $request->input('category_id') ? (int) $request->input('category_id') : null;
         $startAt = CarbonImmutable::parse($dateFrom)->startOfDay();
         $endAt = CarbonImmutable::parse($dateTo)->endOfDay();
 

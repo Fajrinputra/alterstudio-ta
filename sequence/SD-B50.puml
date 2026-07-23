@@ -41,20 +41,20 @@ Booking --> BookingController : data booking
 BookingController -> BookingController : validasi belum dikonfirmasi,\nbelum bayar, dan belum dibatalkan
 BookingController -> ServicePackage : ambil paket aktif pada booking
 ServicePackage --> BookingController : data paket
-BookingController -> StudioLocation : ambil cabang aktif
+BookingController -> StudioLocation : ambil cabang aktif\nberdasarkan location_code
 StudioLocation --> BookingController : data cabang aktif
 BookingController --> FormGantiJadwal : tampilkan form ganti jadwal
 FormGantiJadwal --> Klien : form ganti jadwal tampil
 
-Klien -> FormGantiJadwal : Mengubah cabang, tanggal,\nwaktu, add-on, jenis pembayaran, catatan
+Klien -> FormGantiJadwal : Mengubah cabang, tanggal, dan waktu
 FormGantiJadwal -> BookingController : availability(ignore_booking_id)
 BookingController -> BookingController : validasi tanggal maksimal 1 bulan
 BookingController -> BookingAvailability : hitung slot tersedia\ndengan mengabaikan booking saat ini
-BookingAvailability -> Booking : ambil booking aktif pada cabang/tanggal
+BookingAvailability -> Booking : ambil booking aktif pada\nlocation_code dan tanggal
 Booking --> BookingAvailability : data booking aktif
-BookingAvailability -> StudioRoom : ambil ruangan aktif
+BookingAvailability -> StudioRoom : ambil ruangan aktif\nberdasarkan location_code dan room_code
 StudioRoom --> BookingAvailability : data ruangan aktif
-BookingAvailability -> BookingAvailability : validasi jam operasional,\nslot lewat, durasi add-on, dan bentrok
+BookingAvailability -> BookingAvailability : validasi jam operasional,\nslot lewat, durasi add-on tersimpan,\ndan bentrok
 BookingAvailability --> BookingController : daftar slot tersedia
 BookingController --> FormGantiJadwal : tampilkan pilihan waktu tersedia
 FormGantiJadwal --> Klien : slot baru tersedia
@@ -65,14 +65,14 @@ BookingController -> Booking : lock booking dan validasi ulang status
 Booking --> BookingController : booking valid
 BookingController -> ServicePackage : lock paket aktif
 ServicePackage --> BookingController : data paket aktif
-BookingController -> StudioRoom : lock ruangan aktif pada cabang
+BookingController -> StudioRoom : lock ruangan aktif\nberdasarkan location_code dan room_code
 StudioRoom --> BookingController : data ruangan aktif
 BookingController -> BookingAvailability : validasi ulang slot\nmengabaikan booking saat ini
 BookingAvailability --> BookingController : hasil validasi slot
 
 alt Data valid dan slot tersedia
-    BookingController -> BookingController : hitung ulang add-on\ndan total biaya
-    BookingController -> Booking : update cabang, ruangan,\ntanggal, waktu, add-on,\njenis pembayaran, dan catatan
+    BookingController -> BookingController : pertahankan paket, kategori,\nadd-on, pembayaran, total biaya,\ndan catatan awal
+    BookingController -> Booking : update location_code, room_code,\ntanggal, dan waktu
     Booking --> BookingController : booking diperbarui
     BookingController --> HalamanPemesanan : redirect dengan pesan berhasil
     HalamanPemesanan --> Klien : jadwal berhasil diperbarui\ndan tetap menunggu konfirmasi

@@ -59,8 +59,8 @@ class PublicPagesAndDashboardTest extends TestCase
         $categories = $response->viewData('categories');
         $this->assertTrue($categories->first()->packages->contains('id', $activePackage->id));
         $this->assertFalse($categories->first()->packages->contains('id', $inactivePackage->id));
-        $this->assertTrue($response->viewData('locations')->contains('id', $location->id));
-        $this->assertTrue($response->viewData('heroSlides')->contains('id', $slide->id));
+        $this->assertTrue($response->viewData('locations')->contains('location_code', $location->location_code));
+        $this->assertTrue($response->viewData('heroSlides')->contains('slide_code', $slide->slide_code));
     }
 
     /**
@@ -77,7 +77,7 @@ class PublicPagesAndDashboardTest extends TestCase
             'is_active' => true,
         ]);
         StudioRoom::create([
-            'studio_location_id' => $location->id,
+            'studio_location_code' => $location->location_code,
             'name' => 'Studio A',
             'is_active' => true,
         ]);
@@ -116,7 +116,7 @@ class PublicPagesAndDashboardTest extends TestCase
         Booking::factory()->create([
             'client_id' => $client->id,
             'package_id' => $package->id,
-            'studio_location_id' => $location->id,
+            'studio_location_code' => $location->location_code,
             'status' => Booking::STATUS_WAITING_PAYMENT,
         ]);
 
@@ -129,7 +129,7 @@ class PublicPagesAndDashboardTest extends TestCase
         $paidBooking = Booking::factory()->create([
             'client_id' => $client->id,
             'package_id' => $package->id,
-            'studio_location_id' => $location->id,
+            'studio_location_code' => $location->location_code,
             'status' => Booking::STATUS_PAID,
             'total_price' => 750000,
         ]);
@@ -165,7 +165,7 @@ class PublicPagesAndDashboardTest extends TestCase
         $booking = Booking::factory()->create([
             'client_id' => $client->id,
             'package_id' => $package->id,
-            'studio_location_id' => $location->id,
+            'studio_location_code' => $location->location_code,
             'status' => Booking::STATUS_PAID,
         ]);
         Project::factory()->create([

@@ -26,7 +26,7 @@ class StudioLocationControllerCoverageTest extends TestCase
             'is_active' => true,
         ]);
         StudioRoom::create([
-            'studio_location_id' => $location->id,
+            'studio_location_code' => $location->location_code,
             'name' => 'Studio View',
             'is_active' => true,
         ]);
@@ -108,7 +108,7 @@ class StudioLocationControllerCoverageTest extends TestCase
             ->assertRedirect(route('admin.locations.manage'))
             ->assertSessionHas('status', 'Cabang berhasil dihapus.');
 
-        $this->assertDatabaseMissing('studio_locations', ['id' => $location->id]);
+        $this->assertDatabaseMissing('studio_locations', ['location_code' => $location->location_code]);
     }
 
     public function test_owner_can_store_update_and_destroy_unused_room_with_photo(): void
@@ -124,7 +124,7 @@ class StudioLocationControllerCoverageTest extends TestCase
         $this->actingAs($owner)
             ->from(route('admin.locations.edit', $location))
             ->post(route('admin.locations.room.store'), [
-                'studio_location_id' => $location->id,
+                'studio_location_code' => $location->location_code,
                 'name' => 'Studio Foto',
                 'description' => 'Foto awal',
                 'is_active' => true,
@@ -159,7 +159,7 @@ class StudioLocationControllerCoverageTest extends TestCase
             ->assertRedirect(route('admin.locations.edit', $location));
 
         Storage::disk('public')->assertMissing($currentPhoto);
-        $this->assertDatabaseMissing('studio_rooms', ['id' => $room->id]);
+        $this->assertDatabaseMissing('studio_rooms', ['room_code' => $room->room_code]);
     }
 
     public function test_location_with_booking_history_is_deactivated_instead_of_deleted(): void
@@ -171,13 +171,13 @@ class StudioLocationControllerCoverageTest extends TestCase
             'is_active' => true,
         ]);
         $room = StudioRoom::create([
-            'studio_location_id' => $location->id,
+            'studio_location_code' => $location->location_code,
             'name' => 'Studio Historis',
             'is_active' => true,
         ]);
         Booking::factory()->create([
-            'studio_location_id' => $location->id,
-            'studio_room_id' => $room->id,
+            'studio_location_code' => $location->location_code,
+            'studio_room_code' => $room->room_code,
         ]);
 
         $this->actingAs($owner)
@@ -185,7 +185,7 @@ class StudioLocationControllerCoverageTest extends TestCase
             ->assertRedirect(route('admin.locations.manage'))
             ->assertSessionHas('status', 'Cabang sudah digunakan pada pemesanan, sehingga dinonaktifkan untuk menjaga riwayat transaksi.');
 
-        $this->assertDatabaseHas('studio_locations', ['id' => $location->id, 'is_active' => false]);
-        $this->assertDatabaseHas('studio_rooms', ['id' => $room->id, 'is_active' => false]);
+        $this->assertDatabaseHas('studio_locations', ['location_code' => $location->location_code, 'is_active' => false]);
+        $this->assertDatabaseHas('studio_rooms', ['room_code' => $room->room_code, 'is_active' => false]);
     }
 }

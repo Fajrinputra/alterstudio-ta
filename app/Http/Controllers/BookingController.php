@@ -181,7 +181,7 @@ class BookingController extends Controller
                     ->where('is_active', true)
                     ->whereNull('deleted_at')),
             ],
-            'studio_location_id' => ['required', 'exists:studio_locations,id'],
+            'studio_location_code' => ['required', 'exists:studio_locations,location_code'],
             'booking_date' => ['required', 'date', 'after_or_equal:today', 'before_or_equal:'.$maxBookingDate],
             'selected_addons' => ['nullable', 'array'],
             'selected_addons.*' => ['string'],
@@ -206,7 +206,7 @@ class BookingController extends Controller
 
         $slots = $this->availability->availableSlots(
             $package,
-            (int) $validated['studio_location_id'],
+            $validated['studio_location_code'],
             $date,
             $extraDuration,
             $ignoreBookingId
@@ -214,8 +214,8 @@ class BookingController extends Controller
 
         return response()->json([
             'date' => $date->toDateString(),
-            'is_closed' => $this->availability->isClosedDate($date, (int) $validated['studio_location_id']),
-            'reason' => $this->availability->closedReason($date, (int) $validated['studio_location_id']),
+            'is_closed' => $this->availability->isClosedDate($date, $validated['studio_location_code']),
+            'reason' => $this->availability->closedReason($date, $validated['studio_location_code']),
             'is_today' => $date->isToday(),
             'current_time' => Carbon::now()->format('H:i'),
             'duration_minutes' => $effectiveDuration,
@@ -241,7 +241,7 @@ class BookingController extends Controller
             ],
             'booking_date' => ['required', 'date', 'after_or_equal:today', 'before_or_equal:'.$maxBookingDate],
             'booking_time' => ['required', 'date_format:H:i'],
-            'studio_location_id' => ['required', 'exists:studio_locations,id'],
+            'studio_location_code' => ['required', 'exists:studio_locations,location_code'],
             'notes' => ['nullable', 'string'],
             'payment_type' => ['required', 'in:'.Booking::PAYMENT_TYPE_DP.','.Booking::PAYMENT_TYPE_FULL],
             'selected_addons' => ['nullable', 'array'],
@@ -256,10 +256,10 @@ class BookingController extends Controller
 
         $bookingDate = Carbon::parse($validated['booking_date']);
 
-        if ($this->availability->isClosedDate($bookingDate, (int) $validated['studio_location_id'])) {
+        if ($this->availability->isClosedDate($bookingDate, $validated['studio_location_code'])) {
             return back()
                 ->withInput()
-                ->withErrors(['booking_date' => $this->availability->closedReason($bookingDate, (int) $validated['studio_location_id'])]);
+                ->withErrors(['booking_date' => $this->availability->closedReason($bookingDate, $validated['studio_location_code'])]);
         }
 
         $booking = DB::transaction(function () use ($validated, $bookingDate, $user) {
@@ -277,9 +277,9 @@ class BookingController extends Controller
 
             // Mengunci kapasitas cabang agar dua request bersamaan tidak mengambil slot yang sama.
             StudioRoom::query()
-                ->where('studio_location_id', $validated['studio_location_id'])
+                ->where('studio_location_code', $validated['studio_location_code'])
                 ->where('is_active', true)
-                ->orderBy('id')
+                ->orderBy('room_code')
                 ->lockForUpdate()
                 ->get();
 
@@ -287,7 +287,7 @@ class BookingController extends Controller
             $extraDuration = Booking::extraDurationMinutesFromAddons($chosenAddons);
             $availableRoom = $this->availability->availableRoomForSlot(
                 $package,
-                (int) $validated['studio_location_id'],
+                $validated['studio_location_code'],
                 $bookingDate,
                 $validated['booking_time'],
                 $extraDuration
@@ -303,8 +303,8 @@ class BookingController extends Controller
             $booking = Booking::create([
                 'client_id' => $user->id,
                 'package_id' => $package->id,
-                'studio_location_id' => $validated['studio_location_id'],
-                'studio_room_id' => $availableRoom->id,
+                'studio_location_code' => $validated['studio_location_code'],
+                'studio_room_code' => $availableRoom->room_code,
                 'booking_date' => $validated['booking_date'],
                 'booking_time' => $validated['booking_time'],
                 'notes' => $validated['notes'] ?? null,
@@ -369,7 +369,7 @@ class BookingController extends Controller
         $validated = $request->validate([
             'booking_date' => ['required', 'date', 'after_or_equal:today', 'before_or_equal:'.$maxBookingDate],
             'booking_time' => ['required', 'date_format:H:i'],
-            'studio_location_id' => ['required', 'exists:studio_locations,id'],
+            'studio_location_code' => ['required', 'exists:studio_locations,location_code'],
         ], [
             'booking_date.required' => 'Tanggal pemesanan wajib dipilih.',
             'booking_date.after_or_equal' => 'Tanggal pemesanan tidak boleh sebelum hari ini.',
@@ -378,10 +378,10 @@ class BookingController extends Controller
 
         $bookingDate = Carbon::parse($validated['booking_date']);
 
-        if ($this->availability->isClosedDate($bookingDate, (int) $validated['studio_location_id'])) {
+        if ($this->availability->isClosedDate($bookingDate, $validated['studio_location_code'])) {
             return back()
                 ->withInput()
-                ->withErrors(['booking_date' => $this->availability->closedReason($bookingDate, (int) $validated['studio_location_id'])]);
+                ->withErrors(['booking_date' => $this->availability->closedReason($bookingDate, $validated['studio_location_code'])]);
         }
 
         DB::transaction(function () use ($booking, $bookingDate, $validated) {
@@ -411,9 +411,9 @@ class BookingController extends Controller
 
             // Mengunci ruangan aktif pada cabang agar dua perubahan bersamaan tidak mengambil slot yang sama.
             StudioRoom::query()
-                ->where('studio_location_id', $validated['studio_location_id'])
+                ->where('studio_location_code', $validated['studio_location_code'])
                 ->where('is_active', true)
-                ->orderBy('id')
+                ->orderBy('room_code')
                 ->lockForUpdate()
                 ->get();
 
@@ -421,7 +421,7 @@ class BookingController extends Controller
             $extraDuration = Booking::extraDurationMinutesFromAddons($chosenAddons);
             $availableRoom = $this->availability->availableRoomForSlot(
                 $package,
-                (int) $validated['studio_location_id'],
+                $validated['studio_location_code'],
                 $bookingDate,
                 $validated['booking_time'],
                 $extraDuration,
@@ -435,8 +435,8 @@ class BookingController extends Controller
             }
 
             $lockedBooking->update([
-                'studio_location_id' => $validated['studio_location_id'],
-                'studio_room_id' => $availableRoom->id,
+                'studio_location_code' => $validated['studio_location_code'],
+                'studio_room_code' => $availableRoom->room_code,
                 'booking_date' => $validated['booking_date'],
                 'booking_time' => $validated['booking_time'],
             ]);

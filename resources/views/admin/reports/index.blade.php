@@ -41,8 +41,7 @@
                             <input type="date" name="date_to" value="{{ $dateTo }}"
                                    class="w-full px-6 py-4 rounded-3xl border border-[#E1D3C5] bg-white/70 backdrop-blur-md text-[#3F2B1B] focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20 transition-all">
                         </div>
-                        @unless($isOwnerReport)
-                            <div class="flex-1 min-w-[220px]">
+                        <div class="flex-1 min-w-[220px]">
                                 <label class="block text-xs font-medium text-[#7A5B3A] tracking-widest mb-2 flex items-center gap-2">
                                     <i class="fa-solid fa-layer-group text-[#D4A017]"></i>
                                     Kategori Laporan
@@ -57,12 +56,11 @@
                                     @endforeach
                                 </select>
                             </div>
-                        @endunless
                         
                         <div class="flex w-full sm:w-auto gap-3">
                             <button class="h-14 px-8 rounded-3xl bg-gradient-to-r from-[#D4A017] to-[#E07A5F] text-white font-semibold shadow-xl hover:shadow-2xl hover:-translate-y-0.5 transition-all flex items-center justify-center gap-3">
                                 <i class="fa-solid fa-filter"></i>
-                                {{ $isOwnerReport ? 'Terapkan Periode' : 'Terapkan Filter' }}
+                                Terapkan Filter
                             </button>
                             @if($canExportReport)
                                 <a href="{{ request()->fullUrlWithQuery(['download'=>'xls']) }}"

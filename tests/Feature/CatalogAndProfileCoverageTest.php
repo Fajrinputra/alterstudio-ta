@@ -160,12 +160,12 @@ class CatalogAndProfileCoverageTest extends TestCase
         ]);
 
         $location = StudioLocation::create(['name' => 'Cabang Relasi', 'slug' => 'relasi', 'is_active' => true]);
-        $room = StudioRoom::create(['studio_location_id' => $location->id, 'name' => 'Studio Relasi', 'is_active' => true]);
+        $room = StudioRoom::create(['studio_location_code' => $location->location_code, 'name' => 'Studio Relasi', 'is_active' => true]);
         $package = ServicePackage::factory()->create();
         $booking = Booking::factory()->create([
             'package_id' => $package->id,
-            'studio_location_id' => $location->id,
-            'studio_room_id' => $room->id,
+            'studio_location_code' => $location->location_code,
+            'studio_room_code' => $room->room_code,
         ]);
         $project = Project::factory()->create(['booking_id' => $booking->id]);
         $uploader = User::factory()->create(['role' => Role::PHOTOGRAPHER]);
@@ -179,7 +179,7 @@ class CatalogAndProfileCoverageTest extends TestCase
         ]);
         $selection = PhotoSelection::create([
             'project_id' => $project->id,
-            'media_asset_id' => $media->id,
+            'media_code' => $media->media_code,
             'client_id' => $booking->client_id,
             'selected_at' => now(),
         ]);

@@ -168,7 +168,7 @@ class StudioLocationController extends Controller
     public function storeRoom(Request $request)
     {
         $data = $request->validate([
-            'studio_location_id' => ['required', 'exists:studio_locations,id'],
+            'studio_location_code' => ['required', 'exists:studio_locations,location_code'],
             'name' => ['required','string','max:50'],
             'description' => ['nullable','string'],
             'photo' => ImageUploadValidation::rules(),
@@ -178,7 +178,7 @@ class StudioLocationController extends Controller
         $data['is_active'] = $request->boolean('is_active');
 
         if ($request->hasFile('photo')) {
-            $data['photo_path'] = $request->file('photo')->storePublicly("rooms/{$data['studio_location_id']}", 'public');
+            $data['photo_path'] = $request->file('photo')->storePublicly("rooms/{$data['studio_location_code']}", 'public');
         }
         unset($data['photo']);
 
@@ -208,7 +208,7 @@ class StudioLocationController extends Controller
             if ($studioRoom->photo_path) {
                 \Storage::disk('public')->delete($studioRoom->photo_path);
             }
-            $payload['photo_path'] = $request->file('photo')->storePublicly("rooms/{$studioRoom->studio_location_id}", 'public');
+            $payload['photo_path'] = $request->file('photo')->storePublicly("rooms/{$studioRoom->studio_location_code}", 'public');
         }
 
         $studioRoom->update($payload);
@@ -233,6 +233,34 @@ class StudioLocationController extends Controller
         $studioRoom->delete();
         Cache::forget('landing.page.data.v2');
         return back()->with('status', 'Studio/ruang berhasil dihapus.');
+    }
+
+    /** Hapus satu foto dari galeri lokasi berdasarkan indeks. */
+    public function destroyPhoto(Request $request, StudioLocation $studioLocation)
+    {
+        $data = $request->validate([
+            'photo_index' => ['required', 'integer', 'min:0'],
+        ]);
+
+        $gallery = collect($studioLocation->photo_gallery ?? []);
+        $index   = (int) $data['photo_index'];
+
+        if (! $gallery->has($index)) {
+            return back()->with('error', 'Foto tidak ditemukan.');
+        }
+
+        $photoPath = $gallery->get($index);
+
+        // Hapus file fisik.
+        Storage::disk('public')->delete($photoPath);
+
+        // Update galeri tanpa foto yang dihapus.
+        $newGallery = $gallery->forget($index)->values()->all();
+        $this->syncPhotos($studioLocation, $newGallery);
+
+        Cache::forget('landing.page.data.v2');
+
+        return back()->with('status', 'Foto berhasil dihapus.');
     }
 
     protected function syncPhotos(StudioLocation $location, array $paths): void

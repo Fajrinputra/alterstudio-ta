@@ -47,10 +47,37 @@
                     </div>
 
                     @if(count($studioLocation->photo_gallery ?? []))
-                        <div class="grid sm:grid-cols-2 gap-4">
-                            @foreach($studioLocation->photo_gallery as $photo)
-                                <img src="{{ Storage::url($photo) }}" alt="{{ $studioLocation->name }}" class="aspect-[16/10] w-full rounded-3xl object-cover border border-[#EDE0D0]">
-                            @endforeach
+                        <div class="space-y-3">
+                            <label class="block text-xs font-medium text-[#7A5B3A] tracking-widest">Foto Galeri Saat Ini</label>
+                            <div class="grid sm:grid-cols-2 gap-4">
+                                @foreach($studioLocation->photo_gallery as $photoIndex => $photo)
+                                    <div class="group relative rounded-3xl overflow-hidden border border-[#EDE0D0]">
+                                        <img src="{{ Storage::url($photo) }}"
+                                             alt="{{ $studioLocation->name }}"
+                                             class="aspect-[16/10] w-full object-cover">
+                                        {{-- Overlay tombol hapus --}}
+                                        <div class="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-200 flex items-center justify-center">
+                                            <form method="POST"
+                                                  action="{{ route('admin.locations.photo.destroy', $studioLocation) }}"
+                                                  onsubmit="return confirm('Hapus foto ini?')"
+                                                  class="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                                @csrf
+                                                @method('DELETE')
+                                                <input type="hidden" name="photo_index" value="{{ $photoIndex }}">
+                                                <button type="submit"
+                                                        class="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-red-600 text-white text-sm font-semibold shadow-lg hover:bg-red-700 transition-colors">
+                                                    <i class="fa-solid fa-trash-can"></i>
+                                                    Hapus Foto
+                                                </button>
+                                            </form>
+                                        </div>
+                                        {{-- Badge nomor --}}
+                                        <div class="absolute top-2 left-2 w-6 h-6 rounded-lg bg-black/60 backdrop-blur-sm flex items-center justify-center text-white text-xs font-bold">
+                                            {{ $photoIndex + 1 }}
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
                         </div>
                     @endif
 
@@ -60,16 +87,10 @@
                         <p class="text-xs text-[#8B7359]">Maksimal 10 foto lokasi, 20 MB per foto. Format JPG, JPEG, PNG, WEBP, atau GIF. Video tidak diperbolehkan.</p>
                     </div>
 
-                    <div class="grid md:grid-cols-2 gap-4">
-                        <label class="flex items-center gap-3 rounded-3xl border border-[#EDE0D0] bg-[#FAF6F0] px-5 py-4 text-[#3F2B1B]">
-                            <input type="checkbox" name="is_active" value="1" @checked(old('is_active', $studioLocation->is_active)) class="w-5 h-5 rounded-xl border-[#E1D3C5] text-[#D4A017] focus:ring-[#D4A017]">
-                            <span class="font-medium">Cabang aktif</span>
-                        </label>
-                        <label class="flex items-center gap-3 rounded-3xl border border-red-100 bg-red-50 px-5 py-4 text-red-700">
-                            <input type="checkbox" name="remove_photos" value="1" class="w-5 h-5 rounded-xl border-red-200 text-red-500 focus:ring-red-400">
-                            <span class="font-medium">Hapus semua foto lama</span>
-                        </label>
-                    </div>
+                    <label class="flex items-center gap-3 rounded-3xl border border-[#EDE0D0] bg-[#FAF6F0] px-5 py-4 text-[#3F2B1B]">
+                        <input type="checkbox" name="is_active" value="1" @checked(old('is_active', $studioLocation->is_active)) class="w-5 h-5 rounded-xl border-[#E1D3C5] text-[#D4A017] focus:ring-[#D4A017]">
+                        <span class="font-medium">Cabang aktif</span>
+                    </label>
 
                     <div class="flex justify-end gap-3 pt-4 border-t border-[#EDE0D0]">
                         <a href="{{ route('admin.locations.show', $studioLocation) }}" class="px-7 py-3 rounded-3xl border border-[#E1D3C5] text-[#5C432C] hover:bg-[#FAF6F0] transition-all">Batal</a>
@@ -122,7 +143,7 @@
 
                     <form method="POST" action="{{ route('admin.locations.room.store') }}" enctype="multipart/form-data" class="bg-white border border-[#EDE0D0] rounded-3xl shadow-xl p-6 space-y-4">
                         @csrf
-                        <input type="hidden" name="studio_location_id" value="{{ $studioLocation->id }}">
+                        <input type="hidden" name="studio_location_code" value="{{ $studioLocation->location_code }}">
                         <h3 class="font-display text-2xl font-semibold text-[#3F2B1B]">Tambah Ruangan</h3>
                         <input name="name" required class="w-full px-5 py-3 rounded-3xl border border-[#E1D3C5] bg-white text-[#3F2B1B]" placeholder="Nama ruangan">
                         <textarea name="description" rows="2" class="w-full px-5 py-3 rounded-3xl border border-[#E1D3C5] bg-white text-[#3F2B1B]" placeholder="Deskripsi ruangan"></textarea>

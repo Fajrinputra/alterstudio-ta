@@ -52,7 +52,7 @@ class LandingController extends Controller
         $heroSlides = Schema::hasTable('landing_hero_slides')
             ? LandingHeroSlide::where('is_active', true)
                 ->orderBy('sort_order')
-                ->orderBy('id')
+                ->orderBy('slide_code')
                 ->get()
             : collect();
 

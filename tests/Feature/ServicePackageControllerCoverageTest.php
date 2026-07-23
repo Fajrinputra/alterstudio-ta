@@ -132,7 +132,7 @@ class ServicePackageControllerCoverageTest extends TestCase
         $booking = Booking::factory()->create([
             'client_id' => $client->id,
             'package_id' => $activePackage->id,
-            'studio_location_id' => $location->id,
+            'studio_location_code' => $location->location_code,
             'status' => Booking::STATUS_PAID,
         ]);
         Project::factory()->create(['booking_id' => $booking->id, 'status' => Project::STATUS_SCHEDULED]);

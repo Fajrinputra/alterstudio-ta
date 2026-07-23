@@ -136,7 +136,7 @@ class AdminMasterDataTest extends TestCase
         $booking = Booking::factory()->create([
             'client_id' => $client->id,
             'package_id' => $package->id,
-            'studio_location_id' => $location->id,
+            'studio_location_code' => $location->location_code,
             'status' => Booking::STATUS_PAID,
         ]);
         Project::factory()->create([
@@ -186,7 +186,7 @@ class AdminMasterDataTest extends TestCase
             ->assertOk()
             ->assertJsonPath('message', 'Lokasi berhasil dihapus.');
 
-        $this->assertDatabaseMissing('studio_locations', ['id' => $location->id]);
+        $this->assertDatabaseMissing('studio_locations', ['location_code' => $location->location_code]);
     }
 
     /**
@@ -206,7 +206,7 @@ class AdminMasterDataTest extends TestCase
         $this->actingAs($owner)
             ->from(route('admin.locations.edit', $location))
             ->post(route('admin.locations.room.store'), [
-                'studio_location_id' => $location->id,
+                'studio_location_code' => $location->location_code,
                 'name' => 'Studio A',
                 'description' => 'Ruangan utama',
                 'is_active' => true,
@@ -225,13 +225,13 @@ class AdminMasterDataTest extends TestCase
             ->assertRedirect(route('admin.locations.edit', $location));
 
         $this->assertDatabaseHas('studio_rooms', [
-            'id' => $room->id,
+            'room_code' => $room->room_code,
             'name' => 'Studio A Updated',
         ]);
 
         Booking::factory()->create([
-            'studio_location_id' => $location->id,
-            'studio_room_id' => $room->id,
+            'studio_location_code' => $location->location_code,
+            'studio_room_code' => $room->room_code,
         ]);
 
         $this->actingAs($owner)
@@ -292,7 +292,7 @@ class AdminMasterDataTest extends TestCase
             ->assertRedirect(route('manager.landing.hero'));
 
         Storage::disk('public')->assertMissing($currentImage);
-        $this->assertDatabaseMissing('landing_hero_slides', ['id' => $slide->id]);
+        $this->assertDatabaseMissing('landing_hero_slides', ['slide_code' => $slide->slide_code]);
     }
 
     /**
@@ -317,10 +317,9 @@ class AdminMasterDataTest extends TestCase
             ->from(route('manager.landing.hero'))
             ->post(route('manager.landing.hero.store'), [
                 'title' => 'Slide 11',
-                'sort_order' => 11,
             ])
             ->assertRedirect(route('manager.landing.hero'))
-            ->assertSessionHasErrors('sort_order');
+            ->assertSessionHas('error');
 
         $this->assertSame(10, LandingHeroSlide::count());
     }

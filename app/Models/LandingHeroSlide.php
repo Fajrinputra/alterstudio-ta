@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasPublicCode;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,8 +13,17 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class LandingHeroSlide extends Model
 {
     use HasFactory;
+    use HasPublicCode;
+
+    /** Primary key adalah kode slide, bukan auto-increment integer. */
+    protected $primaryKey = 'slide_code';
+
+    public $incrementing = false;
+
+    protected $keyType = 'string';
 
     protected $fillable = [
+        'slide_code',
         'eyebrow',
         'title',
         'subtitle',
@@ -54,5 +64,15 @@ class LandingHeroSlide extends Model
     public function setUpdatedByAttribute($value): void
     {
         $this->attributes['user_id'] = $value;
+    }
+
+    protected function publicCodeColumn(): string
+    {
+        return 'slide_code';
+    }
+
+    protected function publicCodePrefix(): string
+    {
+        return 'HERO';
     }
 }

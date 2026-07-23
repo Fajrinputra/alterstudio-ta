@@ -89,24 +89,24 @@ class RemainingFeatureEdgesTest extends TestCase
 
         $date = now()->addWeekday();
 
-        $this->assertSame([], $availability->availableSlots($package, $location->id, $date));
+        $this->assertSame([], $availability->availableSlots($package, $location->location_code, $date));
 
         $shortPackage = ServicePackage::factory()->create(['duration_minutes' => 30]);
-        $this->assertSame([], $availability->availableSlots($shortPackage, $location->id, $date));
-        $this->assertFalse($availability->isSlotAvailable($shortPackage, $location->id, $date, '10:00'));
-        $this->assertNull($availability->availableRoomForSlot($shortPackage, $location->id, $date, '09:30'));
+        $this->assertSame([], $availability->availableSlots($shortPackage, $location->location_code, $date));
+        $this->assertFalse($availability->isSlotAvailable($shortPackage, $location->location_code, $date, '10:00'));
+        $this->assertNull($availability->availableRoomForSlot($shortPackage, $location->location_code, $date, '09:30'));
 
         config(['studio.closed_weekdays' => [$date->dayOfWeek]]);
-        $this->assertNull($availability->availableRoomForSlot($shortPackage, $location->id, $date, '10:00'));
+        $this->assertNull($availability->availableRoomForSlot($shortPackage, $location->location_code, $date, '10:00'));
         config(['studio.closed_weekdays' => []]);
 
         StudioRoom::create([
-            'studio_location_id' => $location->id,
+            'studio_location_code' => $location->location_code,
             'name' => 'Room Edge',
             'is_active' => true,
         ]);
 
-        $this->assertNull($availability->availableRoomForSlot($shortPackage, $location->id, $date, '10:15'));
+        $this->assertNull($availability->availableRoomForSlot($shortPackage, $location->location_code, $date, '10:15'));
     }
 
     public function test_remaining_service_package_controller_edges_are_covered(): void
@@ -181,15 +181,15 @@ class RemainingFeatureEdgesTest extends TestCase
             'is_active' => true,
         ]);
         $room = StudioRoom::create([
-            'studio_location_id' => $location->id,
+            'studio_location_code' => $location->location_code,
             'name' => 'Room Remaining Booking',
             'is_active' => true,
         ]);
         $booking = Booking::factory()->create([
             'client_id' => $client->id,
             'package_id' => $package->id,
-            'studio_location_id' => $location->id,
-            'studio_room_id' => $room->id,
+            'studio_location_code' => $location->location_code,
+            'studio_room_code' => $room->room_code,
             'status' => Booking::STATUS_WAITING_PAYMENT,
             'confirmed_at' => now(),
         ]);
@@ -210,8 +210,8 @@ class RemainingFeatureEdgesTest extends TestCase
         $scheduledBooking = Booking::factory()->create([
             'client_id' => $client->id,
             'package_id' => $package->id,
-            'studio_location_id' => $location->id,
-            'studio_room_id' => $room->id,
+            'studio_location_code' => $location->location_code,
+            'studio_room_code' => $room->room_code,
             'status' => Booking::STATUS_PAID,
         ]);
         $scheduled = Project::factory()->create([
@@ -272,8 +272,8 @@ class RemainingFeatureEdgesTest extends TestCase
             'booking_id' => Booking::factory()->create([
                 'client_id' => $client->id,
                 'package_id' => $package->id,
-                'studio_location_id' => $location->id,
-                'studio_room_id' => $room->id,
+                'studio_location_code' => $location->location_code,
+                'studio_room_code' => $room->room_code,
                 'status' => Booking::STATUS_PAID,
                 'booking_date' => now()->addDay()->toDateString(),
                 'booking_time' => '11:00',
@@ -287,7 +287,7 @@ class RemainingFeatureEdgesTest extends TestCase
             ->postJson("/projects/{$invalidCrewProject->id}/schedule", [
                 'photographer_id' => $wrongRole->id,
                 'editor_id' => $editor->id,
-                'studio_room_id' => $room->id,
+                'studio_room_code' => $room->room_code,
             ])
             ->assertStatus(422)
             ->assertJsonPath('message', 'Akun fotografer yang dipilih tidak memiliki akses fotografer aktif.');
@@ -296,8 +296,8 @@ class RemainingFeatureEdgesTest extends TestCase
         $overlapBooking = Booking::factory()->create([
             'client_id' => $client->id,
             'package_id' => $package->id,
-            'studio_location_id' => $location->id,
-            'studio_room_id' => $room->id,
+            'studio_location_code' => $location->location_code,
+            'studio_room_code' => $room->room_code,
             'status' => Booking::STATUS_PAID,
             'booking_date' => now()->addDay()->toDateString(),
             'booking_time' => '11:00',
@@ -311,21 +311,21 @@ class RemainingFeatureEdgesTest extends TestCase
             ->postJson("/projects/{$overlapProject->id}/schedule", [
                 'photographer_id' => $photographer->id,
                 'editor_id' => $otherEditor->id,
-                'studio_room_id' => $room->id,
+                'studio_room_code' => $room->room_code,
             ])
             ->assertStatus(422)
             ->assertJsonPath('message', 'Jadwal bentrok: ruangan yang dipilih sudah memiliki jadwal pada waktu tersebut.');
 
         $freeRoom = StudioRoom::create([
-            'studio_location_id' => $location->id,
+            'studio_location_code' => $location->location_code,
             'name' => 'Free Room',
             'is_active' => true,
         ]);
         $crewOverlapBooking = Booking::factory()->create([
             'client_id' => $client->id,
             'package_id' => $package->id,
-            'studio_location_id' => $location->id,
-            'studio_room_id' => $freeRoom->id,
+            'studio_location_code' => $location->location_code,
+            'studio_room_code' => $freeRoom->room_code,
             'status' => Booking::STATUS_PAID,
             'booking_date' => now()->addDay()->toDateString(),
             'booking_time' => '11:00',
@@ -339,7 +339,7 @@ class RemainingFeatureEdgesTest extends TestCase
             ->postJson("/projects/{$crewOverlapProject->id}/schedule", [
                 'photographer_id' => $photographer->id,
                 'editor_id' => $otherEditor->id,
-                'studio_room_id' => $freeRoom->id,
+                'studio_room_code' => $freeRoom->room_code,
             ])
             ->assertStatus(422)
             ->assertJsonPath('message', 'Jadwal bentrok: fotografer atau editor yang dipilih sudah memiliki jadwal pada waktu tersebut.');
@@ -347,8 +347,8 @@ class RemainingFeatureEdgesTest extends TestCase
         $updateBooking = Booking::factory()->create([
             'client_id' => $client->id,
             'package_id' => $package->id,
-            'studio_location_id' => $location->id,
-            'studio_room_id' => $freeRoom->id,
+            'studio_location_code' => $location->location_code,
+            'studio_room_code' => $freeRoom->room_code,
             'status' => Booking::STATUS_PAID,
             'booking_date' => now()->addDay()->toDateString(),
             'booking_time' => '11:00',
@@ -366,7 +366,7 @@ class RemainingFeatureEdgesTest extends TestCase
             ->putJson(route('projects.schedule.update', $updateProject), [
                 'photographer_id' => $wrongRole->id,
                 'editor_id' => $otherEditor->id,
-                'studio_room_id' => $freeRoom->id,
+                'studio_room_code' => $freeRoom->room_code,
             ])
             ->assertStatus(422)
             ->assertJsonPath('message', 'Akun fotografer yang dipilih tidak memiliki akses fotografer aktif.');
@@ -375,13 +375,13 @@ class RemainingFeatureEdgesTest extends TestCase
             ->putJson(route('projects.schedule.update', $updateProject), [
                 'photographer_id' => $photographer->id,
                 'editor_id' => $otherEditor->id,
-                'studio_room_id' => $room->id,
+                'studio_room_code' => $room->room_code,
             ])
             ->assertStatus(422)
             ->assertJsonPath('message', 'Jadwal bentrok: ruangan yang dipilih sudah memiliki jadwal pada waktu tersebut.');
 
         $anotherFreeRoom = StudioRoom::create([
-            'studio_location_id' => $location->id,
+            'studio_location_code' => $location->location_code,
             'name' => 'Another Free Room',
             'is_active' => true,
         ]);
@@ -390,7 +390,7 @@ class RemainingFeatureEdgesTest extends TestCase
             ->putJson(route('projects.schedule.update', $updateProject), [
                 'photographer_id' => $photographer->id,
                 'editor_id' => $otherEditor->id,
-                'studio_room_id' => $anotherFreeRoom->id,
+                'studio_room_code' => $anotherFreeRoom->room_code,
             ])
             ->assertStatus(422)
             ->assertJsonPath('message', 'Jadwal bentrok: fotografer atau editor yang dipilih sudah memiliki jadwal pada waktu tersebut.');
@@ -440,7 +440,7 @@ class RemainingFeatureEdgesTest extends TestCase
         $this->actingAs($manager)
             ->get(route('manager.landing.hero'))
             ->assertOk()
-            ->assertViewIs('admin.landing.hero');
+            ->assertViewIs('admin.landing.hero.index');
 
         $verified = User::factory()->create(['email_verified_at' => now()]);
         $this->actingAs($verified)
@@ -626,15 +626,15 @@ class RemainingFeatureEdgesTest extends TestCase
             'is_active' => true,
         ]);
         $room = StudioRoom::create([
-            'studio_location_id' => $location->id,
+            'studio_location_code' => $location->location_code,
             'name' => 'Studio Edit Request',
             'is_active' => true,
         ]);
         $booking = Booking::factory()->create([
             'client_id' => $client->id,
             'package_id' => $package->id,
-            'studio_location_id' => $location->id,
-            'studio_room_id' => $room->id,
+            'studio_location_code' => $location->location_code,
+            'studio_room_code' => $room->room_code,
             'status' => Booking::STATUS_PAID,
         ]);
 

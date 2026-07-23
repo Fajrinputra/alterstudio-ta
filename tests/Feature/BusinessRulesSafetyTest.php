@@ -38,7 +38,7 @@ class BusinessRulesSafetyTest extends TestCase
         $booking = Booking::create([
             'client_id' => $client->id,
             'package_id' => $package->id,
-            'studio_location_id' => $location->id,
+            'studio_location_code' => $location->location_code,
             'booking_date' => now()->addDays(1),
             'booking_time' => '13:00',
             'status' => Booking::STATUS_PAID,
@@ -97,7 +97,7 @@ class BusinessRulesSafetyTest extends TestCase
         $booking = Booking::query()->create([
             'client_id' => $client->id,
             'package_id' => $package->id,
-            'studio_location_id' => $location->id,
+            'studio_location_code' => $location->location_code,
             'booking_date' => now()->addDays(3),
             'booking_time' => '12:00',
             'status' => Booking::STATUS_WAITING_PAYMENT,

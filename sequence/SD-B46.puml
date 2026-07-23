@@ -25,7 +25,7 @@ entity "StudioRooms Model" as StudioRoom
 
 Owner -> MenuRuangan : Membuka menu ruangan
 MenuRuangan -> StudioRoomController : index()
-StudioRoomController -> StudioRoom : SELECT studio_rooms dengan cabang
+StudioRoomController -> StudioRoom : SELECT studio_rooms dengan\nroom_code dan location_code
 StudioRoom --> StudioRoomController : data ruangan
 StudioRoomController --> HalamanRuangan : tampilkan daftar ruangan
 

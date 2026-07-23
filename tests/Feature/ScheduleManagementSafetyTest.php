@@ -28,7 +28,7 @@ class ScheduleManagementSafetyTest extends TestCase
         $editorA = User::factory()->create(['role' => Role::EDITOR]);
         $editorB = User::factory()->create(['role' => Role::EDITOR]);
         $location = StudioLocation::create(['name' => 'Cabang 1', 'slug' => 'cabang-1', 'is_active' => true]);
-        $room = StudioRoom::create(['studio_location_id' => $location->id, 'name' => 'Studio A', 'is_active' => true]);
+        $room = StudioRoom::create(['studio_location_code' => $location->location_code, 'name' => 'Studio A', 'is_active' => true]);
 
         $package = ServicePackage::factory()->create();
         $booking = Booking::factory()->create([
@@ -36,8 +36,8 @@ class ScheduleManagementSafetyTest extends TestCase
             'package_id' => $package->id,
             'booking_date' => now()->addDay()->toDateString(),
             'booking_time' => '11:00',
-            'studio_location_id' => $location->id,
-            'studio_room_id' => $room->id,
+            'studio_location_code' => $location->location_code,
+            'studio_room_code' => $room->room_code,
         ]);
 
         $project = Project::factory()->create([
@@ -57,7 +57,7 @@ class ScheduleManagementSafetyTest extends TestCase
             ->putJson("/projects/{$project->id}/schedule", [
                 'photographer_id' => $photographerB->id,
                 'editor_id' => $editorB->id,
-                'studio_room_id' => $room->id,
+                'studio_room_code' => $room->room_code,
             ])
             ->assertOk();
 
@@ -72,25 +72,30 @@ class ScheduleManagementSafetyTest extends TestCase
      * Pengujian: endpoint hapus jadwal project.
      * Hasil yang diharapkan: penghapusan jadwal tidak tersedia dan data penugasan tetap tersimpan.
      */
-    public function test_schedule_delete_endpoint_is_not_available(): void
+    /**
+     * Pengujian: jadwal tidak dapat dihapus ketika project sudah di tahap EDITING.
+     * Hasil yang diharapkan: endpoint menolak permintaan hapus (422) dan data jadwal tetap ada.
+     */
+    public function test_cannot_delete_schedule_when_project_is_in_editing_stage(): void
     {
         $admin = User::factory()->create(['role' => Role::ADMIN]);
         $photographer = User::factory()->create(['role' => Role::PHOTOGRAPHER]);
         $editor = User::factory()->create(['role' => Role::EDITOR]);
         $location = StudioLocation::create(['name' => 'Cabang 1', 'slug' => 'cabang-1', 'is_active' => true]);
-        $room = StudioRoom::create(['studio_location_id' => $location->id, 'name' => 'Studio A', 'is_active' => true]);
+        $room = StudioRoom::create(['studio_location_code' => $location->location_code, 'name' => 'Studio A', 'is_active' => true]);
 
         $package = ServicePackage::factory()->create();
         $booking = Booking::factory()->create([
             'status' => 'PAID',
             'package_id' => $package->id,
-            'studio_location_id' => $location->id,
-            'studio_room_id' => $room->id,
+            'studio_location_code' => $location->location_code,
+            'studio_room_code' => $room->room_code,
         ]);
 
         $project = Project::factory()->create([
             'booking_id' => $booking->id,
             'status' => 'EDITING',
+            'selections_locked' => true,
         ]);
 
         $project->update([
@@ -100,10 +105,12 @@ class ScheduleManagementSafetyTest extends TestCase
             'end_at' => now()->addDay()->setTime(12, 0),
         ]);
 
+        // Endpoint ada, tapi harus menolak karena project sudah di tahap EDITING
         $this->actingAs($admin)
             ->deleteJson("/projects/{$project->id}/schedule")
-            ->assertStatus(405);
+            ->assertStatus(422);
 
+        // Data jadwal tetap tidak terhapus
         $this->assertDatabaseHas('project_schedules', [
             'project_id' => $project->id,
             'photographer_id' => $photographer->id,

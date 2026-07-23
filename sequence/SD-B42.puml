@@ -25,12 +25,12 @@ control "StorageService" as StorageService
 entity "LandingHeroSlides Model" as LandingHeroSlide
 
 Manajer -> HalamanHero : Klik edit pada slide hero
-HalamanHero -> LandingHeroController : edit(slideId)
-LandingHeroController -> LandingHeroSlide : SELECT landing_hero_slides
+HalamanHero -> LandingHeroController : edit(slide_code)
+LandingHeroController -> LandingHeroSlide : SELECT landing_hero_slides\nberdasarkan slide_code
 LandingHeroSlide --> LandingHeroController : data slide
 LandingHeroController --> FormEdit : tampilkan form edit slide
 Manajer -> FormEdit : Submit perubahan slide hero
-FormEdit -> LandingHeroController : update(slideId, data)
+FormEdit -> LandingHeroController : update(slide_code, data)
 LandingHeroController -> LandingHeroController : validasi data perubahan
 
 alt Validasi berhasil
@@ -40,7 +40,7 @@ alt Validasi berhasil
         StorageService --> StorageService : image path baru
         StorageService --> LandingHeroController : image path baru
     end
-    LandingHeroController -> LandingHeroSlide : UPDATE landing_hero_slides
+    LandingHeroController -> LandingHeroSlide : UPDATE landing_hero_slides\nberdasarkan slide_code
     LandingHeroSlide --> LandingHeroController : slide diperbarui
     LandingHeroController --> HalamanHero : redirect dengan pesan berhasil
     HalamanHero --> manajer : slide hero terbaru tampil

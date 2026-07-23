@@ -206,12 +206,12 @@ class ReportExportTest extends TestCase
         $response->assertOk()
             ->assertViewHas('isOwnerReport', true)
             ->assertViewHas('canExportReport', false)
-            ->assertViewHas('categoryId', null)
+            ->assertViewHas('categoryId', $category->id)
             ->assertSee('Detail Owner', false)
             ->assertSee('Ringkasan Final Pemasukan', false)
             ->assertSee('Pelunasan / Lunas', false)
-            ->assertSee('Terapkan Periode', false)
-            ->assertDontSee('Kategori Laporan', false)
+            ->assertSee('Terapkan Filter', false)
+            ->assertSee('Kategori Laporan', false)
             ->assertDontSee('Unduh CSV', false)
             ->assertDontSee('Unduh Excel', false)
             ->assertDontSee('Unduh PDF', false);
@@ -258,7 +258,7 @@ class ReportExportTest extends TestCase
         $booking = Booking::factory()->create([
             'client_id' => $client->id,
             'package_id' => $package->id,
-            'studio_location_id' => $location->id,
+            'studio_location_code' => $location->location_code,
             'booking_date' => now()->toDateString(),
             'status' => Booking::STATUS_PAID,
             'payment_type' => Booking::PAYMENT_TYPE_FULL,

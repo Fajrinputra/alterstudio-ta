@@ -62,6 +62,8 @@ Project --> MediaAssetController : hasil cek project
 MediaAssetController -> Booking : cek status pembayaran
 Booking --> MediaAssetController : hasil cek pembayaran
 MediaAssetController -> MediaAssetController : validasi format link Google Drive
+MediaAssetController -> ProjectSchedule : validasi fotografer sesuai jadwal
+ProjectSchedule --> MediaAssetController : hasil validasi fotografer
 MediaAssetController -> MediaAssetController : validasi project terjadwal
 MediaAssetController -> MediaAssetController : validasi pembayaran lunas
 
