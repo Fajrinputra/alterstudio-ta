@@ -42,7 +42,6 @@
                 <p class="text-sm text-[#7A5B3A]">
                     <span class="font-semibold text-[#3F2B1B]">{{ $slides->count() }}</span> / 10 slide hero
                 </p>
-                <p class="text-xs text-[#8B7359]">Nomor urut ditentukan otomatis saat slide ditambahkan</p>
             </div>
 
             @forelse($slides as $slide)

@@ -11,7 +11,29 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Carbon;
 
 /**
- * Representasi workflow pasca-booking: jadwal, link Drive, permintaan edit, final.
+ * Model Project — Workflow Pasca-Booking Produksi Foto.
+ *
+ * Setiap booking yang dikonfirmasi akan memiliki satu Project yang mencatat
+ * seluruh alur produksi dari penjadwalan hingga pengiriman hasil final.
+ *
+ * Alur status project:
+ *   DRAFT     → Belum dijadwalkan (default setelah booking dikonfirmasi)
+ *   SCHEDULED → Admin sudah menetapkan jadwal, fotografer, dan editor
+ *   SHOOT_DONE→ Fotografer sudah upload link Drive foto mentah
+ *   EDITING   → Klien sudah memilih foto dan mengirim permintaan edit
+ *   FINAL     → Editor sudah upload link Drive hasil final
+ *
+ * Relasi penting:
+ * - booking      : booking yang memicu pembuatan project ini
+ * - scheduleRecord: record jadwal dengan fotografer + editor yang ditugaskan
+ * - mediaAssets  : file lama (dipertahankan untuk kompatibilitas data historis)
+ * - selections   : pilihan foto lama (dipertahankan untuk kompatibilitas)
+ *
+ * Catatan arsitektur:
+ * - photographer_id dan editor_id TIDAK lagi disimpan langsung di tabel projects.
+ *   Keduanya kini ada di tabel project_schedules melalui relasi scheduleRecord.
+ * - Mutator setPhotographerIdAttribute() dan setEditorIdAttribute() dipertahankan
+ *   agar kode lama (sebelum refaktor) tetap bisa berjalan tanpa modifikasi.
  */
 class Project extends Model
 {
@@ -43,17 +65,17 @@ class Project extends Model
         'final_drive_uploaded_at',
     ];
 
-    /** Status workflow project. */
-    public const STATUS_DRAFT = 'DRAFT';
+    /**
+     * Konstanta status workflow project.
+     * Urutan harus diikuti secara berurutan; tidak bisa skip tahap.
+     */
+    public const STATUS_DRAFT     = 'DRAFT';      // Belum dijadwalkan.
+    public const STATUS_SCHEDULED = 'SCHEDULED';  // Sudah dijadwalkan oleh admin.
+    public const STATUS_SHOOT_DONE= 'SHOOT_DONE'; // Link foto mentah sudah tersedia.
+    public const STATUS_EDITING   = 'EDITING';    // Klien sudah kirim permintaan edit.
+    public const STATUS_FINAL     = 'FINAL';      // Hasil final sudah dikirim ke klien.
 
-    public const STATUS_SCHEDULED = 'SCHEDULED';
-
-    public const STATUS_SHOOT_DONE = 'SHOOT_DONE';
-
-    public const STATUS_EDITING = 'EDITING';
-
-    public const STATUS_FINAL = 'FINAL';
-
+    /** Array semua status untuk validasi input dan iterasi UI. */
     public const STATUSES = [
         self::STATUS_DRAFT,
         self::STATUS_SCHEDULED,
@@ -62,6 +84,7 @@ class Project extends Model
         self::STATUS_FINAL,
     ];
 
+    /** Casts atribut untuk konversi otomatis tipe data saat akses/penyimpanan. */
     protected $casts = [
         'selections_locked' => 'boolean',
         'start_at' => 'datetime',
@@ -71,14 +94,27 @@ class Project extends Model
         'final_drive_uploaded_at' => 'datetime',
     ];
 
+    /**
+     * Event observer yang berjalan setelah project disimpan (saved event).
+     *
+     * Tujuan: mengakomodasi kode lama yang mengisi photographer_id dan editor_id
+     * langsung ke project. Setelah refaktor, data ini disimpan ke project_schedules,
+     * bukan ke tabel projects. Hook ini menjembatani keduanya.
+     *
+     * Cara kerja:
+     * 1. Jika pendingPhotographerId atau pendingEditorId diisi via mutator lama,
+     *    hook ini akan membuat/memperbarui record di tabel project_schedules.
+     * 2. Jika tidak ada pending data, hook ini tidak melakukan apa-apa.
+     */
     protected static function booted(): void
     {
         static::saved(function (Project $project) {
-            // Field fotografer/editor lama tetap diterima, lalu disimpan ke record jadwal utama.
+            // Tidak ada pending data — lewati tanpa aksi.
             if (! $project->pendingPhotographerId && ! $project->pendingEditorId) {
                 return;
             }
 
+            // Pastikan semua data yang dibutuhkan untuk membuat jadwal sudah tersedia.
             if (! $project->start_at || ! $project->end_at || ! $project->booking) {
                 return;
             }
@@ -91,6 +127,7 @@ class Project extends Model
                 return;
             }
 
+            // Buat atau perbarui record jadwal dengan data terbaru.
             $project->scheduleRecord()->updateOrCreate(
                 ['project_id' => $project->id],
                 [
@@ -108,19 +145,29 @@ class Project extends Model
                 ]
             );
 
+            // Reset relasi agar query berikutnya mengambil data terbaru dari DB.
             $project->unsetRelation('scheduleRecord');
         });
     }
 
+    /**
+     * Mutator photographer_id untuk kompatibilitas kode lama.
+     * Nilai tidak langsung disimpan ke kolom (kolom tidak ada di tabel);
+     * melainkan disimpan sementara di properti $pendingPhotographerId
+     * dan kemudian diproses oleh booted() hook setelah model disimpan.
+     */
     public function setPhotographerIdAttribute($value): void
     {
-        // Mutator ini menjaga kompatibilitas kode lama yang masih mengisi photographer_id.
         $this->pendingPhotographerId = $value ? (int) $value : null;
     }
 
+    /**
+     * Mutator editor_id untuk kompatibilitas kode lama.
+     * Sama seperti setPhotographerIdAttribute, nilai disimpan sementara
+     * dan diproses oleh hook booted() setelah model disimpan.
+     */
     public function setEditorIdAttribute($value): void
     {
-        // Mutator ini menjaga kompatibilitas kode lama yang masih mengisi editor_id.
         $this->pendingEditorId = $value ? (int) $value : null;
     }
 

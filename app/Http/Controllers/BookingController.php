@@ -18,13 +18,40 @@ use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 /**
- * Menangani alur pemesanan klien serta pemantauan status untuk admin dan manajer.
+ * Controller Pemesanan Layanan Foto AlterStudio.
+ *
+ * Menangani seluruh siklus hidup pemesanan:
+ * - Klien membuat booking (pilih paket, tanggal, jam, lokasi)
+ * - Klien mengecek ketersediaan slot secara AJAX (availability)
+ * - Klien mengubah jadwal sebelum dikonfirmasi (edit/update)
+ * - Admin/manajer mengelola status (konfirmasi, lunas, batal)
+ * - Klien melakukan pembayaran (pay)
+ *
+ * Pola penting yang digunakan:
+ * - DB::transaction dengan lockForUpdate() untuk mencegah double-booking
+ *   ketika dua klien mencoba memesan slot yang sama secara bersamaan.
+ * - DeferredNotification untuk mengirim notifikasi email tanpa memperlambat
+ *   response HTTP (notifikasi dikirim setelah response selesai dikirim).
  */
 class BookingController extends Controller
 {
+    /**
+     * Inject BookingAvailability sebagai dependency.
+     * BookingAvailability bertanggung jawab menghitung slot waktu yang tersedia
+     * berdasarkan jadwal yang sudah ada dan durasi paket yang dipilih.
+     */
     public function __construct(protected BookingAvailability $availability) {}
 
-    /** Menampilkan daftar pemesanan sesuai peran pengguna. */
+    /**
+     * Menampilkan daftar pemesanan sesuai peran pengguna.
+     *
+     * - Klien   : hanya melihat booking miliknya sendiri.
+     * - Admin/Manajer: melihat semua booking dengan filter status, paket,
+     *   tanggal, status penjadwalan, dan pencarian nama klien/paket.
+     *
+     * Menggunakan eager loading (with) agar tidak terjadi query N+1
+     * saat menampilkan banyak booking sekaligus di halaman daftar.
+     */
     public function index(Request $request)
     {
         $user = $request->user();
@@ -110,7 +137,14 @@ class BookingController extends Controller
         return view('admin.booking.index', compact('bookings', 'statuses', 'clients', 'packages'));
     }
 
-    /** Menampilkan form pemesanan untuk klien. */
+    /**
+     * Menampilkan form pemesanan baru untuk klien.
+     *
+     * Logika pemilihan paket default:
+     * - Jika ada query ?package_id=X, pre-select paket tersebut.
+     * - Jika hanya ada 1 paket aktif, otomatis dipilih.
+     * - Add-on paket dinormalisasi ke format stabil untuk frontend.
+     */
     public function create(Request $request)
     {
         $packages = ServicePackage::where('is_active', true)->orderBy('name')->get();
@@ -131,7 +165,16 @@ class BookingController extends Controller
         return view('client.booking.create', compact('packages', 'locations', 'selectedPackage', 'addonOptions', 'maxBookingDate'));
     }
 
-    /** Menampilkan form perubahan jadwal untuk booking yang belum disetujui. */
+    /**
+     * Menampilkan form ubah jadwal (reschedule) untuk booking yang belum dikonfirmasi.
+     *
+     * Aturan: klien hanya bisa mengubah jadwal selama booking masih berstatus
+     * "Diajukan" (isSubmitted). Setelah admin konfirmasi atau pembayaran dimulai,
+     * jadwal tidak lagi bisa diubah oleh klien.
+     *
+     * Jika paket sudah tidak aktif/dihapus, reschedule tidak diizinkan
+     * karena tidak bisa menghitung ulang slot yang tersedia.
+     */
     public function edit(Booking $booking)
     {
         if (! $this->canClientReschedule($booking)) {
@@ -170,6 +213,17 @@ class BookingController extends Controller
         ));
     }
 
+    /**
+     * Endpoint AJAX untuk mengecek ketersediaan slot waktu.
+     *
+     * Dipanggil oleh JavaScript di halaman form booking setiap kali
+     * pengguna mengubah paket, tanggal, atau lokasi.
+     *
+     * Response JSON berisi:
+     * - is_closed   : apakah tanggal tersebut hari libur/tutup
+     * - available_times: array slot waktu yang masih kosong
+     * - duration_minutes: durasi efektif (base + extra dari add-on)
+     */
     public function availability(Request $request)
     {
         $maxBookingDate = Carbon::today()->addMonth()->toDateString();
@@ -226,7 +280,21 @@ class BookingController extends Controller
         ]);
     }
 
-    /** Menyimpan pemesanan baru sebagai pengajuan dan langsung membuat project awal. */
+    /**
+     * Menyimpan booking baru ke database.
+     *
+     * Alur:
+     * 1. Validasi input (tanggal, waktu, paket, lokasi, add-on).
+     * 2. Cek apakah tanggal tutup/libur.
+     * 3. Buka transaksi database:
+     *    a. Lock paket dengan lockForUpdate() — cegah race condition.
+     *    b. Lock ruangan aktif di lokasi yang dipilih.
+     *    c. Cari ruangan yang tersedia untuk slot waktu yang diminta.
+     *    d. Buat record Booking + Project awal (status DRAFT).
+     * 4. Kirim notifikasi ke admin/manajer dan klien.
+     *
+     * Transaksi diulang maksimal 3x (retry: 3) jika terjadi deadlock.
+     */
     public function store(Request $request)
     {
         $user = Auth::user();
@@ -356,7 +424,17 @@ class BookingController extends Controller
             ->with('success', 'Pemesanan berhasil dikirim. Admin atau manajer akan meninjau sebelum pembayaran dibuka.');
     }
 
-    /** Memperbarui cabang, tanggal, dan jam booking yang masih berstatus diajukan. */
+    /**
+     * Memperbarui tanggal, jam, dan lokasi booking yang masih berstatus Diajukan.
+     *
+     * Sama seperti store(), menggunakan DB::transaction + lockForUpdate() untuk
+     * mencegah dua request update bersamaan mengambil slot yang sama.
+     *
+     * Perbedaan dengan store():
+     * - Tidak membuat booking baru, hanya update kolom tertentu.
+     * - Add-on tidak berubah — add-on mengikuti yang sudah dipilih sebelumnya.
+     * - Ruangan yang dipilih bisa berbeda dari sebelumnya (mengikuti ketersediaan).
+     */
     public function update(Request $request, Booking $booking)
     {
         if (! $this->canClientReschedule($booking)) {
@@ -447,7 +525,11 @@ class BookingController extends Controller
             ->with('success', 'Jadwal pemesanan berhasil diperbarui. Pemesanan tetap menunggu konfirmasi admin atau manajer.');
     }
 
-    /** Menampilkan detail pemesanan; klien hanya boleh melihat miliknya sendiri. */
+    /**
+     * Menampilkan detail booking dalam format JSON.
+     * Klien hanya bisa melihat booking miliknya sendiri (403 jika bukan miliknya).
+     * Admin dan manajer bisa melihat semua booking.
+     */
     public function show(Booking $booking)
     {
         $user = Auth::user();
@@ -459,7 +541,18 @@ class BookingController extends Controller
         return response()->json($booking->load(['package', 'project', 'payments']));
     }
 
-    /** Admin dan manajer mengelola konfirmasi, pembatalan, serta pelunasan manual. */
+    /**
+     * Admin/manajer mengubah status pemesanan.
+     *
+     * Transisi status yang diizinkan:
+     * - Diajukan      → Dikonfirmasi (WAITING_PAYMENT dengan confirmed_at) atau CANCELLED
+     * - Dikonfirmasi  → CANCELLED
+     * - DP_PAID       → PAID (pelunasan)
+     *
+     * Saat konfirmasi: catat timestamp confirmed_at dan kirim notifikasi ke klien.
+     * Saat pelunasan : buat/update record Payment dengan status PAID.
+     * Saat pembatalan: ubah semua pembayaran PENDING menjadi FAILED.
+     */
     public function updateStatus(Request $request, Booking $booking)
     {
         $request->validate([
@@ -539,7 +632,16 @@ class BookingController extends Controller
         return back()->with('success', 'Status pemesanan diperbarui.');
     }
 
-    /** Menampilkan halaman pembayaran untuk klien. */
+    /**
+     * Menampilkan halaman pembayaran untuk klien.
+     *
+     * Logika validasi sebelum menampilkan halaman:
+     * 1. Klien hanya bisa akses pembayaran miliknya sendiri.
+     * 2. Booking yang dibatalkan tidak bisa dibayar.
+     * 3. Booking yang belum dikonfirmasi tidak bisa dibayar.
+     * 4. Jika timer pembayaran belum dimulai, mulai timer 30 menit.
+     * 5. Jika timer sudah habis, batalkan booking dan redirect dengan pesan error.
+     */
     public function pay(Booking $booking)
     {
         $user = Auth::user();

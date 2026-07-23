@@ -31,7 +31,7 @@
                     @if(count($studioLocation->photo_gallery ?? []))
                         <div class="grid sm:grid-cols-2 gap-3 p-4 bg-[#FAF6F0]">
                             @foreach($studioLocation->photo_gallery as $photo)
-                                <img src="{{ Storage::url($photo) }}" alt="{{ $studioLocation->name }}" class="aspect-[16/10] w-full rounded-3xl object-cover border border-[#EDE0D0]">
+                                <img loading="lazy" src="{{ Storage::url($photo) }}" alt="{{ $studioLocation->name }}" class="aspect-[16/10] w-full rounded-3xl object-cover border border-[#EDE0D0]">
                             @endforeach
                         </div>
                     @else
@@ -86,7 +86,7 @@
                             @forelse($studioLocation->rooms as $room)
                                 <div class="rounded-3xl border border-[#EDE0D0] bg-[#FAF6F0] p-5">
                                     @if($room->photo_path)
-                                        <img src="{{ Storage::url($room->photo_path) }}" alt="{{ $room->name }}" class="mb-4 aspect-[16/10] w-full rounded-3xl object-cover border border-[#EDE0D0]">
+                                        <img loading="lazy" src="{{ Storage::url($room->photo_path) }}" alt="{{ $room->name }}" class="mb-4 aspect-[16/10] w-full rounded-3xl object-cover border border-[#EDE0D0]">
                                     @else
                                         <div class="mb-4 aspect-[16/10] w-full rounded-3xl border border-[#EDE0D0] bg-white flex items-center justify-center text-[#D4A017]/40">
                                             <i class="fa-solid fa-door-open text-4xl"></i>
