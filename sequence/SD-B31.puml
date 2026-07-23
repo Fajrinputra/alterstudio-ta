@@ -21,21 +21,27 @@ actor "Owner" as Owner
 boundary "Halaman Cabang Studio" as HalamanCabang
 boundary "Form Tambah Cabang" as FormTambah
 control "StudioLocationController" as StudioLocationController
+control "StorageService" as StorageService
 entity "StudioLocations Model" as StudioLocation
-entity "StudioRooms Model" as StudioRoom
 
 Owner -> HalamanCabang : Klik tambah cabang
 HalamanCabang -> StudioLocationController : create()
 StudioLocationController --> FormTambah : tampilkan form cabang
-Owner -> FormTambah : Isi data cabang dan ruangan
+Owner -> FormTambah : Isi data cabang dan foto galeri
 FormTambah -> StudioLocationController : store(data)
-StudioLocationController -> StudioLocationController : validasi nama, alamat, kontak,\nmaps, foto, ruangan
+StudioLocationController -> StudioLocationController : validasi nama, alamat,\nmap_url, foto, dan status
 
 alt Data valid
-    StudioLocationController -> StudioLocation : INSERT studio_locations\ndengan location_code
+    StudioLocationController -> StudioLocationController : generate slug\notomatis dari nama cabang
+    StudioLocationController -> StudioLocation : INSERT studio_locations\ndengan location_code dan slug
     StudioLocation --> StudioLocationController : cabang tersimpan
-    StudioLocationController -> StudioRoom : INSERT studio_rooms dengan room_code\njika ada
-    StudioRoom --> StudioLocationController : ruangan tersimpan
+    opt Foto galeri diunggah
+        StudioLocationController -> StorageService : simpan foto ke\nstorage/public/locations/{id}
+        StorageService --> StudioLocationController : array path foto
+        StudioLocationController -> StudioLocation : syncPhotos(paths)\nupdate kolom photo_gallery
+        StudioLocation --> StudioLocationController : galeri tersimpan
+    end
+    StudioLocationController -> StudioLocationController : Cache::forget\n('landing.page.data.v2')
     StudioLocationController --> HalamanCabang : redirect pesan sukses
     HalamanCabang --> Owner : cabang baru tampil
 else Data tidak valid / gagal simpan

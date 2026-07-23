@@ -28,22 +28,29 @@ Manajer -> HalamanHero : Klik edit pada slide hero
 HalamanHero -> LandingHeroController : edit(slide_code)
 LandingHeroController -> LandingHeroSlide : SELECT landing_hero_slides\nberdasarkan slide_code
 LandingHeroSlide --> LandingHeroController : data slide
-LandingHeroController --> FormEdit : tampilkan form edit slide
-Manajer -> FormEdit : Submit perubahan slide hero
+LandingHeroController --> FormEdit : tampilkan form edit slide\n(view: admin.landing.hero.edit)
+FormEdit --> Manajer : form edit tampil
+
+note right of FormEdit
+  Sort order TIDAK ditampilkan\ndi form edit dan tidak bisa diubah.\nUrutan slide dikelola otomatis.
+end note
+
+Manajer -> FormEdit : Ubah judul, subtitle, eyebrow,\nstatus aktif, dan/atau foto
 FormEdit -> LandingHeroController : update(slide_code, data)
 LandingHeroController -> LandingHeroController : validasi data perubahan
 
 alt Validasi berhasil
     opt Gambar baru diunggah
-        LandingHeroController -> StorageService : hapus gambar lama dan simpan gambar baru
-        StorageService -> StorageService : DELETE old image + STORE new image
-        StorageService --> StorageService : image path baru
-        StorageService --> LandingHeroController : image path baru
+        LandingHeroController -> StorageService : hapus gambar lama dari storage
+        StorageService --> LandingHeroController : file lama terhapus
+        LandingHeroController -> StorageService : simpan gambar baru ke\nstorage/public/landing/hero
+        StorageService --> LandingHeroController : image_path baru
     end
     LandingHeroController -> LandingHeroSlide : UPDATE landing_hero_slides\nberdasarkan slide_code
     LandingHeroSlide --> LandingHeroController : slide diperbarui
+    LandingHeroController -> LandingHeroController : Cache::forget\n('landing.page.data.v2')
     LandingHeroController --> HalamanHero : redirect dengan pesan berhasil
-    HalamanHero --> manajer : slide hero terbaru tampil
+    HalamanHero --> Manajer : slide hero terbaru tampil
 else Validasi gagal
     LandingHeroController --> FormEdit : tampilkan pesan error
     FormEdit --> Manajer : perubahan tidak disimpan

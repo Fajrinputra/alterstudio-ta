@@ -21,24 +21,38 @@ actor "Owner" as Owner
 boundary "Detail Cabang" as DetailCabang
 boundary "Modal Konfirmasi Hapus" as ModalHapus
 control "StudioLocationController" as StudioLocationController
+control "StorageService" as StorageService
 entity "StudioLocations Model" as StudioLocation
+entity "StudioRooms Model" as StudioRoom
 entity "Bookings Model" as Booking
 
 Owner -> DetailCabang : Klik hapus cabang
 DetailCabang -> ModalHapus : tampilkan konfirmasi hapus
 Owner -> ModalHapus : konfirmasi hapus
 ModalHapus -> StudioLocationController : destroy(location_code)
-StudioLocationController -> Booking : cek booking aktif pada location_code
+StudioLocationController -> Booking : cek riwayat booking\npada location_code
 Booking --> StudioLocationController : hasil pengecekan
+StudioLocationController -> StudioRoom : cek booking aktif\npada ruangan di cabang ini
+StudioRoom --> StudioLocationController : hasil pengecekan ruangan
 
-alt Cabang tidak digunakan
-    StudioLocationController -> StudioLocation : DELETE/UPDATE studio_locations\nberdasarkan location_code
+alt Cabang memiliki riwayat booking (tidak bisa dihapus)
+    StudioLocationController -> StudioLocation : UPDATE is_active = false
+    StudioLocation --> StudioLocationController : cabang dinonaktifkan
+    StudioLocationController -> StudioRoom : UPDATE is_active = false\nuntuk semua ruangan
+    StudioRoom --> StudioLocationController : ruangan dinonaktifkan
+    StudioLocationController -> StudioLocationController : Cache::forget\n('landing.page.data.v2')
+    StudioLocationController --> DetailCabang : redirect dengan pesan\ncabang dinonaktifkan
+    DetailCabang --> Owner : cabang dinonaktifkan\n(data historis tetap aman)
+else Cabang belum pernah digunakan (bisa dihapus)
+    StudioLocationController -> StorageService : hapus semua file foto\ngaleri dari storage
+    StorageService --> StudioLocationController : file terhapus
+    StudioLocationController -> StorageService : hapus foto tiap ruangan\ndari storage
+    StorageService --> StudioLocationController : file terhapus
+    StudioLocationController -> StudioLocation : DELETE studio_locations\nberdasarkan location_code
     StudioLocation --> StudioLocationController : cabang terhapus
+    StudioLocationController -> StudioLocationController : Cache::forget\n('landing.page.data.v2')
     StudioLocationController --> DetailCabang : redirect ke menu cabang
     DetailCabang --> Owner : pesan sukses tampil
-else Cabang masih digunakan
-    StudioLocationController --> ModalHapus : tolak penghapusan
-    ModalHapus --> Owner : pesan cabang masih digunakan
 end
 
 @enduml

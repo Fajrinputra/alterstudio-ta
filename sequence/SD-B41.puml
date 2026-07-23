@@ -24,24 +24,40 @@ control "LandingHeroController" as LandingHeroController
 control "StorageService" as StorageService
 entity "LandingHeroSlides Model" as LandingHeroSlide
 
-Manajer -> HalamanHero : Membuka halaman kelola hero
-HalamanHero -> FormTambah : tampilkan form tambah slide
-Manajer -> FormTambah : Submit data slide dan gambar
-FormTambah -> LandingHeroController : store(data)
-LandingHeroController -> LandingHeroController : validasi teks, urutan,\nstatus, dan gambar
+Manajer -> HalamanHero : Klik tombol tambah slide
+HalamanHero -> LandingHeroController : create()
+LandingHeroController -> LandingHeroSlide : hitung jumlah slide yang ada
+LandingHeroSlide --> LandingHeroController : total slide
 
-alt Validasi berhasil
-    LandingHeroController -> StorageService : simpan gambar hero
-    StorageService -> StorageService : STORE landing/hero image
-    StorageService --> StorageService : image path
-    StorageService --> LandingHeroController : image path
-    LandingHeroController -> LandingHeroSlide : INSERT landing_hero_slides\ndengan slide_code
-    LandingHeroSlide --> LandingHeroController : slide tersimpan
-    LandingHeroController --> HalamanHero : redirect dengan pesan berhasil
-    HalamanHero --> Manajer : slide baru tampil pada daftar hero
-else Validasi gagal
-    LandingHeroController --> FormTambah : tampilkan pesan error
-    FormTambah --> Manajer : data slide tidak tersimpan
+alt Sudah ada 10 slide (batas maksimal)
+    LandingHeroController --> HalamanHero : redirect dengan pesan error
+    HalamanHero --> Manajer : tambah slide ditolak
+else Belum mencapai batas maksimal
+    LandingHeroController --> FormTambah : tampilkan form tambah slide\n(view: admin.landing.hero.create)
+    FormTambah --> Manajer : form tampil
+    Manajer -> FormTambah : Isi judul, subtitle, eyebrow,\nstatus aktif, dan foto
+    note right of FormTambah
+      Sort order TIDAK diisi pengguna.
+      Ditentukan otomatis oleh sistem.
+    end note
+    FormTambah -> LandingHeroController : store(data)
+    LandingHeroController -> LandingHeroController : double-check batas 10 slide\n(validasi ulang di server)
+    LandingHeroController -> LandingHeroController : validasi teks dan gambar
+    alt Validasi berhasil
+        LandingHeroController -> LandingHeroSlide : ambil nilai sort_order tertinggi
+        LandingHeroSlide --> LandingHeroController : max sort_order
+        LandingHeroController -> LandingHeroController : auto-assign\nsort_order = max + 1
+        LandingHeroController -> StorageService : simpan gambar ke\nstorage/public/landing/hero
+        StorageService --> LandingHeroController : image_path
+        LandingHeroController -> LandingHeroSlide : INSERT landing_hero_slides\nbeserta sort_order otomatis
+        LandingHeroSlide --> LandingHeroController : slide tersimpan
+        LandingHeroController -> LandingHeroController : Cache::forget\n('landing.page.data.v2')
+        LandingHeroController --> HalamanHero : redirect dengan pesan berhasil
+        HalamanHero --> Manajer : slide baru tampil pada daftar hero
+    else Validasi gagal
+        LandingHeroController --> FormTambah : tampilkan pesan error
+        FormTambah --> Manajer : data slide tidak tersimpan
+    end
 end
 
 @enduml

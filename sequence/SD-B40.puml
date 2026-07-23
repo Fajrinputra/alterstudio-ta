@@ -13,19 +13,21 @@ skinparam sequence {
     ParticipantFontColor #111111
     ActorBorderColor #999999
     ActorFontColor #111111
+    GroupBorderColor #111111
+    GroupBackgroundColor transparent
 }
 
 actor "Manajer" as Manajer
 boundary "Menu Hero Landing Page" as MenuHero
 boundary "Halaman Kelola Hero" as HalamanHero
-control "LandingHeroSlideController" as LandingHeroController
+control "LandingHeroController" as LandingHeroController
 entity "LandingHeroSlides Model" as LandingHeroSlide
 
 Manajer -> MenuHero : Membuka menu kelola hero
 MenuHero -> LandingHeroController : index()
-LandingHeroController -> LandingHeroSlide : SELECT landing_hero_slides\nberdasarkan slide_code dan sort_order
+LandingHeroController -> LandingHeroSlide : SELECT landing_hero_slides\ndiurutkan berdasarkan sort_order
 LandingHeroSlide --> LandingHeroController : data hero slide
-LandingHeroController --> HalamanHero : tampilkan daftar hero slide
+LandingHeroController --> HalamanHero : tampilkan daftar hero slide\n(view: admin.landing.hero.index)
 HalamanHero --> Manajer : menu kelola hero tampil
 
 @enduml

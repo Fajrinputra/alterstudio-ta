@@ -26,6 +26,8 @@ boundary "Detail Paket" as Detail
 boundary "Form Pemesanan" as Form
 control "BookingController" as BookingController
 control "BookingAvailability" as BookingAvailability
+entity "ServiceCategories Model" as ServiceCategory
+entity "ServicePackages Model" as ServicePackage
 entity "Bookings Model" as Booking
 entity "StudioLocations Model" as StudioLocation
 entity "StudioRooms Model" as StudioRoom
@@ -33,33 +35,41 @@ entity "Projects Model" as Project
 
 Klien -> Katalog : Membuka halaman layanan
 Katalog -> BookingController : request daftar layanan
-BookingController -> Booking : ambil kategori dan paket aktif
-Booking --> BookingController : data kategori dan paket
+BookingController -> ServiceCategory : ambil kategori aktif
+ServiceCategory --> BookingController : data kategori
+BookingController -> ServicePackage : ambil paket aktif per kategori
+ServicePackage --> BookingController : data paket
 BookingController --> Katalog : tampilkan daftar layanan
 Katalog --> Klien : Menampilkan kategori dan paket layanan
 
 Klien -> Katalog : Memilih kategori dan paket
 Katalog -> Detail : buka detail paket
 Detail -> BookingController : request detail paket
-BookingController -> Booking : ambil detail paket
-Booking --> BookingController : data paket
+BookingController -> ServicePackage : ambil detail paket berdasarkan package_id
+ServicePackage --> BookingController : data paket (harga, durasi, add-on)
 BookingController --> Detail : tampilkan detail paket
 Detail --> Klien : Menampilkan detail paket
 
 Klien -> Detail : Membuka formulir pemesanan
 Detail -> Form : tampilkan form pemesanan
-Form -> BookingController : request data form
-BookingController -> StudioLocation : ambil cabang aktif\nberdasarkan location_code
+Form -> BookingController : create() — request data form
+BookingController -> ServicePackage : ambil semua paket aktif
+ServicePackage --> BookingController : data paket
+BookingController -> StudioLocation : ambil semua cabang aktif
 StudioLocation --> BookingController : data cabang
-BookingController -> StudioRoom : ambil ruangan aktif\nberdasarkan room_code
-StudioRoom --> BookingController : data ruangan
 BookingController --> Form : tampilkan form pemesanan
 Form --> Klien : Form pemesanan ditampilkan
 
+note right of Form
+  Daftar ruangan dan slot waktu
+  dimuat secara AJAX (availability)
+  saat klien memilih cabang dan tanggal.
+end note
+
 Klien -> Form : Memilih cabang, ruangan, tanggal, dan add-on
-Form -> BookingController : cek ketersediaan slot
-BookingController -> Booking : ambil data paket terpilih
-Booking --> BookingController : data paket
+Form -> BookingController : availability(package_id, date, location_code)
+BookingController -> ServicePackage : ambil data paket terpilih (lockForUpdate)
+ServicePackage --> BookingController : data paket (durasi, add-on)
 BookingController -> BookingAvailability : hitung slot tersedia
 BookingAvailability -> StudioRoom : ambil ruangan aktif\nberdasarkan room_code
 StudioRoom --> BookingAvailability : data ruangan
@@ -80,8 +90,15 @@ Klien -> Form : Mengisi data pemesanan
 Klien -> Form : Klik simpan dan kirim pemesanan
 Form -> BookingController : store(data pemesanan)
 BookingController -> BookingController : validasi data pemesanan
-BookingController -> Booking : ambil paket terpilih
-Booking --> BookingController : data paket
+note right of BookingController
+  Menggunakan DB::transaction dengan
+  lockForUpdate() untuk mencegah
+  double-booking saat request bersamaan.
+end note
+BookingController -> ServicePackage : lock paket terpilih (lockForUpdate)
+ServicePackage --> BookingController : data paket
+BookingController -> StudioRoom : lock ruangan aktif di cabang (lockForUpdate)
+StudioRoom --> BookingController : data ruangan aktif
 BookingController -> BookingAvailability : validasi ulang slot pemesanan
 BookingAvailability -> Booking : cek bentrok booking\nberdasarkan location_code dan room_code
 Booking --> BookingAvailability : hasil pengecekan booking

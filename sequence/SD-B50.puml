@@ -61,11 +61,16 @@ FormGantiJadwal --> Klien : slot baru tersedia
 
 Klien -> FormGantiJadwal : Klik Simpan Perubahan
 FormGantiJadwal -> BookingController : update(bookingId, data)
-BookingController -> Booking : lock booking dan validasi ulang status
+note right of BookingController
+  Seluruh blok di bawah dijalankan dalam
+  DB::transaction untuk mencegah race condition
+  ketika dua klien mengubah slot yang sama.
+end note
+BookingController -> Booking : lockForUpdate() — kunci booking\ndan validasi ulang status
 Booking --> BookingController : booking valid
-BookingController -> ServicePackage : lock paket aktif
+BookingController -> ServicePackage : lockForUpdate() — kunci paket aktif
 ServicePackage --> BookingController : data paket aktif
-BookingController -> StudioRoom : lock ruangan aktif\nberdasarkan location_code dan room_code
+BookingController -> StudioRoom : lockForUpdate() — kunci ruangan aktif\nberdasarkan location_code dan room_code
 StudioRoom --> BookingController : data ruangan aktif
 BookingController -> BookingAvailability : validasi ulang slot\nmengabaikan booking saat ini
 BookingAvailability --> BookingController : hasil validasi slot
