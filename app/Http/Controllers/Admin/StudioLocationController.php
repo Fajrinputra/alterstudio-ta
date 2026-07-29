@@ -103,7 +103,7 @@ class StudioLocationController extends Controller
             // Upload semua foto sekaligus ke folder per-ID lokasi agar terorganisir.
             $paths = [];
             foreach ($request->file('photos') as $file) {
-                $paths[] = $file->storePublicly("locations/{$location->id}", 'public');
+                $paths[] = $file->storePublicly("locations/{$location->location_code}", 'public');
             }
             $this->syncPhotos($location, $paths);
         }
@@ -152,7 +152,7 @@ class StudioLocationController extends Controller
         if ($request->hasFile('photos')) {
             // Tambahkan foto baru ke galeri yang ada (bukan mengganti).
             foreach ($request->file('photos') as $file) {
-                $gallery->push($file->storePublicly("locations/{$studioLocation->id}", 'public'));
+                $gallery->push($file->storePublicly("locations/{$studioLocation->location_code}", 'public'));
             }
         }
 

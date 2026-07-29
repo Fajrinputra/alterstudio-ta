@@ -3,15 +3,16 @@
     <div class="min-h-screen bg-[#FAF6F0] py-12">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             
-            <a href="{{ url('/') }}#studio" 
-               class="inline-flex items-center text-[#5C432C] hover:text-[#D4A017] mb-8 transition-all">
-                <span class="font-medium">Kembali ke Beranda</span>
+            <a href="{{ url('/') }}#studio"
+               class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-[#E1D3C5] bg-white text-[#5C432C] font-medium text-sm shadow-sm hover:border-[#D4A017] hover:text-[#D4A017] hover:shadow-md transition-all duration-200 mb-8">
+                <i class="fa-solid fa-arrow-left text-xs"></i>
+                Kembali ke Beranda
             </a>
 
             {{-- Hero Section - Lebih Dramatic --}}
             <div class="relative rounded-3xl overflow-hidden h-[420px] lg:h-[480px] shadow-2xl mb-10">
-                @if($photos && count($photos) > 0)
-                    <img src="{{ Storage::url($photos[0]) }}" 
+                @if($heroPhoto)
+                    <img src="{{ Storage::url($heroPhoto['path']) }}" 
                          alt="{{ $location->name }}" 
                          class="w-full h-full object-cover">
                 @else
@@ -68,8 +69,8 @@
                         </p>
                     </div>
 
-                    {{-- Gallery - Lebih Cantik --}}
-                    @if($photos && count($photos) > 0)
+                    {{-- Gallery - Foto Lokasi + Foto Ruangan --}}
+                    @if($photos && $photos->count() > 0)
                         <div class="bg-white rounded-3xl shadow-xl border border-[#EDE0D0] p-8 lg:p-10">
                             <h2 class="font-display text-3xl text-[#3F2B1B] mb-8 flex items-center gap-3">
                                 <i class="fa-solid fa-images text-[#D4A017]"></i>
@@ -78,11 +79,19 @@
                             <div class="grid grid-cols-2 md:grid-cols-3 gap-5">
                                 @foreach($photos as $photo)
                                     <div class="group relative rounded-2xl overflow-hidden border border-[#EDE0D0] aspect-square shadow-md hover:shadow-2xl transition-all duration-500">
-                                        <img src="{{ Storage::url($photo) }}" 
-                                             alt="Galeri {{ $location->name }}"
+                                        <img src="{{ Storage::url($photo['path']) }}" 
+                                             alt="{{ $photo['label'] }}"
                                              class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
-                                        <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-6">
-                                            <i class="fa-solid fa-magnifying-glass-plus text-white text-4xl drop-shadow-lg"></i>
+                                        {{-- Label nama ruangan / lokasi --}}
+                                        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-3 py-3 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                                            <p class="text-white text-xs font-medium truncate">{{ $photo['label'] }}</p>
+                                            @if($photo['type'] === 'room')
+                                                <span class="text-[10px] text-amber-300 font-semibold uppercase tracking-widest">Ruangan</span>
+                                            @endif
+                                        </div>
+                                        {{-- Icon zoom --}}
+                                        <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <i class="fa-solid fa-magnifying-glass-plus text-white text-lg drop-shadow-lg"></i>
                                         </div>
                                     </div>
                                 @endforeach

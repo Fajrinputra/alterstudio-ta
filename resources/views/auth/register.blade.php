@@ -168,15 +168,19 @@
 
                         <!-- Terms -->
                         <div class="flex items-start gap-2">
-                            <input type="checkbox" id="terms" 
-                                   class="mt-0.5 h-4 w-4 rounded-lg border-[#E1D3C5] text-[#D4A017] focus:ring-[#D4A017]" required>
+                            <input type="checkbox" id="terms" name="terms"
+                                   class="mt-0.5 h-4 w-4 rounded-lg border-[#E1D3C5] text-[#D4A017] focus:ring-[#D4A017]">
                             <label for="terms" class="text-xs leading-4 text-[#6F5134]">
                                 Saya menyetujui 
-                                <a href="#" class="font-medium text-[#D4A017] hover:underline">Syarat & Ketentuan</a> 
+                                <a href="#" class="font-medium text-[#D4A017] hover:underline">Syarat &amp; Ketentuan</a> 
                                 dan 
                                 <a href="#" class="font-medium text-[#D4A017] hover:underline">Kebijakan Privasi</a>.
                             </label>
                         </div>
+                        <p id="terms-error" class="hidden text-xs text-red-500">
+                            <i class="fa-solid fa-circle-exclamation mr-1"></i>
+                            Anda harus menyetujui Syarat &amp; Ketentuan sebelum mendaftar.
+                        </p>
 
                         <!-- Submit Button -->
                         <button type="submit"
@@ -226,6 +230,28 @@
                     item.icon.classList.toggle('fa-eye-slash', isPassword);
                 });
             });
+            // Validasi checkbox Syarat & Ketentuan dalam Bahasa Indonesia
+            const registerForm  = document.querySelector('form[action*="register"]');
+            const termsCheckbox = document.getElementById('terms');
+            const termsError    = document.getElementById('terms-error');
+
+            if (registerForm && termsCheckbox && termsError) {
+                registerForm.addEventListener('submit', function (e) {
+                    if (!termsCheckbox.checked) {
+                        e.preventDefault();
+                        termsError.classList.remove('hidden');
+                        termsCheckbox.focus();
+                        termsCheckbox.closest('.flex').classList.add('ring-1', 'ring-red-400', 'rounded-lg');
+                    }
+                });
+
+                termsCheckbox.addEventListener('change', function () {
+                    if (this.checked) {
+                        termsError.classList.add('hidden');
+                        this.closest('.flex').classList.remove('ring-1', 'ring-red-400', 'rounded-lg');
+                    }
+                });
+            }
         });
     </script>
 </x-guest-layout>
